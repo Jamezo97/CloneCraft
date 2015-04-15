@@ -31,7 +31,7 @@ public class Handler2UpdateCloneData extends Handler{
 		this(clone);
 		open();
 		add(clone, sync);
-		close();
+		close();//asd
 	}
 
 	public void add(EntityClone clone, Sync sync){

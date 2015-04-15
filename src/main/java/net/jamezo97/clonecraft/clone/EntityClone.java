@@ -74,7 +74,7 @@ public class EntityClone extends EntityLiving implements RenderableManager{
 	
 	
 
-	//For when fishing is implemented
+	//For when fishing is implementeded
 	public EntityFishHook fishEntity;
 	
 	
