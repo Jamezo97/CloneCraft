@@ -6,11 +6,13 @@ public class MusicBase {
 	
 	private static ArrayList<MusicGetter> musics = new ArrayList<MusicGetter>();
 	
-	static{
+	static
+	{
 		load();
 	}
 	
-	private static void load(){
+	private static void load()
+	{
 		musics.add(new CountingStars());	//0
 		musics.add(new CrazyFrog());		//1
 		musics.add(new Levels());			//2
@@ -22,19 +24,23 @@ public class MusicBase {
 		musics.add(new Clocks());			//8
 	}
 	
-	public static int getSize(int id){
+	public static int getSize(int id)
+	{
 		return musics.get(id).getData().length;
 	}
 	
-	public static float[] getData(int id){
+	public static float[] getData(int id)
+	{
 		return musics.get(id).getData();
 	}
 	
-	public static float getPitch(int id, int index){
+	public static float getPitch(int id, int index)
+	{
 		return musics.get(id).getData()[index];
 	}
 
-	public static int getSize() {
+	public static int getSize()
+	{
 		return musics.size();
 	}
 

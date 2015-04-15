@@ -23,6 +23,8 @@ itemGroup.clonecraft=CloneCraft
 
 tile.sterilizer.name=Sterilizer
 tile.centrifuge.name=Centrifuge
+tile.antenna.name=Antenna
+tile.lifeInducer.name=Life Inducer
 
 
 

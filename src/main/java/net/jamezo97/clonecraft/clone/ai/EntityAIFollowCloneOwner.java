@@ -31,6 +31,9 @@ public class EntityAIFollowCloneOwner extends EntityAIBase
 	}
 	
 	Random rand = new Random();
+	
+	//A timer which increments whilst the player is being followed. Reset when not.
+	int followingCount = 0;
 
 	@Override
 	public boolean continueExecuting() {
@@ -54,15 +57,19 @@ public class EntityAIFollowCloneOwner extends EntityAIBase
                         }*/
                     }
                 }
-			}else if(followingPlayer && distance < 4){
+			}
+			else if(followingPlayer && distance < 4)
+			{
+				//If the clone is standing too close to the player, make the clone move out of the way and stop following
 				double x = owner.posX + rand.nextInt(4)-2;
 				double z = owner.posZ + rand.nextInt(4)-2;
 				PathEntity path = clone.moveTo(x, owner.posY, z);
 				followingPlayer = false;
-			}else if(distance > 36 || (followingPlayer && lastSetPath == clone.getNavigator().getPath())){
+			}else if(distance > 25 || (followingPlayer && (lastSetPath != clone.getNavigator().getPath() || followingCount % 10 == 0))){
 				lastSetPath = clone.moveToEntity(owner);
 				followingPlayer = true;
 			}
+			followingCount++;
 		}
 		return super.continueExecuting();
 	}

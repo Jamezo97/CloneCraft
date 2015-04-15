@@ -34,9 +34,13 @@ import net.minecraft.util.Vec3;
 import net.minecraft.world.World;
 import net.minecraft.world.WorldSettings.GameType;
 
+/**
+ * A class to interface the clone with functions which require an EntityPlayer (seems as how a clone is basically just an automated player)
+ */
 public class FakePlayer extends EntityPlayer{
 
 	EntityClone clone;
+	
 	
 	public FakePlayer(EntityClone clone) {
 		super(clone.worldObj, new FakeGameProfile(clone));

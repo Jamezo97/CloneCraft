@@ -12,6 +12,7 @@ import net.jamezo97.clonecraft.GuiHandler;
 import net.jamezo97.clonecraft.Reflect;
 import net.jamezo97.clonecraft.clone.ai.EntityAIAttackEnemies;
 import net.jamezo97.clonecraft.clone.ai.EntityAIBreakBlock;
+import net.jamezo97.clonecraft.clone.ai.EntityAICloneLookIdle;
 import net.jamezo97.clonecraft.clone.ai.EntityAIFollowCloneOwner;
 import net.jamezo97.clonecraft.clone.sync.Syncer;
 import net.jamezo97.clonecraft.entity.EntityExplodeCollapseFX;
@@ -50,8 +51,6 @@ import net.minecraft.item.ItemFood;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.nbt.NBTTagList;
-import net.minecraft.network.play.server.S1DPacketEntityEffect;
-import net.minecraft.network.play.server.S1EPacketRemoveEntityEffect;
 import net.minecraft.pathfinding.PathEntity;
 import net.minecraft.potion.Potion;
 import net.minecraft.potion.PotionEffect;
@@ -74,7 +73,7 @@ public class EntityClone extends EntityLiving implements RenderableManager{
 	
 	
 
-	//For when fishing is implementeded
+	//For when fishing is implemented
 	public EntityFishHook fishEntity;
 	
 	
@@ -122,6 +121,8 @@ public class EntityClone extends EntityLiving implements RenderableManager{
 		this.tasks.addTask(2, new EntityAIFollowCloneOwner(this));
 
 		this.tasks.addTask(3, aiBreakBlocks = new EntityAIBreakBlock(this, 16));
+		
+		this.tasks.addTask(10, new EntityAICloneLookIdle(this));
 		
 //		this.tasks.addTask(6, new EntityAIWatchClosest(this, EntityPlayer.class, 8.0F));
 //        this.tasks.addTask(6, new EntityAILookIdle(this));
@@ -177,38 +178,44 @@ public class EntityClone extends EntityLiving implements RenderableManager{
 	
 	int pIndex = 0;
 	
-	public void initSounds(){
-		pId = this.getRNG().nextInt(MusicBase.getSize());
+	public void initSounds()
+	{
+		pId = this.getRNG().nextInt( MusicBase.getSize() );
 		
 	}
 	
-	public void playNextTing(){
-		if(pId > -1){
-			if(pIndex >= 0 && pIndex < MusicBase.getSize(pId)){
+	public void playNextTing()
+	{
+		if(pId > -1)
+		{
+			if(pIndex >= 0 && pIndex < MusicBase.getSize(pId))
+			{
 				playSound("random.orb", 0.1F, MusicBase.getPitch(pId, pIndex));
 			}
 			pIndex++;
-			if(pIndex >= MusicBase.getSize(pId)){
+			if(pIndex >= MusicBase.getSize(pId))
+			{
 				pIndex = 0;
 			}
-		}else{
+		}
+		else
+		{
 			playSound("random.orb", 0.1F,  0.5F * ((this.rand.nextFloat() - this.rand.nextFloat()) * 0.7F + 1.8F));
 		}
-		
 	}
 	
 	@Override
-	protected boolean interact(EntityPlayer player) {
+	protected boolean interact(EntityPlayer player)
+	{
 		if(!player.isSneaking() && this.canUseThisEntity(player))
 		{
 			player.openGui(CloneCraft.INSTANCE, GuiHandler.CLONE, worldObj, this.getEntityId(), 0, 0);
 			return true;
-		}else{
-			playNextTing();
-			
-			return true;
 		}
-//		return super.interact(player);
+		else
+		{
+			return false;
+		}
 	}
 
 	
@@ -238,9 +245,9 @@ public class EntityClone extends EntityLiving implements RenderableManager{
 			pickupNearbyItems();
 			this.foodStats.onUpdate(this);
 			checkHunger();
-			if(this.getNavigator().noPath()){
+			if(this.isSprinting() && this.getNavigator().noPath()){
 				this.setSprinting(false);
-			}else{
+			}else if(this.getOptions().sprint.get()){
 				this.setSprinting(true);
 			}
 			if(this.getAttackTarget() != null){
