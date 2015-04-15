@@ -1,0 +1,83 @@
+{
+	"general.pop":
+	{
+		"category": "neutral",
+		"sounds":
+		[
+			"general/pop1",
+			"general/pop2"
+		]
+	},
+	"general.bubbles":
+	{
+		"category": "neutral",
+		"sounds":
+		[
+			"general/bubbles1",
+			"general/bubbles2",
+			"general/bubblesloop"
+		]
+	},
+	"general.bubbles.loop":
+	{
+		"category": "neutral",
+		"sounds":
+		[
+			"general/bubblesloop"
+		]
+	},
+	"block.close":
+	{
+		"category": "block",
+		"sounds":
+		[
+			"block/close"
+		]
+	},
+	"block.open":
+	{
+		"category": "block",
+		"sounds":
+		[
+			"block/open"
+		]
+	},
+	"block.spin":
+	{
+		"category": "block",
+		"sounds":
+		[
+			"block/spin"
+		]
+	},
+	"block.zoom":
+	{
+		"category": "block",
+		"sounds":
+		[
+			"block/zoom"
+		]
+	},
+	"elec.zap":
+	{
+		"category": "block",
+		"sounds":
+		[
+		 	"elec/elec1",
+		 	"elec/elec2",
+		 	"elec/elec3",
+		 	"elec/elec4",
+		 	"elec/elec5",
+		 	"elec/elec6",
+		 	"elec/elec7"
+		]
+	},
+	"elec.chargeUp":
+	{
+		"category": "block",
+		"sounds":
+		[
+		 	"elec/ChargeExplode3.1s"
+		]
+	}
+}

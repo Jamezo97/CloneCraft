@@ -1,0 +1,138 @@
+package net.jamezo97.clonecraft.clone.ai;
+
+import java.util.Random;
+
+import net.jamezo97.clonecraft.clone.EntityClone;
+import net.minecraft.entity.ai.EntityAIBase;
+import net.minecraft.util.Vec3;
+
+public class EntityAICloneWander extends EntityAIBase
+{
+    private EntityClone entity;
+    private double xPosition;
+    private double yPosition;
+    private double zPosition;
+    private float speed;
+
+    public EntityAICloneWander(EntityClone par1EntityCreature, float par2)
+    {
+        this.entity = par1EntityCreature;
+        this.speed = par2;
+        this.setMutexBits(1);
+    }
+
+    /**
+     * Returns whether the EntityAIBase should begin execution.
+     */
+    public boolean shouldExecute()
+    {
+        if (this.entity.getAge() >= 100)
+        {
+            return false;
+        }
+        else if (this.entity.getRNG().nextInt(120) != 0)
+        {
+            return false;
+        }
+        else if (!this.entity.getOptions().wander.get()){
+            return false;
+        }else if(entity.getOptions().guard.get()){
+        	return false;
+        }/*else if(!entity.notMining()){
+        	return false;
+        }*/else{
+            Vec3 var1 = findRandomTargetBlock(this.entity, 10, 7, (Vec3)null);
+            if (var1 == null)
+            {
+                return false;
+            }
+            else
+            {
+                this.xPosition = var1.xCoord;
+                this.yPosition = var1.yCoord;
+                this.zPosition = var1.zCoord;
+                return true;
+            }
+        }
+    }
+
+    /**
+     * Returns whether an in-progress EntityAIBase should continue executing
+     */
+    public boolean continueExecuting()
+    {
+        return !this.entity.getNavigator().noPath() && entity.getOptions().wander.get() && !entity.getOptions().guard.get();
+    }
+
+    /**
+     * Execute a one shot task or start executing a continuous task
+     */
+    public void startExecuting()
+    {
+        this.entity.getNavigator().tryMoveToXYZ(this.xPosition, this.yPosition, this.zPosition, this.speed);
+    }
+    
+    
+    
+    
+    private static Vec3 findRandomTargetBlock(EntityClone par0EntityCreature, int par1, int par2, Vec3 par3Vec3)
+    {
+        Random var4 = par0EntityCreature.getRNG();
+        boolean var5 = false;
+        int var6 = 0;
+        int var7 = 0;
+        int var8 = 0;
+        float var9 = -99999.0F;
+        boolean var10 = false;
+
+        /*if (par0EntityCreature.hasHome())
+        {
+            double var11 = (double)(par0EntityCreature.getHomePosition().getDistanceSquared(MathHelper.floor_double(par0EntityCreature.posX), MathHelper.floor_double(par0EntityCreature.posY), MathHelper.floor_double(par0EntityCreature.posZ)) + 4.0F);
+            double var13 = (double)(par0EntityCreature.getMaximumHomeDistance() + (float)par1);
+            var10 = var11 < var13 * var13;
+        }
+        else
+        {
+            var10 = false;
+        }*/
+
+        /*for (int var16 = 0; var16 < 10; ++var16)
+        {
+            int var12 = var4.nextInt(2 * par1) - par1;
+            int var17 = var4.nextInt(2 * par2) - par2;
+            int var14 = var4.nextInt(2 * par1) - par1;
+
+            if (par3Vec3 == null || (double)var12 * par3Vec3.xCoord + (double)var14 * par3Vec3.zCoord >= 0.0D)
+            {
+                var12 += MathHelper.floor_double(par0EntityCreature.posX);
+                var17 += MathHelper.floor_double(par0EntityCreature.posY);
+                var14 += MathHelper.floor_double(par0EntityCreature.posZ);
+
+                if (!var10 || par0EntityCreature.isWithinHomeDistance(var12, var17, var14))
+                {
+                    float var15 = par0EntityCreature.getBlockPathWeight(var12, var17, var14);
+
+                    if (var15 > var9)
+                    {
+                        var9 = var15;
+                        var6 = var12;
+                        var7 = var17;
+                        var8 = var14;
+                        var5 = true;
+                    }
+                }
+            }
+        }*/
+
+        /*if (var5)
+        {
+            return par0EntityCreature.worldObj.().getVecFromPool((double)var6, (double)var7, (double)var8);
+        }
+        else*/
+        {
+            return null;
+        }
+    }
+    
+    
+}
