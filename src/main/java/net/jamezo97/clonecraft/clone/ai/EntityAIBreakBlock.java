@@ -17,6 +17,11 @@ import net.minecraft.util.Vec3;
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
 
+/**
+ * AI to make the clone mine blocks. Has mutex bits of 1 (00000001).
+ * @author James
+ *
+ */
 public class EntityAIBreakBlock extends EntityAIBase {
 	
 	EntityClone clone;
@@ -31,6 +36,7 @@ public class EntityAIBreakBlock extends EntityAIBase {
 	public EntityAIBreakBlock(EntityClone clone, int viewDistance){
 		this.clone = clone;
 		this.viewDistance = viewDistance;
+		this.setMutexBits(1);
 	}
 
 	@Override

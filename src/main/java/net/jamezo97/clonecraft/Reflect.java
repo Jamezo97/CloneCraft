@@ -10,6 +10,7 @@ import net.minecraft.client.particle.EffectRenderer;
 import net.minecraft.client.renderer.entity.Render;
 import net.minecraft.client.renderer.texture.TextureManager;
 import net.minecraft.client.resources.IResourceManager;
+import net.minecraft.entity.ai.EntityAINearestAttackableTarget;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.Session;
 import cpw.mods.fml.relauncher.Side;
@@ -20,7 +21,7 @@ public class Reflect {
 
 	public static Method Render_getEntityTexture;
 	
-	public static Field TextureManager_theResourceManager, Minecraft_isGamePaused, EffectRenderer_fxLayers;
+	public static Field TextureManager_theResourceManager, Minecraft_isGamePaused, EffectRenderer_fxLayers, EntityAINearestAttackableTarget_targetClass;
 	
 	public static void init(Side side) {
 		if(side == Side.CLIENT){
@@ -46,6 +47,7 @@ public class Reflect {
 	public static void loadCommon(){
 		if(!commonLoaded){
 			commonLoaded = true;
+			EntityAINearestAttackableTarget_targetClass = getFieldByType(EntityAINearestAttackableTarget.class, Class.class, 0);
 		}
 	}
 	

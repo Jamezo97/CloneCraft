@@ -20,6 +20,7 @@ public class EntityAIFollowCloneOwner extends EntityAIBase
 	
     public EntityAIFollowCloneOwner(EntityClone entityMyPerson) {
 		clone = entityMyPerson;
+		this.setMutexBits(1);
 	}
 
 	@Override

@@ -1,5 +1,6 @@
 package net.jamezo97.clonecraft.clone;
 
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map.Entry;
@@ -13,6 +14,7 @@ import net.jamezo97.clonecraft.Reflect;
 import net.jamezo97.clonecraft.clone.ai.EntityAIAttackEnemies;
 import net.jamezo97.clonecraft.clone.ai.EntityAIBreakBlock;
 import net.jamezo97.clonecraft.clone.ai.EntityAICloneLookIdle;
+import net.jamezo97.clonecraft.clone.ai.EntityAICloneWander;
 import net.jamezo97.clonecraft.clone.ai.EntityAIFollowCloneOwner;
 import net.jamezo97.clonecraft.clone.sync.Syncer;
 import net.jamezo97.clonecraft.entity.EntityExplodeCollapseFX;
@@ -30,16 +32,22 @@ import net.minecraft.client.renderer.texture.TextureManager;
 import net.minecraft.enchantment.Enchantment;
 import net.minecraft.enchantment.EnchantmentHelper;
 import net.minecraft.entity.Entity;
+import net.minecraft.entity.EntityAccessor;
+import net.minecraft.entity.EntityCreature;
 import net.minecraft.entity.EntityList;
 import net.minecraft.entity.EntityLiving;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.IEntityMultiPart;
 import net.minecraft.entity.SharedMonsterAttributes;
+import net.minecraft.entity.ai.EntityAIAttackOnCollide;
+import net.minecraft.entity.ai.EntityAINearestAttackableTarget;
 import net.minecraft.entity.ai.EntityAISwimming;
+import net.minecraft.entity.ai.EntityAITasks;
 import net.minecraft.entity.ai.attributes.AttributeModifier;
 import net.minecraft.entity.boss.EntityDragonPart;
 import net.minecraft.entity.item.EntityItem;
 import net.minecraft.entity.item.EntityXPOrb;
+import net.minecraft.entity.monster.IMob;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.projectile.EntityArrow;
 import net.minecraft.entity.projectile.EntityFishHook;
@@ -116,22 +124,19 @@ public class EntityClone extends EntityLiving implements RenderableManager{
 	
 	public void initAI(){
 		
-		this.tasks.addTask(0, new EntityAISwimming(this));
-		this.tasks.addTask(1, new EntityAIAttackEnemies(this));
-		this.tasks.addTask(2, new EntityAIFollowCloneOwner(this));
-
-		this.tasks.addTask(3, aiBreakBlocks = new EntityAIBreakBlock(this, 16));
+		//Cant Follow, Attack, Wander, Curious, Mine
+		//Cant         
 		
+		this.tasks.addTask(0, new EntityAISwimming(this));
+		this.tasks.addTask(1, new EntityAIFollowCloneOwner(this));
+		this.tasks.addTask(2, aiBreakBlocks = new EntityAIBreakBlock(this, 16));
+		
+		this.tasks.addTask(9, new EntityAICloneWander(this, 1.0F));
 		this.tasks.addTask(10, new EntityAICloneLookIdle(this));
 		
-//		this.tasks.addTask(6, new EntityAIWatchClosest(this, EntityPlayer.class, 8.0F));
-//        this.tasks.addTask(6, new EntityAILookIdle(this));
-        
 
-//		this.targetTasks.addTask(1, new EntityAIAttackEnemies(this));
-		
-//		this.tasks.addTask(10, new EntityAIWatchClosest(this, EntityPlayer.class, 8.0F));
-//		this.tasks.addTask(10, new EntityAILookIdle(this));
+		this.targetTasks.addTask(0, new EntityAIAttackEnemies(this));
+
 	}
 	
 	protected void applyEntityAttributes()
@@ -250,6 +255,7 @@ public class EntityClone extends EntityLiving implements RenderableManager{
 			}else if(this.getOptions().sprint.get()){
 				this.setSprinting(true);
 			}
+			this.makeOthersAttackMe();
 			if(this.getAttackTarget() != null){
 				this.getLookHelper().setLookPositionWithEntity(this.getAttackTarget(), 10, this.getVerticalFaceSpeed());
 			}
@@ -313,7 +319,7 @@ public class EntityClone extends EntityLiving implements RenderableManager{
 	public void onSpawnedBy(String spawnedBy) {
 		this.setOwner(spawnedBy);
 		if(!worldObj.isRemote){
-			this.foodStats.setFoodLevel(4);
+//			this.foodStats.setFoodLevel(4);
 //			this.setName("philbrush");
 			this.setName(names[worldObj.rand.nextInt(names.length)]);
 		}
@@ -743,8 +749,98 @@ public class EntityClone extends EntityLiving implements RenderableManager{
     public void onCriticalHit(Entity p_71009_1_) {}
 
     public void onEnchantmentCritical(Entity p_71047_1_) {}
+    
+    
+    /**
+     * An array listing the entities which have been modified so they attack this clone.
+     * As they are removed from the world and killed etc, they are removed from this list.
+     */
+    private ArrayList<EntityLiving> modifiedAttackEntities = new ArrayList<EntityLiving>();
+    
+    /**
+     * Makes other mobs attack this clone. 
+     * Basically just adds an AI task to the surrounding hostile mobs to make them think the clone is the same as a player
+     */
+    public void makeOthersAttackMe(){
+    	if(this.ticksExisted % 20 == 0)
+    	{
+    		
+    		for(int a = 0; a < modifiedAttackEntities.size(); a++){
+    			if(!modifiedAttackEntities.get(a).isEntityAlive()){
+    				modifiedAttackEntities.remove(a--);
+    			}
+    		}
 
-	
+    		List mobs = this.worldObj.getEntitiesWithinAABBExcludingEntity(this, this.boundingBox.expand(50, 50, 50));
+			for(int a = 0; a < mobs.size(); a++)
+        	{
+				Object mob = mobs.get(a);
+				
+        		if(mob != null && mob instanceof EntityLiving && !modifiedAttackEntities.contains(mob))
+        		{
+        			EntityLiving entity = (EntityLiving)mob;
+        			
+        			if(EntityAccessor.isAIEnabled(entity))
+        			{
+        				if(!(entity instanceof EntityCreature)){
+        					continue;
+        				}
+        				
+        				EntityCreature creature = (EntityCreature)entity;
+        				
+        				List targetTasks = entity.targetTasks.taskEntries;
+            			
+            			boolean cloneSet = false;
+            			
+            			boolean playerSet = false;
+            			
+            			for(int b = 0; b < targetTasks.size(); b++)
+            			{
+            				if(((EntityAITasks.EntityAITaskEntry)targetTasks.get(b)).action instanceof EntityAINearestAttackableTarget)
+            				{
+            					EntityAINearestAttackableTarget entityAI = (EntityAINearestAttackableTarget)((EntityAITasks.EntityAITaskEntry)targetTasks.get(b)).action;
+            					Class targetClass = Reflect.getFieldValueAndCast(Reflect.EntityAINearestAttackableTarget_targetClass, entityAI, Class.class);
+            					
+            					if(targetClass != null)
+            					{
+            						if(EntityClone.class.isAssignableFrom(targetClass))
+            						{
+            							cloneSet = true;
+            							break;
+            						}
+            						else if(EntityPlayer.class.isAssignableFrom(targetClass))
+            						{
+            							playerSet = true;
+            						}
+            					}
+            				}
+            			}
+            			//If the mob attacks players, but not clones. Then let's make the mob attack clones too!
+            			if(!cloneSet && playerSet)
+            			{
+            				entity.tasks.addTask(20, new EntityAIAttackOnCollide(creature, EntityClone.class, 1.0D, false));
+            				entity.targetTasks.addTask(20, new EntityAINearestAttackableTarget(creature, EntityClone.class, 0, true));
+            				
+            				this.modifiedAttackEntities.add(entity);
+            			}
+        			}
+        			else
+        			{
+        				//Well. I tried :P
+        				if(IMob.class.isAssignableFrom(entity.getClass()))
+        				{
+        					if(entity instanceof EntityCreature){
+        						((EntityCreature)entity).setAttackTarget(this);
+        					}
+        					entity.setAttackTarget(this);
+        					entity.getNavigator().setPath(entity.getNavigator().getPathToEntityLiving(this), 1.0d);
+        				}
+        			}
+        		}
+        	}
+    	}
+    }
+
 	//==================================================================================================================
 	//TODO CloneOptions Updates
 	//==================================================================================================================

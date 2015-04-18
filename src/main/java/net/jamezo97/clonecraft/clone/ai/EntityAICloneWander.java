@@ -4,6 +4,7 @@ import java.util.Random;
 
 import net.jamezo97.clonecraft.clone.EntityClone;
 import net.minecraft.entity.ai.EntityAIBase;
+import net.minecraft.util.MathHelper;
 import net.minecraft.util.Vec3;
 
 public class EntityAICloneWander extends EntityAIBase
@@ -14,10 +15,10 @@ public class EntityAICloneWander extends EntityAIBase
     private double zPosition;
     private float speed;
 
-    public EntityAICloneWander(EntityClone par1EntityCreature, float par2)
+    public EntityAICloneWander(EntityClone entityClone, float speed)
     {
-        this.entity = par1EntityCreature;
-        this.speed = par2;
+        this.entity = entityClone;
+        this.speed = speed;
         this.setMutexBits(1);
     }
 
@@ -34,13 +35,16 @@ public class EntityAICloneWander extends EntityAIBase
         {
             return false;
         }
-        else if (!this.entity.getOptions().wander.get()){
+        else if (!this.entity.getOptions().wander.get())
+        {
             return false;
-        }else if(entity.getOptions().guard.get()){
+        }
+        else if(entity.getOptions().guard.get())
+        {
         	return false;
-        }/*else if(!entity.notMining()){
-        	return false;
-        }*/else{
+        }
+        else
+        {
             Vec3 var1 = findRandomTargetBlock(this.entity, 10, 7, (Vec3)null);
             if (var1 == null)
             {
@@ -85,18 +89,8 @@ public class EntityAICloneWander extends EntityAIBase
         float var9 = -99999.0F;
         boolean var10 = false;
 
-        /*if (par0EntityCreature.hasHome())
-        {
-            double var11 = (double)(par0EntityCreature.getHomePosition().getDistanceSquared(MathHelper.floor_double(par0EntityCreature.posX), MathHelper.floor_double(par0EntityCreature.posY), MathHelper.floor_double(par0EntityCreature.posZ)) + 4.0F);
-            double var13 = (double)(par0EntityCreature.getMaximumHomeDistance() + (float)par1);
-            var10 = var11 < var13 * var13;
-        }
-        else
-        {
-            var10 = false;
-        }*/
 
-        /*for (int var16 = 0; var16 < 10; ++var16)
+        for (int var16 = 0; var16 < 10; ++var16)
         {
             int var12 = var4.nextInt(2 * par1) - par1;
             int var17 = var4.nextInt(2 * par2) - par2;
@@ -108,27 +102,25 @@ public class EntityAICloneWander extends EntityAIBase
                 var17 += MathHelper.floor_double(par0EntityCreature.posY);
                 var14 += MathHelper.floor_double(par0EntityCreature.posZ);
 
-                if (!var10 || par0EntityCreature.isWithinHomeDistance(var12, var17, var14))
-                {
-                    float var15 = par0EntityCreature.getBlockPathWeight(var12, var17, var14);
 
-                    if (var15 > var9)
-                    {
-                        var9 = var15;
-                        var6 = var12;
-                        var7 = var17;
-                        var8 = var14;
-                        var5 = true;
-                    }
+                float var15 = par0EntityCreature.getRNG().nextFloat()*100;//par0EntityCreature.getBlockPathWeight(var12, var17, var14);
+
+                if (var15 > var9)
+                {
+                    var9 = var15;
+                    var6 = var12;
+                    var7 = var17;
+                    var8 = var14;
+                    var5 = true;
                 }
             }
-        }*/
-
-        /*if (var5)
-        {
-            return par0EntityCreature.worldObj.().getVecFromPool((double)var6, (double)var7, (double)var8);
         }
-        else*/
+
+        if (var5)
+        {
+        	return Vec3.createVectorHelper((double)var6, (double)var7, (double)var8);
+        }
+        else
         {
             return null;
         }

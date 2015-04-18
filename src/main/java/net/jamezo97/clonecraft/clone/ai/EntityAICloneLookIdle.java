@@ -18,7 +18,7 @@ public class EntityAICloneLookIdle extends EntityAIBase
     public EntityAICloneLookIdle(EntityClone p_i1647_1_)
     {
         this.idleEntity = p_i1647_1_;
-        this.setMutexBits(3);
+        this.setMutexBits(1);
     }
 
     /**

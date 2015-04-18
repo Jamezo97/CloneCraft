@@ -20,12 +20,7 @@ public class EntityAIAttackEnemies extends EntityAIBase {
 	}
 
 	public boolean shouldExecute() {
-//		System.out.println("Should" + clone.getOptions().fight.get());
 		return clone.getOptions().fight.get();
-//		if(clone != null && clone.getOptions() != null && !clone.isEatingFood()){
-//			return clone.options.fight.value();
-//		}
-//		return false;
 	}
 
 	int noImprovement = 0;
@@ -44,7 +39,7 @@ public class EntityAIAttackEnemies extends EntityAIBase {
 	
 	@Override
 	public boolean continueExecuting() {
-		System.out.println((clone.getAttackTarget()));
+//		System.out.println((clone.getAttackTarget()));
 		if(clone.getAttackTarget() == null || !clone.shouldAttack(clone.getAttackTarget())){
 			EntityLivingBase attack = this.getClosestEntityToAttackExcluding(null);
 			if(attack != null){

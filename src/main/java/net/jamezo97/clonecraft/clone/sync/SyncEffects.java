@@ -44,7 +44,7 @@ public class SyncEffects extends Sync{
 	@Override
 	public void read(DataInputStream in, EntityClone clone) throws IOException {
 		int length = in.readShort();
-		System.out.println("READ: " + length);
+//		System.out.println("READ: " + length);
 		clone.forceClearActivePotions();
 		for(int a = 0; a < length; a++){
 			int potionID = in.readInt();
@@ -53,7 +53,7 @@ public class SyncEffects extends Sync{
 			PotionEffect pe = new PotionEffect(potionID, duration, amplifier);
 			clone.addPotionEffect(pe);
 		}
-		System.out.println("NOW HAS: " + clone.getActivePotionEffects().size());
+//		System.out.println("NOW HAS: " + clone.getActivePotionEffects().size());
 	}
 	
 
