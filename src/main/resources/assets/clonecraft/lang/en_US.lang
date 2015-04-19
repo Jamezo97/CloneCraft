@@ -66,6 +66,8 @@ clonecraft.coption.breakExtraBlocks=Break Roughly
 clonecraft.coption.desc.breakExtraBlocks=If enabled, clones will not hesitate to destroy blocks inbetween them and their destination. Turn off when around delicate structures
 clonecraft.coption.farm=Farm
 clonecraft.coption.desc.farm=Enables/disables a clone's farming ability
+clonecraft.coption.share=Share Items
+clonecraft.coption.desc.share=Clones on the same team with the same owner will share items with eachother.
 
 
 

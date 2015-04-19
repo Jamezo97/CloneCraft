@@ -6,6 +6,7 @@ import java.util.Iterator;
 import net.jamezo97.clonecraft.clone.EntityClone;
 import net.jamezo97.clonecraft.clone.InventoryClone;
 import net.jamezo97.clonecraft.gui.container.ContainerTransferPlayerItems;
+import net.jamezo97.clonecraft.network.Handler10ChangeOwner;
 import net.jamezo97.clonecraft.network.Handler5TransferXP;
 import net.jamezo97.clonecraft.network.Handler6KillClone;
 import net.jamezo97.clonecraft.network.Handler7CloneClones;
@@ -17,8 +18,10 @@ import net.minecraft.client.resources.I18n;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.potion.Potion;
 import net.minecraft.potion.PotionEffect;
+import net.minecraft.util.ChatComponentText;
+import net.minecraft.util.ChatStyle;
+import net.minecraft.util.EnumChatFormatting;
 import net.minecraft.util.ResourceLocation;
-import net.minecraft.util.StatCollector;
 
 import org.lwjgl.input.Keyboard;
 import org.lwjgl.opengl.GL11;
@@ -65,7 +68,7 @@ public class GuiTransferPlayerItems extends GuiContainer{
 		}else if(gb.id == 5){
 			mc.displayGuiScreen(new GuiChooseBlocksToBreak(clone, this));
 		}else if(gb.id == 6){
-//			new Handler11ChangeOwner(clone.entityId).sendToServer();
+			new Handler10ChangeOwner(clone.getEntityId()).sendToServer();
 		}else if(gb.id == 7){
 			if(copyAmount != null){
 				try{
@@ -78,7 +81,7 @@ public class GuiTransferPlayerItems extends GuiContainer{
 						handler.sendToServer();
 					}
 				}catch(Exception e){
-					mc.thePlayer.sendChatMessage("\2474Could not parse text to number: " + copyAmount.getText());
+					mc.thePlayer.addChatMessage(new ChatComponentText("Could not parse text to number: " + copyAmount.getText()).setChatStyle(new ChatStyle().setColor(EnumChatFormatting.RED)));
 				}	
 			}
 		}
@@ -101,7 +104,8 @@ public class GuiTransferPlayerItems extends GuiContainer{
 		buttonList.add(new GuiButton(5, 5, 160, 110, 20, "Blocks To Break"));
 
 		if(Minecraft.getMinecraft() != null){
-			if(Minecraft.getMinecraft().getSession() == null || Minecraft.getMinecraft().getSession().getSessionID() == null || Minecraft.getMinecraft().getSession().getSessionID().equals("-")){
+			if(Minecraft.getMinecraft().getSession() == null || Minecraft.getMinecraft().getSession().getSessionID() == null || 
+					Minecraft.getMinecraft().getSession().getSessionID().equals("-") || Minecraft.getMinecraft().thePlayer.capabilities.isCreativeMode){
 				buttonList.add(new GuiButton(6, width-120, height-30, 110, 20, "Claim clone"));
 			}
 		}

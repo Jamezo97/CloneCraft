@@ -39,14 +39,16 @@ public class EntityAIAttackEnemies extends EntityAIBase {
 	
 	@Override
 	public boolean continueExecuting() {
-//		System.out.println((clone.getAttackTarget()));
-		if(clone.getAttackTarget() == null || !clone.shouldAttack(clone.getAttackTarget())){
+		if(clone.getAttackTarget() == null || (!clone.shouldProvokeAttack(clone.getAttackTarget()) && !clone.canAttackEntity(clone.getAttackTarget()))){
 			EntityLivingBase attack = this.getClosestEntityToAttackExcluding(null);
 			if(attack != null){
 				clone.setAttackTarget(attack);
 				clone.setPath(clone.getNavigator().getPathToEntityLiving(attack));
 			}else{
-				clone.setAttackTarget(null);
+				//If the current target is because of an act of revenge, and is not a selected enemy
+				if(clone.shouldProvokeAttack(clone.getAttackTarget())){
+					clone.setAttackTarget(null);
+				}
 			}
 		}else if(clone.getAttackTarget().isEntityAlive()){
 			if(clone.getRNG().nextInt(10) == 0){
@@ -69,6 +71,7 @@ public class EntityAIAttackEnemies extends EntityAIBase {
 				if(noImprovement > 30){
 					EntityLivingBase newEntity = getClosestEntityToAttackExcluding(clone.getAttackTarget());
 					if(newEntity != null){
+						noImprovement = 0;
 						clone.setAttackTarget(newEntity);
 						clone.setPath(clone.getNavigator().getPathToEntityLiving(clone.getAttackTarget()));
 					}
@@ -167,7 +170,7 @@ public class EntityAIAttackEnemies extends EntityAIBase {
 			if(o != null && o instanceof EntityLivingBase){
 				EntityLivingBase e = (EntityLivingBase)o;
 				if(e.isEntityAlive() && clone.canEntityBeSeen(e)){
-					if(clone.shouldAttack(e) && clone.canEntityBeSeen(e)){
+					if(clone.shouldProvokeAttack(e) && clone.canEntityBeSeen(e)){
 						double distancesqr = distanceSquared(clone, e);
 						if(distancesqr < distance || distance == -1){
 							distance = distancesqr;

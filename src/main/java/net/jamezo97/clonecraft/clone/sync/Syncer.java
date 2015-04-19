@@ -206,6 +206,7 @@ public class Syncer {
 		syncs.add(new SyncEntities(ID_ATCK));
 		syncs.add(new SyncBlocks(ID_BLCK));
 		syncs.add(new SyncEffects(ID_POTS));
+		syncs.add(new SyncScale(ID_SCAL));
 	}
 	public static final int ID_TEAM = 	0;
 	public static final int ID_EXPE = 	1;
@@ -216,6 +217,7 @@ public class Syncer {
 	public static final int ID_ATCK = 	6;
 	public static final int ID_BLCK = 	7;
 	public static final int ID_POTS = 	8;
+	public static final int ID_SCAL = 	9;
 
 
 	public void sendValueToServer(int idName) {

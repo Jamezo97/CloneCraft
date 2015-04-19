@@ -2,6 +2,7 @@ package net.jamezo97.clonecraft.clone;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Random;
 
 import net.jamezo97.clonecraft.network.Handler4UpdateOptions;
 import net.minecraft.nbt.NBTTagCompound;
@@ -23,6 +24,7 @@ public class CloneOptions {
 	public CloneOption female;
 	public CloneOption breakBlocks;
 	public CloneOption farming;
+	public CloneOption share;
 
 	public final EntityClone clone;
 
@@ -42,22 +44,22 @@ public class CloneOptions {
 	HashMap<Integer, CloneOption> idToOption = new HashMap<Integer, CloneOption>();
 
 	public void initOptions() {
-		addOption(fight = new CloneOption(0, "fight", false, this));
+		addOption(fight = new CloneOption(0, "fight", true, this));
 		addOption(sprint = new CloneOption(1, "sprint", false, this));
 		addOption(follow = new CloneOption(2, "follow", false, this));
 		addOption(pickUp = new CloneOption(3, "pickup", false, this));
 		addOption(walkToItems = new CloneOption(4, "walkToItems", false, this));
-		addOption(retaliate = new CloneOption(5, "retaliate", false, this));
+		addOption(retaliate = new CloneOption(5, "retaliate", true, this));
 		addOption(guard = new CloneOption(6, "guard", false, this));
 		addOption(wander = new CloneOption(7, "wander", false, this));
 		addOption(jump = new CloneOption(8, "jump", false, this));
 		addOption(curious = new CloneOption(9, "curious", true, this));
 		addOption(stats = new CloneOption(10, "stats", true, this));
-		addOption(female = new CloneOption(11, "female", false, this));
+		addOption(female = new CloneOption(11, "female", new Random().nextBoolean(), this));
 		addOption(breakBlocks = new CloneOption(12, "breakBlocks", false, this));
-		addOption(breakExtraBlocks = new CloneOption(13, "breakExtraBlocks",
-				false, this));
+		addOption(breakExtraBlocks = new CloneOption(13, "breakExtraBlocks", false, this));
 		addOption(farming = new CloneOption(14, "farm", false, this));
+		addOption(share = new CloneOption(15, "share", false, this));
 		lastOptionData = this.toInteger();
 
 	}

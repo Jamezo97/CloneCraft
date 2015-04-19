@@ -142,7 +142,10 @@ public class RenderClone extends RendererLivingEntity {
         GL11.glColor3f(1.0F, 1.0F, 1.0F);
         ItemStack itemstack = clone.getHeldItem();
         this.modelArmorChestplate.heldItemRight = this.modelArmor.heldItemRight = this.modelBipedMain.heldItemRight = itemstack != null ? 1 : 0;
-
+       
+        
+        this.modelArmorChestplate.heldItemLeft = this.modelArmor.heldItemLeft = this.modelBipedMain.heldItemLeft = clone.getOfferedItem() != null ? 3 : 0;
+        
         if (itemstack != null && clone.getItemInUseCount() > 0)
         {
             EnumAction enumaction = itemstack.getItemUseAction();
@@ -178,7 +181,7 @@ public class RenderClone extends RendererLivingEntity {
         this.modelArmorChestplate.heldItemRight = this.modelArmor.heldItemRight = this.modelBipedMain.heldItemRight = 0;
         
       
-        if(clone.canUseThisEntity(Minecraft.getMinecraft().thePlayer)){
+        if(clone.getOptions().stats.get() && clone.canUseThisEntity(Minecraft.getMinecraft().thePlayer)){
         	renderStatus(clone,Math.round(clone.getHealth()) + "/" + Math.round(clone.getMaxHealth()), clone.getHealth() / clone.getMaxHealth(), p_76986_2_, p_76986_4_, p_76986_6_, p_76986_9_, 0);
         	renderStatus(clone, clone.foodStats.getFoodLevel() + "/20", clone.foodStats.getFoodLevel()/20.0f, p_76986_2_, p_76986_4_, p_76986_6_, p_76986_9_, 1);
         }
@@ -346,12 +349,12 @@ public class RenderClone extends RendererLivingEntity {
         return p_110775_1_.getTexture();
     }
 
-    protected void renderEquippedItems(EntityClone p_77029_1_, float p_77029_2_)
+    protected void renderEquippedItems(EntityClone clone, float partial)
     {
         GL11.glColor3f(1.0F, 1.0F, 1.0F);
-        super.renderEquippedItems(p_77029_1_, p_77029_2_);
-        super.renderArrowsStuckInEntity(p_77029_1_, p_77029_2_);
-        ItemStack itemstack = p_77029_1_.inventory.armorItemInSlot(3);
+        super.renderEquippedItems(clone, partial);
+        super.renderArrowsStuckInEntity(clone, partial);
+        ItemStack itemstack = clone.inventory.armorItemInSlot(3);
 
         if (itemstack != null)
         {
@@ -372,7 +375,7 @@ public class RenderClone extends RendererLivingEntity {
                     GL11.glScalef(f1, -f1, -f1);
                 }
 
-                this.renderManager.itemRenderer.renderItem(p_77029_1_, itemstack, 0);
+                this.renderManager.itemRenderer.renderItem(clone, itemstack, 0);
             }
             else if (itemstack.getItem() == Items.skull)
             {
@@ -453,107 +456,125 @@ public class RenderClone extends RendererLivingEntity {
 //            GL11.glPopMatrix();
 //        }
 
-        ItemStack itemstack1 = p_77029_1_.getHeldItem();
-
+        ItemStack itemstack1 = clone.getHeldItem();
+        ItemStack itemstack2 = clone.getOfferedItem();
         if (itemstack1 != null)
         {
-            GL11.glPushMatrix();
-            this.modelBipedMain.bipedRightArm.postRender(0.0625F);
-            GL11.glTranslatef(-0.0625F, 0.4375F, 0.0625F);
-
-            if (p_77029_1_.fishEntity != null)
-            {
-                itemstack1 = new ItemStack(Items.stick);
-            }
-
-            EnumAction enumaction = null;
-
-            if (p_77029_1_.getItemInUseCount() > 0)
-            {
-                enumaction = itemstack1.getItemUseAction();
-            }
-
-            net.minecraftforge.client.IItemRenderer customRenderer = net.minecraftforge.client.MinecraftForgeClient.getItemRenderer(itemstack1, net.minecraftforge.client.IItemRenderer.ItemRenderType.EQUIPPED);
-            boolean is3D = (customRenderer != null && customRenderer.shouldUseRenderHelper(net.minecraftforge.client.IItemRenderer.ItemRenderType.EQUIPPED, itemstack1, net.minecraftforge.client.IItemRenderer.ItemRendererHelper.BLOCK_3D));
-
-            if (is3D || itemstack1.getItem() instanceof ItemBlock && RenderBlocks.renderItemIn3d(Block.getBlockFromItem(itemstack1.getItem()).getRenderType()))
-            {
-                f2 = 0.5F;
-                GL11.glTranslatef(0.0F, 0.1875F, -0.3125F);
-                f2 *= 0.75F;
-                GL11.glRotatef(20.0F, 1.0F, 0.0F, 0.0F);
-                GL11.glRotatef(45.0F, 0.0F, 1.0F, 0.0F);
-                GL11.glScalef(-f2, -f2, f2);
-            }
-            else if (itemstack1.getItem() == Items.bow)
-            {
-                f2 = 0.625F;
-                GL11.glTranslatef(0.0F, 0.125F, 0.3125F);
-                GL11.glRotatef(-20.0F, 0.0F, 1.0F, 0.0F);
-                GL11.glScalef(f2, -f2, f2);
-                GL11.glRotatef(-100.0F, 1.0F, 0.0F, 0.0F);
-                GL11.glRotatef(45.0F, 0.0F, 1.0F, 0.0F);
-            }
-            else if (itemstack1.getItem().isFull3D())
-            {
-                f2 = 0.625F;
-
-                if (itemstack1.getItem().shouldRotateAroundWhenRendering())
-                {
-                    GL11.glRotatef(180.0F, 0.0F, 0.0F, 1.0F);
-                    GL11.glTranslatef(0.0F, -0.125F, 0.0F);
-                }
-
-                if (p_77029_1_.getItemInUseCount() > 0 && enumaction == EnumAction.block)
-                {
-                    GL11.glTranslatef(0.05F, 0.0F, -0.1F);
-                    GL11.glRotatef(-50.0F, 0.0F, 1.0F, 0.0F);
-                    GL11.glRotatef(-10.0F, 1.0F, 0.0F, 0.0F);
-                    GL11.glRotatef(-60.0F, 0.0F, 0.0F, 1.0F);
-                }
-
-                GL11.glTranslatef(0.0F, 0.1875F, 0.0F);
-                GL11.glScalef(f2, -f2, f2);
-                GL11.glRotatef(-100.0F, 1.0F, 0.0F, 0.0F);
-                GL11.glRotatef(45.0F, 0.0F, 1.0F, 0.0F);
-            }
-            else
-            {
-                f2 = 0.375F;
-                GL11.glTranslatef(0.25F, 0.1875F, -0.1875F);
-                GL11.glScalef(f2, f2, f2);
-                GL11.glRotatef(60.0F, 0.0F, 0.0F, 1.0F);
-                GL11.glRotatef(-90.0F, 1.0F, 0.0F, 0.0F);
-                GL11.glRotatef(20.0F, 0.0F, 0.0F, 1.0F);
-            }
-
-            float f3;
-            int k;
-            float f12;
-
-            if (itemstack1.getItem().requiresMultipleRenderPasses())
-            {
-                for (k = 0; k < itemstack1.getItem().getRenderPasses(itemstack1.getItemDamage()); ++k)
-                {
-                    int i = itemstack1.getItem().getColorFromItemStack(itemstack1, k);
-                    f12 = (float)(i >> 16 & 255) / 255.0F;
-                    f3 = (float)(i >> 8 & 255) / 255.0F;
-                    f4 = (float)(i & 255) / 255.0F;
-                    GL11.glColor4f(f12, f3, f4, 1.0F);
-                    this.renderManager.itemRenderer.renderItem(p_77029_1_, itemstack1, k);
-                }
-            }
-            else
-            {
-                k = itemstack1.getItem().getColorFromItemStack(itemstack1, 0);
-                float f11 = (float)(k >> 16 & 255) / 255.0F;
-                f12 = (float)(k >> 8 & 255) / 255.0F;
-                f3 = (float)(k & 255) / 255.0F;
-                GL11.glColor4f(f11, f12, f3, 1.0F);
-                this.renderManager.itemRenderer.renderItem(p_77029_1_, itemstack1, 0);
-            }
-            GL11.glPopMatrix();
+            renderItemstackInHand(itemstack1, 0, clone, partial);
         }
+        if (itemstack2 != null)
+        {
+            renderItemstackInHand(itemstack2, 1, clone, partial);
+        }
+    }
+    
+    public void renderItemstackInHand(ItemStack stack, int hand, EntityClone clone, float partial){
+    	float f2, f4;
+    	
+    	GL11.glPushMatrix();
+        
+        
+        
+        if(hand == 0){
+        	this.modelBipedMain.bipedRightArm.postRender(0.0625F);
+            GL11.glTranslatef(-0.0625F, 0.4375F, 0.0625F);
+        }else if(hand == 1){
+        	this.modelBipedMain.bipedLeftArm.postRender(0.0625F);
+            GL11.glTranslatef(0.0625F, 0.4375F, 0.0625F);
+        }
+
+        if (clone.fishEntity != null)
+        {
+            stack = new ItemStack(Items.stick);
+        }
+
+        EnumAction enumaction = null;
+
+        if (clone.getItemInUseCount() > 0)
+        {
+            enumaction = stack.getItemUseAction();
+        }
+
+        net.minecraftforge.client.IItemRenderer customRenderer = net.minecraftforge.client.MinecraftForgeClient.getItemRenderer(stack, net.minecraftforge.client.IItemRenderer.ItemRenderType.EQUIPPED);
+        boolean is3D = (customRenderer != null && customRenderer.shouldUseRenderHelper(net.minecraftforge.client.IItemRenderer.ItemRenderType.EQUIPPED, stack, net.minecraftforge.client.IItemRenderer.ItemRendererHelper.BLOCK_3D));
+
+        if (is3D || stack.getItem() instanceof ItemBlock && RenderBlocks.renderItemIn3d(Block.getBlockFromItem(stack.getItem()).getRenderType()))
+        {
+            f2 = 0.5F;
+            GL11.glTranslatef(0.0F, 0.1875F, -0.3125F);
+            f2 *= 0.75F;
+            GL11.glRotatef(20.0F, 1.0F, 0.0F, 0.0F);
+            GL11.glRotatef(45.0F, 0.0F, 1.0F, 0.0F);
+            GL11.glScalef(-f2, -f2, f2);
+        }
+        else if (stack.getItem() == Items.bow)
+        {
+            f2 = 0.625F;
+            GL11.glTranslatef(0.0F, 0.125F, 0.3125F);
+            GL11.glRotatef(-20.0F, 0.0F, 1.0F, 0.0F);
+            GL11.glScalef(f2, -f2, f2);
+            GL11.glRotatef(-100.0F, 1.0F, 0.0F, 0.0F);
+            GL11.glRotatef(45.0F, 0.0F, 1.0F, 0.0F);
+        }
+        else if (stack.getItem().isFull3D())
+        {
+            f2 = 0.625F;
+
+            if (stack.getItem().shouldRotateAroundWhenRendering())
+            {
+                GL11.glRotatef(180.0F, 0.0F, 0.0F, 1.0F);
+                GL11.glTranslatef(0.0F, -0.125F, 0.0F);
+            }
+
+            if (clone.getItemInUseCount() > 0 && enumaction == EnumAction.block)
+            {
+                GL11.glTranslatef(0.05F, 0.0F, -0.1F);
+                GL11.glRotatef(-50.0F, 0.0F, 1.0F, 0.0F);
+                GL11.glRotatef(-10.0F, 1.0F, 0.0F, 0.0F);
+                GL11.glRotatef(-60.0F, 0.0F, 0.0F, 1.0F);
+            }
+
+            GL11.glTranslatef(0.0F, 0.1875F, 0.0F);
+            GL11.glScalef(f2, -f2, f2);
+            GL11.glRotatef(-100.0F, 1.0F, 0.0F, 0.0F);
+            GL11.glRotatef(45.0F, 0.0F, 1.0F, 0.0F);
+        }
+        else
+        {
+            f2 = 0.375F;
+            GL11.glTranslatef(0.25F, 0.1875F, -0.1875F);
+            GL11.glScalef(f2, f2, f2);
+            GL11.glRotatef(60.0F, 0.0F, 0.0F, 1.0F);
+            GL11.glRotatef(-90.0F, 1.0F, 0.0F, 0.0F);
+            GL11.glRotatef(20.0F, 0.0F, 0.0F, 1.0F);
+        }
+
+        float f3;
+        int k;
+        float f12;
+
+        if (stack.getItem().requiresMultipleRenderPasses())
+        {
+            for (k = 0; k < stack.getItem().getRenderPasses(stack.getItemDamage()); ++k)
+            {
+                int i = stack.getItem().getColorFromItemStack(stack, k);
+                f12 = (float)(i >> 16 & 255) / 255.0F;
+                f3 = (float)(i >> 8 & 255) / 255.0F;
+                f4 = (float)(i & 255) / 255.0F;
+                GL11.glColor4f(f12, f3, f4, 1.0F);
+                this.renderManager.itemRenderer.renderItem(clone, stack, k);
+            }
+        }
+        else
+        {
+            k = stack.getItem().getColorFromItemStack(stack, 0);
+            float f11 = (float)(k >> 16 & 255) / 255.0F;
+            f12 = (float)(k >> 8 & 255) / 255.0F;
+            f3 = (float)(k & 255) / 255.0F;
+            GL11.glColor4f(f11, f12, f3, 1.0F);
+            this.renderManager.itemRenderer.renderItem(clone, stack, 0);
+        }
+        GL11.glPopMatrix();
     }
 
     /**
@@ -562,7 +583,7 @@ public class RenderClone extends RendererLivingEntity {
      */
     protected void preRenderCallback(EntityClone p_77041_1_, float p_77041_2_)
     {
-        float f1 = 0.9375F;
+        float f1 = 0.9375F * p_77041_1_.getScale();
         GL11.glScalef(f1, f1, f1);
     }
 

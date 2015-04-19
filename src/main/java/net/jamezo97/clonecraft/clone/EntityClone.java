@@ -16,6 +16,7 @@ import net.jamezo97.clonecraft.clone.ai.EntityAIBreakBlock;
 import net.jamezo97.clonecraft.clone.ai.EntityAICloneLookIdle;
 import net.jamezo97.clonecraft.clone.ai.EntityAICloneWander;
 import net.jamezo97.clonecraft.clone.ai.EntityAIFollowCloneOwner;
+import net.jamezo97.clonecraft.clone.ai.EntityAIShare;
 import net.jamezo97.clonecraft.clone.sync.Syncer;
 import net.jamezo97.clonecraft.entity.EntityExplodeCollapseFX;
 import net.jamezo97.clonecraft.musics.MusicBase;
@@ -63,6 +64,7 @@ import net.minecraft.pathfinding.PathEntity;
 import net.minecraft.potion.Potion;
 import net.minecraft.potion.PotionEffect;
 import net.minecraft.util.DamageSource;
+import net.minecraft.util.EntityDamageSource;
 import net.minecraft.util.IIcon;
 import net.minecraft.util.MathHelper;
 import net.minecraft.util.ResourceLocation;
@@ -99,6 +101,10 @@ public class EntityClone extends EntityLiving implements RenderableManager{
 	Syncer watcher;
 	CloneOptions options;
 	
+	float maxScale = 1.0f;
+	
+	float lastScaleUpdate = 0.5f;
+	float preciseScale = 0.5f;
 
 	public EntityClone(World world)
 	{
@@ -108,9 +114,8 @@ public class EntityClone extends EntityLiving implements RenderableManager{
 		options = new CloneOptions(this);
 		ticksExisted = -1;
 
-//		if(!worldObj.isRemote){
-			initAI();
-//		}
+		initAI();
+
 		initSounds();
 		postInit();
 	}
@@ -120,7 +125,9 @@ public class EntityClone extends EntityLiving implements RenderableManager{
         return true;
     }
 	
-	EntityAIBreakBlock aiBreakBlocks = new EntityAIBreakBlock(this, 16);
+	EntityAIBreakBlock aiBreakBlocks;// = new EntityAIBreakBlock(this, 16);
+	
+	EntityAIShare aiShareItems;
 	
 	public void initAI(){
 		
@@ -130,13 +137,17 @@ public class EntityClone extends EntityLiving implements RenderableManager{
 		this.tasks.addTask(0, new EntityAISwimming(this));
 		this.tasks.addTask(1, new EntityAIFollowCloneOwner(this));
 		this.tasks.addTask(2, aiBreakBlocks = new EntityAIBreakBlock(this, 16));
-		
+		this.tasks.addTask(8, aiShareItems = new EntityAIShare(this));
 		this.tasks.addTask(9, new EntityAICloneWander(this, 1.0F));
 		this.tasks.addTask(10, new EntityAICloneLookIdle(this));
 		
 
 		this.targetTasks.addTask(0, new EntityAIAttackEnemies(this));
 
+	}
+	
+	public EntityAIShare getShareAI(){
+		return aiShareItems;
 	}
 	
 	protected void applyEntityAttributes()
@@ -267,6 +278,7 @@ public class EntityClone extends EntityLiving implements RenderableManager{
 				renderSelection.tick();
 			}
 		}
+		this.updateScale();
 		this.updateExperience();
 		this.updateUsingItem();
 		this.updateArmSwingProgress();
@@ -319,16 +331,75 @@ public class EntityClone extends EntityLiving implements RenderableManager{
 	public void onSpawnedBy(String spawnedBy) {
 		this.setOwner(spawnedBy);
 		if(!worldObj.isRemote){
-//			this.foodStats.setFoodLevel(4);
-//			this.setName("philbrush");
 			this.setName(names[worldObj.rand.nextInt(names.length)]);
 		}
 	}
 	
 	//==================================================================================================================
+	//TODO Age, Scaling and Growing Up
+	//==================================================================================================================
+	
+	//preciseScale, visibleScale
+	
+	public void updateScale(){
+		setScale(preciseScale + 0.0001f);
+		
+		if(lastScaleUpdate != preciseScale)
+		{
+			if(Math.abs(lastScaleUpdate-preciseScale) > 0.02){
+				lastScaleUpdate = preciseScale;
+			}
+		}
+	}
+	
+	public void setScale(float scale){
+		if(scale > maxScale)
+		{
+			return;
+		}
+		double lastMaxHealth = Math.round(this.getEntityAttribute(SharedMonsterAttributes.maxHealth).getAttributeValue());
+
+		this.preciseScale = scale;
+		
+		if(preciseScale > maxScale)
+		{
+			preciseScale = maxScale;
+		}
+		
+		double newMaxHealth = Math.round(20.0D * (preciseScale/maxScale));
+		
+		if(lastMaxHealth != newMaxHealth)
+		{
+			this.getEntityAttribute(SharedMonsterAttributes.maxHealth).setBaseValue(newMaxHealth);
+		}
+		if(this.getHealth() > newMaxHealth){
+			this.setHealth((float)newMaxHealth);
+		}
+	}
+	
+	public float getScale() {
+		return preciseScale;
+	}
+	
+	public float getMaxScale(){
+		return maxScale;
+	}
+	
+	
+	
+	@Override
+	public float getEyeHeight() {
+		// TODO Auto-generated method stub
+		return super.getEyeHeight();
+	}
+	
+	
+	//==================================================================================================================
 	//TODO Potion Effects
 	//==================================================================================================================
 	
+
+
 	@Override
 	protected void onNewPotionEffect(PotionEffect p_70670_1_)
     {
@@ -363,17 +434,6 @@ public class EntityClone extends EntityLiving implements RenderableManager{
 	//TODO Attacking
 	//==================================================================================================================
 	
-//	EntityLivingBase attackTarget = null;
-//	
-//	@Override
-//	public EntityLivingBase getAttackTarget() {
-//		return attackTarget;
-//	}
-//
-//	@Override
-//	public void setAttackTarget(EntityLivingBase target) {
-//		this.attackTarget = target;
-//	}
 
 	
 	public PathEntity moveTo(double x, double y, double z) {
@@ -392,7 +452,31 @@ public class EntityClone extends EntityLiving implements RenderableManager{
 		getNavigator().setPath(path, 1.0f);
 	}
 	
-	public boolean shouldAttack(EntityLivingBase entity){
+	/**
+	 * Returns whether the clone should provoke an attack against the entity.
+	 * @param entity
+	 * @return
+	 */
+	public boolean shouldProvokeAttack(EntityLivingBase entity){
+		if(entity == null){
+			return false;
+		}
+		if(entity instanceof EntityPlayer){
+			return team == PlayerTeam.Evil && !((EntityPlayer)entity).capabilities.isCreativeMode;
+		}else if(entity instanceof EntityClone){
+			return team.doesAttackTeam(((EntityClone)entity).team) && ((EntityClone)entity).getOptions().fight.get();
+		}else{
+			return this.options.attackables.canAttack(EntityList.getEntityID(entity));
+		}
+//		return canAttackEntity(entity) || 
+	}
+	
+	/**
+	 * Returns whether the clone is capable of attacking the entity. Even if it's not a selected entity. Used for retaliation
+	 * @param entity
+	 * @return
+	 */
+	public boolean canAttackEntity(EntityLivingBase entity){
 		if(entity == null){
 			return false;
 		}
@@ -400,16 +484,13 @@ public class EntityClone extends EntityLiving implements RenderableManager{
 			return team == PlayerTeam.Evil && !((EntityPlayer)entity).capabilities.isCreativeMode;
 		}else if(entity instanceof EntityClone){
 			return team.doesAttackTeam(((EntityClone)entity).team);
-		}else{
-			return this.options.attackables.canAttack(EntityList.getEntityID(entity));
 		}
+		return true;
 	}
 	
 	int attackTimer = 2;
 	
 	public void attackEntity(EntityLivingBase attack){
-//		System.out.println("Attack" + this.getAttackTarget());
-//		this.getLookHelper().setLookPositionWithEntity(this.getAttackTarget(), 0, 0);
 		if(attackTimer > 0){
 			attackTimer--;
 		}
@@ -751,7 +832,34 @@ public class EntityClone extends EntityLiving implements RenderableManager{
     public void onEnchantmentCritical(Entity p_71047_1_) {}
     
     
-    /**
+    
+    @Override
+	public boolean attackEntityFrom(DamageSource damageSource, float damageAmount) {
+		if(damageSource instanceof EntityDamageSource){
+			EntityDamageSource entityDamageSource = (EntityDamageSource)damageSource;
+			
+			Entity damager = entityDamageSource.getEntity();
+			
+			if(damager instanceof EntityPlayer)
+			{
+				if(this.canUseThisEntity((EntityPlayer)damager))
+				{
+					return super.attackEntityFrom(damageSource, damageAmount);
+				}
+			}
+			if(damager instanceof EntityLivingBase){
+				if(this.canAttackEntity((EntityLivingBase)damager)){
+					this.setAttackTarget((EntityLivingBase)damager);
+					this.setPath(this.getNavigator().getPathToEntityLiving(damager));
+				}
+			}
+			
+			
+		}
+		return super.attackEntityFrom(damageSource, damageAmount);
+	}
+
+	/**
      * An array listing the entities which have been modified so they attack this clone.
      * As they are removed from the world and killed etc, they are removed from this list.
      */
@@ -1095,6 +1203,10 @@ public class EntityClone extends EntityLiving implements RenderableManager{
 	public ItemStack getHeldItem()
 	{
 		return inventory.getCurrentItem();//inventory.getStackInSlot(this.inventory.currentItem);
+	}
+	
+	public ItemStack getOfferedItem(){
+		return this.getShareAI().getCurrentItem();
 	}
 
 	//==================================================================================================================
@@ -1709,4 +1821,7 @@ public class EntityClone extends EntityLiving implements RenderableManager{
 	
 	
 	public final static int ID_OPTIONS = 12;
+
+
+	
 }

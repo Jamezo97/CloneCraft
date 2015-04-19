@@ -1,9 +1,10 @@
 package net.jamezo97.clonecraft.render;
 
-import net.jamezo97.clonecraft.CloneCraft;
+import net.jamezo97.clonecraft.clone.EntityClone;
 import net.minecraft.client.model.ModelBiped;
 import net.minecraft.entity.Entity;
-import net.minecraft.util.MathHelper;
+
+import org.lwjgl.opengl.GL11;
 
 public class ModelBipedCustom extends ModelBiped{
 
@@ -36,5 +37,70 @@ public class ModelBipedCustom extends ModelBiped{
 		
 		
 	}
+	
+	/**
+     * Sets the models various rotation angles then renders the model.
+     */
+    public void render(Entity p_78088_1_, float p_78088_2_, float p_78088_3_, float p_78088_4_, float p_78088_5_, float p_78088_6_, float p_78088_7_)
+    {
+        this.setRotationAngles(p_78088_2_, p_78088_3_, p_78088_4_, p_78088_5_, p_78088_6_, p_78088_7_, p_78088_1_);
+
+        if (this.isChild)
+        {
+            float f6 = 2.0F;
+            GL11.glPushMatrix();
+
+            
+            GL11.glScalef(1.5F / f6, 1.5F / f6, 1.5F / f6);
+            GL11.glTranslatef(0.0F, 16.0F * p_78088_7_, 0.0F);
+            this.bipedHead.render(p_78088_7_);
+            GL11.glPopMatrix();
+            GL11.glPushMatrix();
+            GL11.glScalef(1.0F / f6, 1.0F / f6, 1.0F / f6);
+            GL11.glTranslatef(0.0F, 24.0F * p_78088_7_, 0.0F);
+            this.bipedBody.render(p_78088_7_);
+            this.bipedRightArm.render(p_78088_7_);
+            this.bipedLeftArm.render(p_78088_7_);
+            this.bipedRightLeg.render(p_78088_7_);
+            this.bipedLeftLeg.render(p_78088_7_);
+            this.bipedHeadwear.render(p_78088_7_);
+            GL11.glPopMatrix();
+        }
+        else
+        {
+        	float scaleHead = 1.0f;
+        	
+            if(p_78088_1_ instanceof EntityClone){
+            	EntityClone clone = (EntityClone)p_78088_1_;
+            	float scale = clone.getScale();
+            	float max = clone.getMaxScale();
+            	
+            	scaleHead = 0.5f + max/scale * (0.5f);
+            	
+            }
+        	if(scaleHead != 1.0f){
+        		
+        		
+        		GL11.glScalef(scaleHead,  scaleHead, scaleHead);
+        		
+                this.bipedHead.render(p_78088_7_);
+                this.bipedHeadwear.render(p_78088_7_);
+                
+
+        		GL11.glScalef(1/scaleHead,  1/scaleHead, 1/scaleHead);
+                
+                
+        	}else{
+                this.bipedHead.render(p_78088_7_);
+                this.bipedHeadwear.render(p_78088_7_);
+        	}
+        	
+            this.bipedBody.render(p_78088_7_);
+            this.bipedRightArm.render(p_78088_7_);
+            this.bipedLeftArm.render(p_78088_7_);
+            this.bipedRightLeg.render(p_78088_7_);
+            this.bipedLeftLeg.render(p_78088_7_);
+        }
+    }
 
 }

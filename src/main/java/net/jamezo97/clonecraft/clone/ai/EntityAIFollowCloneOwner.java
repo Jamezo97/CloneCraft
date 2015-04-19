@@ -50,12 +50,12 @@ public class EntityAIFollowCloneOwner extends EntityAIBase
                 {
                     for (int var5 = 0; var5 <= 4; ++var5)
                     {
-                        /*if ((var4 < 1 || var5 < 1 || var4 > 3 || var5 > 3) && clone.worldObj.doesBlockHaveSolidTopSurface(clone.worldObj, var1 + var4, var3 - 1, var2 + var5) && !clone.worldObj.isBlockNormalCube(var1 + var4, var3, var2 + var5) && !clone.worldObj.isBlockNormalCube(var1 + var4, var3 + 1, var2 + var5))
+                        if ((var4 < 1 || var5 < 1 || var4 > 3 || var5 > 3) && clone.worldObj.doesBlockHaveSolidTopSurface(clone.worldObj, var1 + var4, var3 - 1, var2 + var5) && !clone.worldObj.isBlockNormalCubeDefault(var1 + var4, var3, var2 + var5, false) && !clone.worldObj.isBlockNormalCubeDefault(var1 + var4, var3 + 1, var2 + var5, false))
                         {
                             clone.setLocationAndAngles((double)((float)(var1 + var4) + 0.5F), (double)var3, (double)((float)(var2 + var5) + 0.5F), clone.rotationYaw, clone.rotationPitch);
                             clone.getNavigator().clearPathEntity();
                             return true;
-                        }*/
+                        }
                     }
                 }
 			}

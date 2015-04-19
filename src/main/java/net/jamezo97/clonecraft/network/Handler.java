@@ -127,6 +127,7 @@ public abstract class Handler{
 		registerHandler(7, Handler7CloneClones.class);
 		registerHandler(8, Handler8UpdateAttackEntities.class);
 		registerHandler(9, Handler9UpdateBreakBlocks.class);
+		registerHandler(10, Handler10ChangeOwner.class);
 		
 		
 	}
