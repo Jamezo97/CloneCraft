@@ -130,16 +130,15 @@ public class EntityClone extends EntityLiving implements RenderableManager{
 	EntityAIShare aiShareItems;
 	
 	public void initAI(){
-		
-		//Cant Follow, Attack, Wander, Curious, Mine
-		//Cant         
+		     
 		
 		this.tasks.addTask(0, new EntityAISwimming(this));
 		this.tasks.addTask(1, new EntityAIFollowCloneOwner(this));
 		this.tasks.addTask(2, aiBreakBlocks = new EntityAIBreakBlock(this, 16));
 		this.tasks.addTask(8, aiShareItems = new EntityAIShare(this));
-		this.tasks.addTask(9, new EntityAICloneWander(this, 1.0F));
-//		this.tasks.addTask(10, new EntityAICloneLookIdle(this));
+		this.tasks.addTask(9, new EntityAICloneLookIdle(this));
+		this.tasks.addTask(10, new EntityAICloneWander(this, 1.0F));
+		
 		
 
 		this.targetTasks.addTask(0, new EntityAIAttackEnemies(this));
@@ -257,7 +256,7 @@ public class EntityClone extends EntityLiving implements RenderableManager{
 		
 		
 		if(!worldObj.isRemote){
-//			if(this.ticksExisted % 40 == 0){this.team = PlayerTeam.getByID(worldObj.rand.nextInt(10));}
+
 			pickupNearbyItems();
 			this.foodStats.onUpdate(this);
 			checkHunger();
@@ -285,6 +284,8 @@ public class EntityClone extends EntityLiving implements RenderableManager{
 		this.options.onTick();
 		if(!worldObj.isRemote){/*long l1=System.nanoTime();*/watcher.tick();/*System.out.println((System.nanoTime()-l1) / 1000000.0f);*/}
 	}
+	
+	
 	
 	@Override
 	public void onEntityUpdate() {
@@ -390,7 +391,7 @@ public class EntityClone extends EntityLiving implements RenderableManager{
 	@Override
 	public float getEyeHeight() {
 		// TODO Auto-generated method stub
-		return super.getEyeHeight();
+		return super.getEyeHeight() * (preciseScale);
 	}
 	
 	
@@ -1018,6 +1019,7 @@ public class EntityClone extends EntityLiving implements RenderableManager{
 		nbt.setString("Owner", ownerName);
 		nbt.setInteger("Team", team.teamID);
 		nbt.setTag("Inventory", this.inventory.writeToNBT(new NBTTagList()));
+		nbt.setFloat("scale", this.preciseScale);
 		this.foodStats.writeNBT(nbt);
 		this.options.writeNBT(nbt);
 	}
@@ -1031,6 +1033,12 @@ public class EntityClone extends EntityLiving implements RenderableManager{
 		this.setOwner(nbt.getString("Owner"));
 		this.team = PlayerTeam.getByID(nbt.getInteger("Team"));
 		this.inventory.readFromNBT(nbt.getTagList("Inventory", 10));
+		
+		float scale = nbt.getFloat("scale");
+		if(scale != 0){
+			this.setScale(scale);
+		}
+		
 		this.foodStats.readNBT(nbt);
 		this.options.readFromNBT(nbt);
 	}

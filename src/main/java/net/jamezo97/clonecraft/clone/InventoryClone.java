@@ -3,17 +3,18 @@ package net.jamezo97.clonecraft.clone;
 import java.util.Random;
 import java.util.concurrent.Callable;
 
-import net.minecraft.block.Block;
 import net.minecraft.crash.CrashReport;
 import net.minecraft.crash.CrashReportCategory;
 import net.minecraft.entity.item.EntityItem;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.InventoryPlayer;
+import net.minecraft.init.Items;
+import net.minecraft.item.EnumAction;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemArmor;
+import net.minecraft.item.ItemFood;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
-import net.minecraft.nbt.NBTTagList;
 import net.minecraft.util.ReportedException;
 
 public class InventoryClone extends InventoryPlayer{//implements IInventory{
@@ -120,6 +121,8 @@ public class InventoryClone extends InventoryPlayer{//implements IInventory{
 		}
 		return removed;
 	}
+	
+	
 	
 	/**
 	 * 
@@ -630,17 +633,21 @@ public class InventoryClone extends InventoryPlayer{//implements IInventory{
 			{
 				if(mainInventory[a].getItem() == copy.getItem() && ItemStack.areItemStackTagsEqual(copy, mainInventory[a]))
 				{
-					int max = mainInventory[a].getMaxStackSize();
-					int stackSize = mainInventory[a].stackSize;
 					
-					int remove = max-stackSize;
+					int remove = mainInventory[a].stackSize;
 					
 					if(remove > copy.stackSize){
 						remove = copy.stackSize;
 					}
-					
+//					System.out.println("Remove: " + remove + ", " + max + ", " + stackSize);
+					System.out.println(copy.stackSize);
 					copy.stackSize -= remove;
-					mainInventory[a].stackSize += remove;
+					mainInventory[a].stackSize -= remove;
+					
+					if(mainInventory[a].stackSize == 0){
+						mainInventory[a] = null;
+					}
+					
 					if(copy.stackSize <= 0)
 					{
 						return true;
@@ -653,7 +660,116 @@ public class InventoryClone extends InventoryPlayer{//implements IInventory{
 	}
 	
 	
+	/**
+	 * Checks if the given ItemStack can be found, or made from the current inventory contents (and made as in, stack similar items together)
+	 * @param stack The stack to check if available.
+	 * @return true if the ItemStack could be made from the current inventory (i.e. 6 Bread. 3 in slot 6, 1 in slot 2, and 2 in slot 19. 6 Bread is available.
+	 */
+	public boolean isStackAvailable(ItemStack stack){
+		if(stack == null)
+		{
+			return false;
+		}
+		ItemStack copy = stack.copy();
+		
+		for(int a = 0; a < mainInventory.length; a++)
+		{
+			if(mainInventory[a] != null)
+			{
+				if(mainInventory[a].getItem() == copy.getItem() && mainInventory[a].getItemDamage() == copy.getItemDamage()  && ItemStack.areItemStackTagsEqual(copy,  mainInventory[a]))
+				{
+					copy.stackSize -= mainInventory[a].stackSize;
+					if(copy.stackSize <= 0)
+					{
+						return true;
+					}
+				}
+			}
+		}
+		
+		return copy.stackSize <= 0;
+	}
 	
+	public int getFitCount(ItemStack stack){
+		if(stack == null)
+		{
+			return -1;
+		}
+		ItemStack copy = stack.copy();
+		
+		int fitCount = 0;
+		
+		int emptyCount = 0;
+		
+		for(int a = 0; a < mainInventory.length; a++)
+		{
+			if(mainInventory[a] != null)
+			{
+				if(mainInventory[a].getItem() == copy.getItem() && mainInventory[a].getItemDamage() == copy.getItemDamage() && ItemStack.areItemStackTagsEqual(copy,  mainInventory[a]))
+				{
+					int maxAdd = (mainInventory[a].getMaxStackSize()-mainInventory[a].stackSize);
+					
+					if(maxAdd > copy.stackSize){
+						maxAdd = copy.stackSize;
+					}
+					
+					copy.stackSize -= maxAdd;
+					fitCount += maxAdd;
+				}
+			}else{
+				emptyCount+=this.getInventoryStackLimit();
+			}
+		}
+		
+		return fitCount+emptyCount;
+	}
+	
+	public boolean hasEmptySlot(){
+		for(int a = 0; a < mainInventory.length; a++){
+			if(mainInventory[a] == null){
+				return true;
+			}
+		}
+		return false;
+	}
+	
+	public int getTypeCount(TypeCheck type){
+		int count = 0;
+		for(int a = 0; a < mainInventory.length; a++){
+			if(mainInventory[a] != null){
+				if(type.isType(mainInventory[a])){
+					count += mainInventory[a].stackSize;
+				}
+			}
+		}
+		return count;
+	}
+	
+	
+	
+	public static interface TypeCheck{
+		/**
+		 * 
+		 * @param stack A Non-Null ItemStack
+		 * @return Whether the stack is the specified type
+		 */
+		public boolean isType(ItemStack stack);
+		
+	}
+	
+	public static TypeCheck CHECK_FOOD = new TypeCheck(){
+		@Override
+		public boolean isType(ItemStack stack) {
+			return stack.getItem().getItemUseAction(stack) == EnumAction.eat || stack.getItem() instanceof ItemFood;
+		}
+	};
+	
+	public static TypeCheck CHECK_ARROW = new TypeCheck(){
+		@Override
+		public boolean isType(ItemStack stack) {
+			return stack.getItem() == Items.arrow;
+		}
+	};
 	
 
 }

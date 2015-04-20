@@ -20,34 +20,77 @@ public class SyncItemOffer extends Sync{
 
 	@Override
 	public boolean checkNeedsUpdating(EntityClone clone) {
-		return !oldStack.areItemStacksEqual(oldStack, clone.getOfferedItem());
+		return oldStack != clone.getShareAI().getOfferedItem();
 	}
 
 	@Override
 	public void updateValues(EntityClone clone) {
-		oldStack = clone.getOfferedItem();
+		oldStack = clone.getShareAI().getOfferedItem();
 	}
 
 	@Override
 	public void write(DataOutputStream out, EntityClone clone)
 			throws IOException {
-		if(clone.getOfferedItem() == null){
-			out.writeBoolean(false);
+		
+		NBTTagCompound nbt = null;
+		ItemStack onOffer = clone.getShareAI().getOfferedItem();
+		
+		if(onOffer != null)
+		{
+			nbt = onOffer.writeToNBT(new NBTTagCompound());
 		}
-		CompressedStreamTools.write(clone.getOfferedItem().writeToNBT(new NBTTagCompound()), out);
+		
+		writeNBTTag(nbt, out);
 	}
 
 	@Override
 	public void read(DataInputStream in, EntityClone clone) throws IOException {
-		if(in.readBoolean()){
-			clone.getShareAI().setOfferedItem(null);
-		}else{
-			ItemStack stack = ItemStack.loadItemStackFromNBT(CompressedStreamTools.func_152456_a(in, NBTSizeTracker.field_152451_a));
-			
-			clone.getShareAI().setOfferedItem(stack);
+		
+		NBTTagCompound nbt = this.readNBTTag(in);
+		ItemStack stack = null;
+		
+		if(nbt != null)
+		{
+			stack = ItemStack.loadItemStackFromNBT(nbt);
 		}
+		
+		clone.getShareAI().setOfferedItem(stack);
 	}
 
+	
+	//Copied from PacketBuffer.class
+	public void writeNBTTag(NBTTagCompound stack, DataOutputStream out) throws IOException
+    {
+        if (stack == null)
+        {
+            out.writeShort(-1);
+        }
+        else
+        {
+            byte[] abyte = CompressedStreamTools.compress(stack);
+            out.writeShort((short)abyte.length);
+            out.write(abyte);
+        }
+    }
+
+    /**
+     * Reads a compressed NBTTagCompound from this buffer
+     */
+    public NBTTagCompound readNBTTag(DataInputStream in) throws IOException
+    {
+        short short1 = in.readShort();
+
+        if (short1 < 0)
+        {
+            return null;
+        }
+        else
+        {
+            byte[] abyte = new byte[short1];
+            in.readFully(abyte);
+            return CompressedStreamTools.func_152457_a(abyte, new NBTSizeTracker(2097152L));
+        }
+    }
 	
 
 }

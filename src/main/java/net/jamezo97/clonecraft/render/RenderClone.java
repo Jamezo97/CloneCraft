@@ -456,15 +456,15 @@ public class RenderClone extends RendererLivingEntity {
 //            GL11.glPopMatrix();
 //        }
 
-        ItemStack itemstack1 = clone.getHeldItem();
-        ItemStack itemstack2 = clone.getOfferedItem();
-        if (itemstack1 != null)
+        ItemStack s1 = clone.getHeldItem();
+        ItemStack s2 = clone.getOfferedItem();
+        if (s1 != null && (s1 == null || s2 == null || s1.getItem() != s2.getItem() || s1.getItemDamage() != s2.getItemDamage() || s1.stackSize != s2.stackSize))
         {
-            renderItemstackInHand(itemstack1, 0, clone, partial);
+            renderItemstackInHand(s1, 0, clone, partial);
         }
-        if (itemstack2 != null)
+        if (s2 != null)
         {
-            renderItemstackInHand(itemstack2, 1, clone, partial);
+            renderItemstackInHand(s2, 1, clone, partial);
         }
     }
     
