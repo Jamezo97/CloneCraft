@@ -139,7 +139,7 @@ public class EntityClone extends EntityLiving implements RenderableManager{
 		this.tasks.addTask(2, aiBreakBlocks = new EntityAIBreakBlock(this, 16));
 		this.tasks.addTask(8, aiShareItems = new EntityAIShare(this));
 		this.tasks.addTask(9, new EntityAICloneWander(this, 1.0F));
-		this.tasks.addTask(10, new EntityAICloneLookIdle(this));
+//		this.tasks.addTask(10, new EntityAICloneLookIdle(this));
 		
 
 		this.targetTasks.addTask(0, new EntityAIAttackEnemies(this));
@@ -1206,7 +1206,7 @@ public class EntityClone extends EntityLiving implements RenderableManager{
 	}
 	
 	public ItemStack getOfferedItem(){
-		return this.getShareAI().getCurrentItem();
+		return this.getShareAI().getOfferedItem();
 	}
 
 	//==================================================================================================================

@@ -615,6 +615,42 @@ public class InventoryClone extends InventoryPlayer{//implements IInventory{
 		mainInventory[slotFrom] = temp;
 		return 8;
 	}
+
+	public boolean removeItemStackFromInventory(ItemStack stack) {
+		if(stack == null)
+		{
+			return false;
+		}
+		ItemStack copy = stack.copy();
+		
+	
+		for(int a = 0; a < mainInventory.length; a++)
+		{
+			if(mainInventory[a] != null)
+			{
+				if(mainInventory[a].getItem() == copy.getItem() && ItemStack.areItemStackTagsEqual(copy, mainInventory[a]))
+				{
+					int max = mainInventory[a].getMaxStackSize();
+					int stackSize = mainInventory[a].stackSize;
+					
+					int remove = max-stackSize;
+					
+					if(remove > copy.stackSize){
+						remove = copy.stackSize;
+					}
+					
+					copy.stackSize -= remove;
+					mainInventory[a].stackSize += remove;
+					if(copy.stackSize <= 0)
+					{
+						return true;
+					}
+				}
+			}
+		}
+		
+		return copy.stackSize <= 0;
+	}
 	
 	
 	

@@ -7,6 +7,8 @@ import java.io.IOException;
 import net.jamezo97.clonecraft.clone.EntityClone;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.CompressedStreamTools;
+import net.minecraft.nbt.NBTSizeTracker;
+import net.minecraft.nbt.NBTTagCompound;
 
 public class SyncItemOffer extends Sync{
 	
@@ -32,15 +34,17 @@ public class SyncItemOffer extends Sync{
 		if(clone.getOfferedItem() == null){
 			out.writeBoolean(false);
 		}
-		CompressedStreamTools.write(clone.getOfferedItem().writeToNBT(new NBTTagCompound()), p_74800_1_)
+		CompressedStreamTools.write(clone.getOfferedItem().writeToNBT(new NBTTagCompound()), out);
 	}
 
 	@Override
 	public void read(DataInputStream in, EntityClone clone) throws IOException {
 		if(in.readBoolean()){
-			
+			clone.getShareAI().setOfferedItem(null);
 		}else{
-//			clone.getShareAI().set
+			ItemStack stack = ItemStack.loadItemStackFromNBT(CompressedStreamTools.func_152456_a(in, NBTSizeTracker.field_152451_a));
+			
+			clone.getShareAI().setOfferedItem(stack);
 		}
 	}
 
