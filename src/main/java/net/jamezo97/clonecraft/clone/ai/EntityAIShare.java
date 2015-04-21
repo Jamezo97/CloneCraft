@@ -21,11 +21,7 @@ public class EntityAIShare extends EntityAIBase{
 		this.setMutexBits(1);
 	}
 	
-//	int itemInventoryIndex = -1;
-	
 	ItemStack itemOnOffer;
-	
-	
 	
 	EntityClone toShareWith;
 
@@ -58,6 +54,18 @@ public class EntityAIShare extends EntityAIBase{
 		typeChecks.add(InventoryClone.CHECK_ARROW);
 		typeChecks.add(InventoryClone.CHECK_FOOD);
 		
+		TypeCheck[][] checks = new TypeCheck[][]{
+				InventoryClone.CHECK_WOOD,
+				InventoryClone.CHECK_STONE,
+				InventoryClone.CHECK_IRON,
+				InventoryClone.CHECK_GOLD,
+				InventoryClone.CHECK_DIAMOND};
+		for(int a = 0; a < checks.length; a++){
+			for(int b = 0; b < checks[a].length; b++){
+				typeChecks.add(checks[a][b]);
+			}
+		}
+		
 		for(int a = 0; a < list.size(); a++)
 		{
 			EntityClone other = (EntityClone)list.get(a);
@@ -83,19 +91,26 @@ public class EntityAIShare extends EntityAIBase{
 								
 								int countMe = clone.inventory.getTypeCount(typeChecks.get(c));
 								int countOther = typeCountsOther[c];
-								if(countMe-countOther >= diffSize){
-
-									
+								
+								if(countMe-countOther >= diffSize)
+								{
 									int amountShouldGive = (countMe-countOther)/2;
-									if(amountShouldGive > 64){
+									
+									if(amountShouldGive > 64)
+									{
 										amountShouldGive = 64;
 									}
+									else if(amountShouldGive > stack.stackSize)
+									{
+										amountShouldGive = stack.stackSize;
+									}
 									
-									int canFit = other.inventory.getFitCount(stack);
-//									System.out.println(canFit + ", " + countMe + ", " + countOther);
-									if(canFit > 0){
+									int amountCanFit = other.inventory.getFitCount(stack);
+									
+									if(amountCanFit > 0)
+									{
 										itemOnOffer = stack.copy();
-										itemOnOffer.stackSize = canFit<amountShouldGive?canFit:amountShouldGive;
+										itemOnOffer.stackSize = amountCanFit<amountShouldGive?amountCanFit:amountShouldGive;
 										toShareWith = other;
 										return true;
 									}
@@ -122,7 +137,7 @@ public class EntityAIShare extends EntityAIBase{
 
 	@Override
 	public void startExecuting() {
-		countDown = 40;
+		countDown = 30;
 	}
 	
 
@@ -149,7 +164,6 @@ public class EntityAIShare extends EntityAIBase{
 		}
 		this.toShareWith = null;
 		this.itemOnOffer = null;
-//		this.itemInventoryIndex = -1;
 	}
 
 	public ItemStack getOfferedItem() {
@@ -159,11 +173,4 @@ public class EntityAIShare extends EntityAIBase{
 	public void setOfferedItem(ItemStack stack){
 		this.itemOnOffer = stack;
 	}
-	
-//	public int getShareSlot(){
-//		return this.itemInventoryIndex;
-//	}
-	
-
-
 }

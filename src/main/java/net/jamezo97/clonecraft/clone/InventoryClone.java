@@ -676,7 +676,9 @@ public class InventoryClone extends InventoryPlayer{//implements IInventory{
 		{
 			if(mainInventory[a] != null)
 			{
-				if(mainInventory[a].getItem() == copy.getItem() && mainInventory[a].getItemDamage() == copy.getItemDamage()  && ItemStack.areItemStackTagsEqual(copy,  mainInventory[a]))
+				if(mainInventory[a].getItem() == copy.getItem()
+						&& mainInventory[a].getItemDamage() == copy.getItemDamage()
+						&& ItemStack.areItemStackTagsEqual(copy,  mainInventory[a]))
 				{
 					copy.stackSize -= mainInventory[a].stackSize;
 					if(copy.stackSize <= 0)
@@ -757,19 +759,68 @@ public class InventoryClone extends InventoryPlayer{//implements IInventory{
 		
 	}
 	
-	public static TypeCheck CHECK_FOOD = new TypeCheck(){
+	public static class TypeCheckItem implements TypeCheck{
+		
+		public final Item theItem;
+		
+		public TypeCheckItem(Item item){
+			this.theItem = item;
+		}
+
+		@Override
+		public boolean isType(ItemStack stack) {
+			return stack.getItem() == theItem;
+		}
+		
+	}
+	
+	public static final TypeCheck CHECK_FOOD = new TypeCheck(){
 		@Override
 		public boolean isType(ItemStack stack) {
 			return stack.getItem().getItemUseAction(stack) == EnumAction.eat || stack.getItem() instanceof ItemFood;
 		}
 	};
 	
-	public static TypeCheck CHECK_ARROW = new TypeCheck(){
+	public static final TypeCheck CHECK_ARROW = new TypeCheck(){
 		@Override
 		public boolean isType(ItemStack stack) {
 			return stack.getItem() == Items.arrow;
 		}
 	};
 	
-
+	public static final TypeCheck[] CHECK_WOOD = new TypeCheck[]{
+		new TypeCheckItem(Items.wooden_axe),
+		new TypeCheckItem(Items.wooden_hoe),
+		new TypeCheckItem(Items.wooden_pickaxe),
+		new TypeCheckItem(Items.wooden_shovel),
+		new TypeCheckItem(Items.wooden_sword)
+	};
+	public static final TypeCheck[] CHECK_STONE = new TypeCheck[]{
+		new TypeCheckItem(Items.stone_axe),
+		new TypeCheckItem(Items.stone_hoe),
+		new TypeCheckItem(Items.stone_pickaxe),
+		new TypeCheckItem(Items.stone_shovel),
+		new TypeCheckItem(Items.stone_sword)
+	};
+	public static final TypeCheck[] CHECK_IRON = new TypeCheck[]{
+		new TypeCheckItem(Items.iron_axe),
+		new TypeCheckItem(Items.iron_hoe),
+		new TypeCheckItem(Items.iron_pickaxe),
+		new TypeCheckItem(Items.iron_shovel),
+		new TypeCheckItem(Items.iron_sword)
+	};
+	public static final TypeCheck[] CHECK_GOLD = new TypeCheck[]{
+		new TypeCheckItem(Items.golden_axe),
+		new TypeCheckItem(Items.golden_hoe),
+		new TypeCheckItem(Items.golden_pickaxe),
+		new TypeCheckItem(Items.golden_shovel),
+		new TypeCheckItem(Items.golden_sword)
+	};
+	public static final TypeCheck[] CHECK_DIAMOND = new TypeCheck[]{
+		new TypeCheckItem(Items.diamond_axe),
+		new TypeCheckItem(Items.diamond_hoe),
+		new TypeCheckItem(Items.diamond_pickaxe),
+		new TypeCheckItem(Items.diamond_shovel),
+		new TypeCheckItem(Items.diamond_sword)
+	};
 }
