@@ -14,8 +14,10 @@ import net.jamezo97.clonecraft.Reflect;
 import net.jamezo97.clonecraft.clone.ai.EntityAIAttackEnemies;
 import net.jamezo97.clonecraft.clone.ai.EntityAIBreakBlock;
 import net.jamezo97.clonecraft.clone.ai.EntityAICloneLookIdle;
+import net.jamezo97.clonecraft.clone.ai.EntityAICloneWalkToItems;
 import net.jamezo97.clonecraft.clone.ai.EntityAICloneWander;
 import net.jamezo97.clonecraft.clone.ai.EntityAIFollowCloneOwner;
+import net.jamezo97.clonecraft.clone.ai.EntityAIReturnGuard;
 import net.jamezo97.clonecraft.clone.ai.EntityAIShare;
 import net.jamezo97.clonecraft.clone.sync.Syncer;
 import net.jamezo97.clonecraft.entity.EntityExplodeCollapseFX;
@@ -63,6 +65,7 @@ import net.minecraft.nbt.NBTTagList;
 import net.minecraft.pathfinding.PathEntity;
 import net.minecraft.potion.Potion;
 import net.minecraft.potion.PotionEffect;
+import net.minecraft.util.ChunkCoordinates;
 import net.minecraft.util.DamageSource;
 import net.minecraft.util.EntityDamageSource;
 import net.minecraft.util.IIcon;
@@ -125,28 +128,30 @@ public class EntityClone extends EntityLiving implements RenderableManager{
         return true;
     }
 	
-	EntityAIBreakBlock aiBreakBlocks;// = new EntityAIBreakBlock(this, 16);
+	EntityAIBreakBlock aiBreakBlocks;
 	
 	EntityAIShare aiShareItems;
 	
 	public void initAI(){
-		     
 		
 		this.tasks.addTask(0, new EntityAISwimming(this));
-		this.tasks.addTask(1, new EntityAIFollowCloneOwner(this));
-		this.tasks.addTask(2, aiBreakBlocks = new EntityAIBreakBlock(this, 16));
-		this.tasks.addTask(8, aiShareItems = new EntityAIShare(this));
-		this.tasks.addTask(9, new EntityAICloneLookIdle(this));
-		this.tasks.addTask(10, new EntityAICloneWander(this, 1.0F));
+		this.tasks.addTask(1, new EntityAIAttackEnemies(this));
+		this.tasks.addTask(2, new EntityAIFollowCloneOwner(this));
+		this.tasks.addTask(3, aiBreakBlocks = new EntityAIBreakBlock(this, 16));
+		this.tasks.addTask(4, new EntityAICloneWalkToItems(this));
+		this.tasks.addTask(5, new EntityAIReturnGuard(this));
 		
-		
-
-		this.targetTasks.addTask(0, new EntityAIAttackEnemies(this));
-
+		this.tasks.addTask(18, aiShareItems = new EntityAIShare(this));
+		this.tasks.addTask(19, new EntityAICloneLookIdle(this));
+		this.tasks.addTask(20, new EntityAICloneWander(this, 1.0F));
 	}
 	
 	public EntityAIShare getShareAI(){
 		return aiShareItems;
+	}
+	
+	public EntityAIBreakBlock getBlockAI(){
+		return aiBreakBlocks;
 	}
 	
 	protected void applyEntityAttributes()
@@ -181,18 +186,17 @@ public class EntityClone extends EntityLiving implements RenderableManager{
 	@Override
 	protected void updateAITasks() {
 		super.updateAITasks();
-//		this.AI.tick();
 	}
 
 	public Syncer getWatcher()
 	{
 		return watcher;
 	}
-	
+
 	int pId = -1;
 	
 	int pIndex = 0;
-	
+
 	public void initSounds()
 	{
 		pId = this.getRNG().nextInt( MusicBase.getSize() );
@@ -260,12 +264,30 @@ public class EntityClone extends EntityLiving implements RenderableManager{
 			pickupNearbyItems();
 			this.foodStats.onUpdate(this);
 			checkHunger();
-			if(this.isSprinting() && this.getNavigator().noPath()){
+			if(this.isSprinting() && this.getNavigator().noPath())
+			{
 				this.setSprinting(false);
-			}else if(this.getOptions().sprint.get()){
+			}
+			else if(this.getOptions().sprint.get())
+			{
 				this.setSprinting(true);
 			}
 			this.makeOthersAttackMe();
+			if(this.getOptions().guard.get())
+			{
+				if(!this.isGuardPositionSet())
+				{
+					this.guardPosition.posX = (int)Math.floor(posX);
+					this.guardPosition.posY = (int)Math.floor(posY)-1;
+					this.guardPosition.posZ = (int)Math.floor(posZ);
+				}
+			}
+			else
+			{
+				this.guardPosition.posX = Integer.MAX_VALUE;
+				this.guardPosition.posY = Integer.MAX_VALUE;
+				this.guardPosition.posZ = Integer.MAX_VALUE;
+			}
 			if(this.getAttackTarget() != null){
 				this.getLookHelper().setLookPositionWithEntity(this.getAttackTarget(), 10, this.getVerticalFaceSpeed());
 			}
@@ -294,11 +316,6 @@ public class EntityClone extends EntityLiving implements RenderableManager{
 		{
 			this.heal(1);
 		}
-//		this.updateAITasks();
-//		if(getEntityToAttack() == null && options.guard.value && posX > guardPosX && posX < guardPosX+1 && posZ > guardPosZ && posZ < guardPosZ+1){
-//			this.setRotation(guardYaw, guardPitch);
-//		}
-
 	}
 	
 	
@@ -337,6 +354,31 @@ public class EntityClone extends EntityLiving implements RenderableManager{
 	}
 	
 	//==================================================================================================================
+	//TODO Position Guard
+	//==================================================================================================================
+	
+	//Clone has a 1 in 9903520314283042199192993792 chance of guarding the wrong position. Ha! 1 Million Million Million ish
+	ChunkCoordinates guardPosition = new ChunkCoordinates(Integer.MAX_VALUE, Integer.MAX_VALUE, Integer.MAX_VALUE);
+	
+	/**
+	 * 
+	 * @return ChunkCoordinates representing the position the clone is guarding.
+	 */
+	public ChunkCoordinates getGuardPosition(){
+		return guardPosition;
+	}
+	
+	public boolean isGuardPositionSet(){
+		return guardPosition.posX != Integer.MAX_VALUE || guardPosition.posY != Integer.MAX_VALUE || guardPosition.posZ != Integer.MAX_VALUE; 
+	}
+	
+	public void teleportToGuardPosition(){
+		if(isGuardPositionSet()){
+			setPosition(this.getGuardPosition().posX+0.5, this.getGuardPosition().posY+1, this.getGuardPosition().posZ+0.5);
+		}
+	}
+	
+	//==================================================================================================================
 	//TODO Age, Scaling and Growing Up
 	//==================================================================================================================
 	
@@ -367,13 +409,14 @@ public class EntityClone extends EntityLiving implements RenderableManager{
 			preciseScale = maxScale;
 		}
 		
-		double newMaxHealth = Math.round(20.0D * (preciseScale/maxScale));
+		double newMaxHealth = Math.round(20.0D * preciseScale);
 		
 		if(lastMaxHealth != newMaxHealth)
 		{
 			this.getEntityAttribute(SharedMonsterAttributes.maxHealth).setBaseValue(newMaxHealth);
 		}
-		if(this.getHealth() > newMaxHealth){
+		if(this.getHealth() > newMaxHealth)
+		{
 			this.setHealth((float)newMaxHealth);
 		}
 	}
@@ -390,7 +433,6 @@ public class EntityClone extends EntityLiving implements RenderableManager{
 	
 	@Override
 	public float getEyeHeight() {
-		// TODO Auto-generated method stub
 		return super.getEyeHeight() * (preciseScale);
 	}
 	
@@ -462,14 +504,18 @@ public class EntityClone extends EntityLiving implements RenderableManager{
 		if(entity == null){
 			return false;
 		}
-		if(entity instanceof EntityPlayer){
+		if(entity instanceof EntityPlayer)
+		{
 			return team == PlayerTeam.Evil && !((EntityPlayer)entity).capabilities.isCreativeMode;
-		}else if(entity instanceof EntityClone){
+		}
+		else if(entity instanceof EntityClone)
+		{
 			return team.doesAttackTeam(((EntityClone)entity).team) && ((EntityClone)entity).getOptions().fight.get();
-		}else{
+		}
+		else
+		{
 			return this.options.attackables.canAttack(EntityList.getEntityID(entity));
 		}
-//		return canAttackEntity(entity) || 
 	}
 	
 	/**
@@ -478,12 +524,16 @@ public class EntityClone extends EntityLiving implements RenderableManager{
 	 * @return
 	 */
 	public boolean canAttackEntity(EntityLivingBase entity){
-		if(entity == null){
+		if(entity == null)
+		{
 			return false;
 		}
-		if(entity instanceof EntityPlayer){
+		if(entity instanceof EntityPlayer)
+		{
 			return team == PlayerTeam.Evil && !((EntityPlayer)entity).capabilities.isCreativeMode;
-		}else if(entity instanceof EntityClone){
+		}
+		else if(entity instanceof EntityClone)
+		{
 			return team.doesAttackTeam(((EntityClone)entity).team);
 		}
 		return true;
@@ -989,6 +1039,36 @@ public class EntityClone extends EntityLiving implements RenderableManager{
 		return false;
 	}
 	
+	public void forceEatFood(int inventorySlot){
+		
+		ItemStack foodStack = this.inventory.mainInventory[inventorySlot];
+		
+		if(foodStack == null)
+		{
+			return;
+		}
+		
+		Item item = foodStack.getItem();
+		
+		if(item == null)
+		{
+			return;
+		}
+		
+		EnumAction itemUse = item.getItemUseAction(foodStack);
+		
+		if(itemUse == EnumAction.eat || itemUse == EnumAction.drink || item instanceof ItemFood)
+		{
+			
+			int slot = this.inventory.putStackOnHotbar(inventorySlot);
+			
+			this.inventory.currentItem = slot;
+			
+			this.setItemInUse(foodStack, item.getMaxItemUseDuration(foodStack));
+			
+		}
+	}
+	
 	public void checkHunger(){
 		if(!this.getFlag(4) && this.foodStats.getFoodLevel() < 20 && (this.getAttackTarget() == null || this.foodStats.getFoodLevel() < criticalEatingPoint)){
 			ItemStack foodStack;
@@ -998,9 +1078,7 @@ public class EntityClone extends EntityLiving implements RenderableManager{
 					foodStack = this.inventory.mainInventory[a];
 					food = (ItemFood)this.inventory.mainInventory[a].getItem();
 					if(foodStack.stackSize > 0){
-						int slot = this.inventory.putStackOnHotbar(a);
-						this.inventory.currentItem = slot;
-						this.setItemInUse(foodStack, food.getMaxItemUseDuration(foodStack));
+						forceEatFood(a);
 						return;
 					}
 				}

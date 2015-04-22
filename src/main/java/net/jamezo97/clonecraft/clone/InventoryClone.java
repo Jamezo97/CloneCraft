@@ -639,8 +639,7 @@ public class InventoryClone extends InventoryPlayer{//implements IInventory{
 					if(remove > copy.stackSize){
 						remove = copy.stackSize;
 					}
-//					System.out.println("Remove: " + remove + ", " + max + ", " + stackSize);
-					System.out.println(copy.stackSize);
+
 					copy.stackSize -= remove;
 					mainInventory[a].stackSize -= remove;
 					

@@ -54,7 +54,7 @@ public class EntityAIShare extends EntityAIBase{
 		typeChecks.add(InventoryClone.CHECK_ARROW);
 		typeChecks.add(InventoryClone.CHECK_FOOD);
 		
-		TypeCheck[][] checks = new TypeCheck[][]{
+		/*TypeCheck[][] checks = new TypeCheck[][]{
 				InventoryClone.CHECK_WOOD,
 				InventoryClone.CHECK_STONE,
 				InventoryClone.CHECK_IRON,
@@ -64,7 +64,7 @@ public class EntityAIShare extends EntityAIBase{
 			for(int b = 0; b < checks[a].length; b++){
 				typeChecks.add(checks[a][b]);
 			}
-		}
+		}*/
 		
 		for(int a = 0; a < list.size(); a++)
 		{

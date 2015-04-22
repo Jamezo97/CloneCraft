@@ -20,7 +20,25 @@ public class EntityAIAttackEnemies extends EntityAIBase {
 	}
 
 	public boolean shouldExecute() {
-		return clone.getOptions().fight.get();
+		if(clone.getOptions().fight.get())
+		{
+			if(clone.getAttackTarget() == null || (!clone.shouldProvokeAttack(clone.getAttackTarget()) && !clone.canAttackEntity(clone.getAttackTarget()))){
+				EntityLivingBase attack = this.getClosestEntityToAttackExcluding(null);
+				if(attack != null){
+					clone.setAttackTarget(attack);
+					clone.setPath(clone.getNavigator().getPathToEntityLiving(attack));
+					return true;
+				}else{
+					//If the current target is because of an act of revenge, and is not a selected enemy
+					if(clone.shouldProvokeAttack(clone.getAttackTarget())){
+						clone.setAttackTarget(null);
+					}
+				}
+			}
+			return clone.getAttackTarget() != null;
+		}
+		
+		return false;
 	}
 
 	int noImprovement = 0;
@@ -39,18 +57,19 @@ public class EntityAIAttackEnemies extends EntityAIBase {
 	
 	@Override
 	public boolean continueExecuting() {
-		if(clone.getAttackTarget() == null || (!clone.shouldProvokeAttack(clone.getAttackTarget()) && !clone.canAttackEntity(clone.getAttackTarget()))){
-			EntityLivingBase attack = this.getClosestEntityToAttackExcluding(null);
-			if(attack != null){
-				clone.setAttackTarget(attack);
-				clone.setPath(clone.getNavigator().getPathToEntityLiving(attack));
-			}else{
-				//If the current target is because of an act of revenge, and is not a selected enemy
-				if(clone.shouldProvokeAttack(clone.getAttackTarget())){
-					clone.setAttackTarget(null);
-				}
-			}
-		}else if(clone.getAttackTarget().isEntityAlive()){
+		if(clone.getAttackTarget() == null || !clone.getAttackTarget().isEntityAlive()){
+			clone.setAttackTarget(null);
+			return false;
+		}else{
+			return true;
+		}
+	}
+	
+	
+	
+	@Override
+	public void updateTask() {
+		if(clone.getAttackTarget().isEntityAlive()){
 			if(clone.getRNG().nextInt(10) == 0){
 				EntityLivingBase attack = this.getClosestEntityToAttackExcluding(null);
 				if(attack != null && attack != clone.getAttackTarget()){
@@ -65,6 +84,7 @@ public class EntityAIAttackEnemies extends EntityAIBase {
 				update = 0;
 				clone.setPath(clone.getNavigator().getPathToEntityLiving(clone.getAttackTarget()));
 			}
+//			System.out.println("Attack");
 			clone.attackEntity(clone.getAttackTarget());
 			if(clone.prevPosX == clone.posX && clone.prevPosY == clone.posY && clone.prevPosZ == clone.posZ && clone.getAttackTarget().getHealth() == lastHealth){
 				noImprovement++;
@@ -99,64 +119,8 @@ public class EntityAIAttackEnemies extends EntityAIBase {
 			clone.setAttackTarget(null);
 			clone.setPath(null);
 		}
-		
-		
-		
-//		if(clone.getTarget() != null){
-//			lastHealth = clone.getTarget().getHealth();
-//		}
-//		if(clone.getTarget() == null){
-//			EntityLivingBase newEntity = getClosestEntityToAttackExcluding(null);
-//			if(newEntity != null){
-//				clone.setTarget(newEntity);
-//				clone.setPathToEntity(clone.worldObj.getPathEntityToEntity(clone, clone.getTarget(), 16.0F, true, false, false, true));
-//			}
-//		}else if(clone.getTarget().isEntityAlive()){
-//			if(rand.nextInt(10) == 0){
-//				EntityLivingBase newEntity = getClosestEntityToAttackExcluding(null);
-//				if(newEntity != null && newEntity != clone.getTarget()){
-//					double d1 = clone.getDistanceSqToEntity(clone.getTarget());
-//					double d2 = clone.getDistanceSqToEntity(newEntity);
-//					if(d2 < d1){
-//						clone.setTarget(newEntity);
-//						clone.setPathToEntity(clone.worldObj.getPathEntityToEntity(clone, clone.getTarget(), 16.0F, true, false, false, true));
-//					}
-//				}
-//			}else if(update++ > 1){
-//				update = 0;
-//				clone.setPathToEntity(clone.worldObj.getPathEntityToEntity(clone, clone.getTarget(), 16.0F, true, false, false, true));
-//			}
-//			if((clone.getOptions().shouldAttack(clone.getTarget())?false:!clone.revenge) && !(clone.team == PlayerTeam.Evil && clone.getTarget() instanceof EntityPlayer)){
-//				clone.setTarget(null);
-//				clone.setPathToEntity(null);
-//			}else{
-//				if(clone.getNavigator().noPath()){
-//					clone.setPathToEntity(clone.worldObj.getPathEntityToEntity(clone, clone.getTarget(), 16.0F, true, false, false, true));
-//				}
-//				clone.attackEntity(clone.getTarget(), clone.getDistanceToEntityFromHead(clone.getTarget()));
-//			}
-//			if(clone.prevPosX == clone.posX && clone.prevPosY == clone.posY && clone.prevPosZ == clone.posZ && clone.getTarget().getHealth() == lastHealth){
-//				noImprovement++;
-//				if(noImprovement > 30){
-//					EntityLivingBase newEntity = getClosestEntityToAttackExcluding(clone.getTarget());
-//					if(newEntity != null){
-//						clone.setTarget(newEntity);
-//						clone.setPathToEntity(clone.worldObj.getPathEntityToEntity(clone, clone.getTarget(), 16.0F, true, false, false, true));
-//					}
-//				}
-//			}else{
-//				noImprovement = 0;
-//			}
-//		}else{
-//			clone.setTarget(null);
-//			clone.setPathToEntity(null);
-//			if(clone.attackDelay > 3){
-//				clone.attackDelay = 3;
-//			}
-//		} 
-		return super.continueExecuting();
 	}
-	
+
 	public EntityLivingBase getClosestEntityToAttackExcluding(EntityLivingBase entity){
 		List list = clone.worldObj.getEntitiesWithinAABBExcludingEntity(clone, clone.boundingBox.expand(32D, 16D, 32D));
 		if(entity != null){
@@ -178,24 +142,18 @@ public class EntityAIAttackEnemies extends EntityAIBase {
 						}
 					}
 				}
-//				if(e instanceof EntityPlayer && clone.team == PlayerTeam.Traitor){
-//					double distancesqr = distanceSquared(clone, e);
-//					if(distancesqr < distance || distance == -1){
-//						distance = distancesqr;
-//						toAttack = e;
-//					}
-//				}
 			}
 		}
 		return toAttack;
 	}
+	
+	
 	
 	public double distanceSquared(Entity e1, Entity e2){
 		double d1 = e1.posX - e2.posX;
 		double d2 = e1.posY - e2.posY;
 		double d3 = e1.posZ - e2.posZ;
 		return d1*d1 + d2*d2 + d3*d3;
-		
 	}
 	
 	
