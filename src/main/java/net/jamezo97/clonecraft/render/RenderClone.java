@@ -237,10 +237,8 @@ public class RenderClone extends RendererLivingEntity {
             }
            
             fontrenderer.drawString(s, -fontrenderer.getStringWidth(s) / 2, 0, 553648127);
-            GL11.glEnable(GL11.GL_DEPTH_TEST);
-            GL11.glDepthMask(true);
+            
             fontrenderer.drawString(s, -fontrenderer.getStringWidth(s) / 2, 0, -1);
-            GL11.glDisable(GL11.GL_BLEND);
             //Render Icon
             if(flag){
             	this.bindTexture(GuiScreen.icons);
@@ -270,7 +268,9 @@ public class RenderClone extends RendererLivingEntity {
                
                 GL11.glEnd();
             }
-            
+            GL11.glEnable(GL11.GL_DEPTH_TEST);
+            GL11.glDepthMask(true);
+            GL11.glDisable(GL11.GL_BLEND);
             
             GL11.glEnable(GL11.GL_LIGHTING);
             GL11.glColor4f(1.0F, 1.0F, 1.0F, 1.0F);

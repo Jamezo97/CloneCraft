@@ -1098,6 +1098,13 @@ public class EntityClone extends EntityLiving implements RenderableManager{
 		nbt.setInteger("Team", team.teamID);
 		nbt.setTag("Inventory", this.inventory.writeToNBT(new NBTTagList()));
 		nbt.setFloat("scale", this.preciseScale);
+		
+		nbt.setIntArray("guardPosition", new int[]{
+				guardPosition.posX,
+				guardPosition.posY,
+				guardPosition.posZ
+		});
+		
 		this.foodStats.writeNBT(nbt);
 		this.options.writeNBT(nbt);
 	}
@@ -1107,7 +1114,7 @@ public class EntityClone extends EntityLiving implements RenderableManager{
 	{
 		super.readEntityFromNBT(nbt);
 		this.setName(nbt.getString("Name_U"));
-//		System.out.println("Set name: " + this.nameUnedited);
+
 		this.setOwner(nbt.getString("Owner"));
 		this.team = PlayerTeam.getByID(nbt.getInteger("Team"));
 		this.inventory.readFromNBT(nbt.getTagList("Inventory", 10));
@@ -1115,6 +1122,17 @@ public class EntityClone extends EntityLiving implements RenderableManager{
 		float scale = nbt.getFloat("scale");
 		if(scale != 0){
 			this.setScale(scale);
+		}
+		
+		int[] guardPos = nbt.getIntArray("guardPosition");
+		
+		if(guardPos != null && guardPos.length == 3)
+		{
+			this.guardPosition = new ChunkCoordinates(
+					guardPos[0],
+					guardPos[1],
+					guardPos[2]
+					);
 		}
 		
 		this.foodStats.readNBT(nbt);
