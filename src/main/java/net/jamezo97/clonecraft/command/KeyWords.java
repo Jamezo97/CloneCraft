@@ -5,6 +5,7 @@ public class KeyWords {
 	public static final KeyWord KEY_go = new KeyWord("go");
 	public static final KeyWord KEY_dig = new KeyWord("dig", "mine");
 	public static final KeyWord KEY_build = new KeyWord("build", "construct", "make");
+	public static final KeyWord KEY_chop = new KeyWord("chop", "cut");
 	public static final KeyWord KEY_attack = new KeyWord("kill", "attack", "maime", "destroy").setStrength(0.7f);
 	public static final KeyWord KEY_jump = new KeyWord("jump");
 	public static final KeyWord KEY_follow = new KeyWord("follow", "track", "lead");

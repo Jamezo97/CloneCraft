@@ -23,7 +23,7 @@ import net.minecraft.world.World;
 
 public class BlockAntenna extends Block {
 
-//	Icon topBottom;
+//	Icon topBottomTest;
 	
 	public BlockAntenna() {
 		super(Material.iron);

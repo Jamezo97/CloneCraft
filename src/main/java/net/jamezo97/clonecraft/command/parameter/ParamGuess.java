@@ -14,6 +14,7 @@ public class ParamGuess {
 	
 	public Object value;
 	
+	//Confidence level values of 0 should be confirmed by the command before execution.
 	public float confidence = 0.5f;
 	
 	public ParamGuess(Object value, float confidence){

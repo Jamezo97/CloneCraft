@@ -1,5 +1,7 @@
 package net.jamezo97.util;
 
+import net.jamezo97.clonecraft.command.parameter.ParamGuess;
+
 public class SimpleList<E> {
 	
 	Object[] data;
@@ -37,6 +39,13 @@ public class SimpleList<E> {
 			System.arraycopy(data, 0, newData, 0, data.length);
 			this.data = newData;
 		}
+	}
+
+	public E[] toArray(E[] paramGuesses) {
+		for(int a = 0; a < paramGuesses.length && a < size; a++){
+			paramGuesses[a] = (E)this.data[a];
+		}
+		return paramGuesses;
 	}
 	
 	
