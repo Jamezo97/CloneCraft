@@ -20,6 +20,7 @@ import net.jamezo97.clonecraft.clone.ai.EntityAIFollowCloneOwner;
 import net.jamezo97.clonecraft.clone.ai.EntityAIReturnGuard;
 import net.jamezo97.clonecraft.clone.ai.EntityAIShare;
 import net.jamezo97.clonecraft.clone.sync.Syncer;
+import net.jamezo97.clonecraft.command.Interpretter;
 import net.jamezo97.clonecraft.entity.EntityExplodeCollapseFX;
 import net.jamezo97.clonecraft.musics.MusicBase;
 import net.jamezo97.clonecraft.render.Renderable;
@@ -104,6 +105,8 @@ public class EntityClone extends EntityLiving implements RenderableManager{
 	Syncer watcher;
 	CloneOptions options;
 	
+	Interpretter interpretter;
+	
 	float maxScale = 1.0f;
 	
 	float lastScaleUpdate = 0.5f;
@@ -121,6 +124,14 @@ public class EntityClone extends EntityLiving implements RenderableManager{
 
 		initSounds();
 		postInit();
+		
+		if(!world.isRemote){
+			interpretter = new Interpretter(this);
+		}
+	}
+	
+	public Interpretter getInterpretter(){
+		return this.interpretter;
 	}
 	
 	public boolean isAIEnabled()
@@ -552,12 +563,13 @@ public class EntityClone extends EntityLiving implements RenderableManager{
 			selectBestDamageItem();
 			return;
 		}
-		
+		//Squared
 		int attackDist = ((attack instanceof EntityPlayer)?4:12);
 		
 		double distanceSquared = this.getDistanceSqToEntity(attack);
 		if(distanceSquared < attackDist){
 			selectBestDamageItem();
+			this.clearItemInUse();
 //			if(distanceSquared < 12){
 				if((float)attack.hurtResistantTime <= (float)attack.maxHurtResistantTime / 2.0F && attackTimer == 0){
 					this.swingItem();
@@ -659,7 +671,12 @@ public class EntityClone extends EntityLiving implements RenderableManager{
 
 	        this.playSound("random.bow", 1.0F, 1.0F / (this.getRNG().nextFloat() * 0.4F + 0.8F));
 	        this.worldObj.spawnEntityInWorld(entityarrow);
-			this.inventory.consumeInventoryItem(Items.arrow);
+	        
+	        if(EnchantmentHelper.getEnchantmentLevel(Enchantment.infinity.effectId, this.getHeldItem()) == 0){
+	        	this.inventory.consumeInventoryItem(Items.arrow);
+	        }
+	        
+			
 		}
 	}
 	

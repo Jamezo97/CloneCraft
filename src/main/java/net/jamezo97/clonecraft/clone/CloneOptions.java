@@ -25,6 +25,7 @@ public class CloneOptions {
 	public CloneOption breakBlocks;
 	public CloneOption farming;
 	public CloneOption share;
+	public CloneOption command;
 
 	public final EntityClone clone;
 
@@ -60,6 +61,7 @@ public class CloneOptions {
 		addOption(breakExtraBlocks = new CloneOption(13, "breakExtraBlocks", false, this));
 		addOption(farming = new CloneOption(14, "farm", false, this));
 		addOption(share = new CloneOption(15, "share", false, this));
+		addOption(command = new CloneOption(16, "command", true, this));
 		lastOptionData = this.toInteger();
 
 	}

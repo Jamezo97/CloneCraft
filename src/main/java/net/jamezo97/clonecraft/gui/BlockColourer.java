@@ -152,12 +152,12 @@ public class BlockColourer {
 			bigImage.setRGB(0, 0, size, size, data2, 0, size);
 			theImage = bigImage;
 			
-			try {
-				ImageIO.write(theImage, "PNG", new File("C:/Users/James/Desktop/BigOne.png"));
-			} catch (IOException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
+//			try {
+//				ImageIO.write(theImage, "PNG", new File("C:/Users/James/Desktop/BigOne.png"));
+//			} catch (IOException e) {
+//				// TODO Auto-generated catch block
+//				e.printStackTrace();
+//			}
 		}else{
 			System.out.println("Size is invalid: " + size);
 		}

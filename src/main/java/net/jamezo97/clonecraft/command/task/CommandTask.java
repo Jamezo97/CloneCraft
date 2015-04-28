@@ -1,6 +1,27 @@
 package net.jamezo97.clonecraft.command.task;
 
+import net.jamezo97.clonecraft.clone.EntityClone;
+import net.minecraft.entity.player.EntityPlayer;
+
 public abstract class CommandTask {
+	
+	/**
+	 * The poor bugger who gets to be on the front end of my AI system
+	 */
+	protected EntityClone clone = null;
+	
+	/**
+	 * The player who executed the command.
+	 */
+	protected EntityPlayer commander = null;
+	
+	public void setClone(EntityClone clone){
+		this.clone = clone;
+	}
+	
+	public void setSender(EntityPlayer commander){
+		this.commander = commander;
+	}
 
 	/**
      * Returns whether the EntityAIBase should begin execution.

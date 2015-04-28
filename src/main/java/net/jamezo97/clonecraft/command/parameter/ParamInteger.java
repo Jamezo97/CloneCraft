@@ -7,8 +7,8 @@ import net.minecraft.entity.player.EntityPlayer;
 public class ParamInteger extends Parameter{
 
 	@Override
-	public ParamGuess[] findParameters(EntityClone clone, EntityPlayer sender, String[] words) {
-		SimpleList<ParamGuess> guesses = new SimpleList<ParamGuess>();
+	public PGuess findParameters(EntityClone clone, EntityPlayer sender, String[] words) {
+		PGuess guesses = new PGuess();
 		for(int a = 0; a < words.length; a++)
 		{
 			try{
@@ -25,7 +25,7 @@ public class ParamInteger extends Parameter{
 			}catch(Exception e){}
 		}
 		
-		return guesses.size() == 0? null : guesses.toArray(new ParamGuess[guesses.size()]);
+		return guesses;
 	}
 	
 	

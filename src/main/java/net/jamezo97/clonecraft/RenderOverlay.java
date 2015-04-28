@@ -1,8 +1,8 @@
 package net.jamezo97.clonecraft;
 
-import net.jamezo97.clonecraft.clone.EntityClone;
 import net.jamezo97.clonecraft.render.Renderable;
 import net.minecraft.client.renderer.entity.RenderManager;
+import net.minecraft.entity.Entity;
 
 import org.lwjgl.opengl.GL11;
 
@@ -41,8 +41,12 @@ public class RenderOverlay implements Renderable{
 		this.maxX = maxX;
 		this.maxY = maxY;
 		this.maxZ = maxZ;
-		
-		
+	}
+	
+	float opacity = 0.2f;
+	
+	public void setOpacity(float opacity){
+		this.opacity = opacity;
 	}
 	
 
@@ -52,7 +56,7 @@ public class RenderOverlay implements Renderable{
 		
 		GL11.glColor4f(1.0f, 0.0f, 0.0f, 1.0f);//red, green, blue, alpha);
 		
-		System.out.println(red + ", " + green + ", " + blue + ", " + alpha);
+//		System.out.println(red + ", " + green + ", " + blue + ", " + alpha);
 		
 		GL11.glLineWidth(2.0f);
 		
@@ -73,7 +77,12 @@ public class RenderOverlay implements Renderable{
 		
 		GL11.glRotatef(rotate%360, 0, 1, 0);
 		
-		System.out.println(rotate);
+//		System.out.println(rotate);
+		
+		GL11.glEnable(GL11.GL_BLEND);
+		GL11.glBlendFunc(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA);
+		
+		GL11.glColor4f(red, green, blue, alpha*opacity);
 		
 		GL11.glBegin(GL11.GL_LINES);
 		GL11.glVertex3d(maxX, minY, minZ);
@@ -101,12 +110,7 @@ public class RenderOverlay implements Renderable{
 		
 		
 		
-		GL11.glEnable(GL11.GL_BLEND);
-		GL11.glBlendFunc(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA);
 		
-		
-		
-		GL11.glColor4f(red, green, blue, alpha*0.2f);
 		
 		GL11.glBegin(GL11.GL_QUADS);
 		GL11.glVertex3d(maxX, minY, minZ);

@@ -17,6 +17,10 @@ public class PGuess {
 		return null;
 	}
 	
+	public ParamGuess get(int index){
+		return guesses.get(index);
+	}
+	
 	public int size(){
 		return this.guesses.size();
 	}

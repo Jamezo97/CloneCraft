@@ -19,6 +19,10 @@ public class RenderSelection implements Renderable{
 	int minX, minY, minZ;
 	int maxX, maxY, maxZ;
 	
+	public RenderSelection(){
+		minX=minY=minZ=maxX=maxY=maxZ = 0;
+	}
+	
 	public RenderSelection(EntityClone clone) {
 		this.clone = clone;
 		renderManager = RenderManager.instance;

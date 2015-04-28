@@ -8,7 +8,7 @@ import net.minecraft.entity.player.EntityPlayer;
 public class ParamPlayer extends Parameter{
 
 	@Override
-	public ParamGuess[] findParameters(EntityClone clone, EntityPlayer sender, String[] words) {
+	public PGuess findParameters(EntityClone clone, EntityPlayer sender, String[] words) {
 		PGuess pg = new PGuess();
 		
 		List players = clone.worldObj.getEntitiesWithinAABB(EntityPlayer.class, clone.boundingBox.expand(32, 16, 32));
@@ -33,7 +33,7 @@ public class ParamPlayer extends Parameter{
 		{
 			pg.add(new ParamGuess(sender, 0f));
 		}
-		return pg.build();
+		return pg;
 	}
 
 	

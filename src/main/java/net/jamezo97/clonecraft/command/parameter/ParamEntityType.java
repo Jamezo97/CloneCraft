@@ -17,8 +17,8 @@ import net.minecraft.entity.player.EntityPlayer;
 public class ParamEntityType extends Parameter{
 
 	@Override
-	public ParamGuess[] findParameters(EntityClone clone, EntityPlayer sender, String[] words) {
-		SimpleList<ParamGuess> guesses = new SimpleList<ParamGuess>();
+	public PGuess findParameters(EntityClone clone, EntityPlayer sender, String[] words) {
+		PGuess guesses = new PGuess();
 		for(int a = 0; a < words.length; a++)
 		{
 			String word = words[a];
@@ -36,7 +36,7 @@ public class ParamEntityType extends Parameter{
 				}
 			}
 		}
-		return guesses.size()==0?null:guesses.toArray(new ParamGuess[guesses.size()]);
+		return guesses;
 	}
 	
 	private static ArrayList<KeywordToClass> entries = new ArrayList<KeywordToClass>();
@@ -47,7 +47,7 @@ public class ParamEntityType extends Parameter{
 	
 	static{
 		registerKeyword(EntityPlayer.class, "me", "him", "her", "them");
-		
+		registerKeyword(EntityClone.class, "yourself", "you");
 		for(Object objEntry : EntityList.stringToClassMapping.entrySet())
 		{
 			if(objEntry instanceof Entry)
