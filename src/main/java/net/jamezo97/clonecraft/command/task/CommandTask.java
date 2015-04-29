@@ -1,6 +1,7 @@
 package net.jamezo97.clonecraft.command.task;
 
 import net.jamezo97.clonecraft.clone.EntityClone;
+import net.jamezo97.clonecraft.command.CurrentParams;
 import net.minecraft.entity.player.EntityPlayer;
 
 public abstract class CommandTask {
@@ -58,5 +59,11 @@ public abstract class CommandTask {
      * Updates the task
      */
     public void updateTask() {}
+    
+    protected CurrentParams paramSet = null;
+
+	public void setParams(CurrentParams currentParams) {
+		this.paramSet = currentParams;
+	}
 	
 }

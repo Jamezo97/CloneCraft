@@ -2,7 +2,7 @@ package net.jamezo97.clonecraft.command.parameter;
 
 import net.jamezo97.util.SimpleList;
 
-public class PGuess {
+public class PGuess{
 	
 	public final Parameter param;
 	

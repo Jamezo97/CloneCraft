@@ -2,7 +2,7 @@ package net.jamezo97.clonecraft.command;
 
 import net.jamezo97.clonecraft.command.parameter.Parameter;
 import net.jamezo97.clonecraft.command.task.CommandTask;
-import net.jamezo97.clonecraft.command.word.VerbSet;
+import net.jamezo97.clonecraft.command.word.WordSet;
 
 /**
  * All Commands must be defined by a verb(/action). i.e. mine, dig, build, jump, kill, come
@@ -23,7 +23,7 @@ public abstract class Command {
 
 	public abstract CommandTask getCommandExecutionDelegate();
 	
-	public abstract VerbSet getRequiredVerb();
+	public abstract WordSet getRequiredVerbs();
 	
 	public Parameter hasRequiredParams(CurrentParams params){
 		Parameter objParam = params.getMissingParam(objectParams);
@@ -66,4 +66,8 @@ public abstract class Command {
 		return missingParam.getDefaultAskString();
 	}
 
+	public float getConfidenceMultiplier(){
+		return 1.0f;
+	}
+	
 }

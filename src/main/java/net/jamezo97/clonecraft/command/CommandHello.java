@@ -3,7 +3,7 @@ package net.jamezo97.clonecraft.command;
 import net.jamezo97.clonecraft.command.parameter.Parameter;
 import net.jamezo97.clonecraft.command.task.CommandTask;
 import net.jamezo97.clonecraft.command.task.CommandTaskOnce;
-import net.jamezo97.clonecraft.command.word.VerbSet;
+import net.jamezo97.clonecraft.command.word.WordSet;
 import net.minecraft.util.ChatComponentText;
 
 public class CommandHello extends Command{
@@ -51,10 +51,12 @@ public class CommandHello extends Command{
 	}
 
 	@Override
-	public VerbSet getRequiredVerb() {
-		return VerbSet.hello;
+	public WordSet getRequiredVerbs() {
+		return WordSet.hello;
 	}
 	
-	
+	public float getConfidenceMultiplier(){
+		return 0.2f;
+	}
 
 }

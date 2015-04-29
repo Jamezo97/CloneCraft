@@ -97,6 +97,7 @@ public class CloneOptions {
 			lastOptionData = clone.getCloneOptions();
 			this.fromInteger(lastOptionData);
 		}else if(this.isDirty){
+			this.isDirty = false;
 			new Handler4UpdateOptions(this.clone, this.toInteger()).sendToServer();
 		}
 	}

@@ -22,6 +22,7 @@ public class Commands {
 	static{
 		registerCommand(new CommandHello());
 		registerCommand(new CommandFollow());
+		registerCommand(new CommandKill());
 	}
 
 }

@@ -27,6 +27,10 @@ public class ParamPlayer extends Parameter{
 					
 					pg.add(new ParamGuess(ep, isSameName?0.4f:0.6f));
 				}
+				else if(words[b].toLowerCase().equals("me") || words[b].toLowerCase().equals("myself") || words[b].toLowerCase().equals("i"))
+				{
+					pg.add(new ParamGuess(sender, 0.6f));
+				}
 			}
 		}
 		if(pg.size() == 0)

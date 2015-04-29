@@ -122,6 +122,9 @@ public class CCEventListener {
 	}
 	
 	EntityClone selectedClone = null;
+	
+	
+	
 
 	@SubscribeEvent
 	public void onChat(ServerChatEvent event){

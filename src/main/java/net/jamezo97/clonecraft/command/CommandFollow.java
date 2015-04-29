@@ -1,9 +1,15 @@
 package net.jamezo97.clonecraft.command;
 
+import net.jamezo97.clonecraft.command.parameter.PGuess;
 import net.jamezo97.clonecraft.command.parameter.Parameter;
 import net.jamezo97.clonecraft.command.parameter.Parameters;
 import net.jamezo97.clonecraft.command.task.CommandTask;
-import net.jamezo97.clonecraft.command.word.VerbSet;
+import net.jamezo97.clonecraft.command.task.CommandTaskOnce;
+import net.jamezo97.clonecraft.command.word.WordSet;
+import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.util.ChatComponentText;
+import net.minecraft.util.ChatStyle;
+import net.minecraft.util.EnumChatFormatting;
 
 public class CommandFollow extends Command{
 	
@@ -14,13 +20,32 @@ public class CommandFollow extends Command{
 	}
 
 	@Override
-	public VerbSet getRequiredVerb() {
-		return VerbSet.follow;
+	public WordSet getRequiredVerbs() {
+		return WordSet.follow;
 	}
 
 	@Override
 	public CommandTask getCommandExecutionDelegate() {
-		return null;
+		return new CommandTaskOnce(){
+
+			@Override
+			public void execute() {
+				PGuess playerParam = this.paramSet.getParamValue(Parameters.p_player);
+				Object player = playerParam.getBestGuess().value;
+
+				
+				
+				if(player instanceof EntityPlayer){
+					this.clone.setOwner(((EntityPlayer)player).getCommandSenderName());
+					this.clone.getOptions().follow.set(true);
+					this.clone.getOptions().setDirty();
+					
+					((EntityPlayer)player).addChatMessage(new ChatComponentText("I'll follow you to the ends of the earth, friend.").setChatStyle(new ChatStyle().setColor(EnumChatFormatting.GREEN)));
+					
+				}
+			}
+			
+		};
 	}
 	
 	

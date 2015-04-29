@@ -16,6 +16,7 @@ import net.jamezo97.clonecraft.clone.ai.EntityAIBreakBlock;
 import net.jamezo97.clonecraft.clone.ai.EntityAICloneLookIdle;
 import net.jamezo97.clonecraft.clone.ai.EntityAICloneWalkToItems;
 import net.jamezo97.clonecraft.clone.ai.EntityAICloneWander;
+import net.jamezo97.clonecraft.clone.ai.EntityAICommand;
 import net.jamezo97.clonecraft.clone.ai.EntityAIFollowCloneOwner;
 import net.jamezo97.clonecraft.clone.ai.EntityAIReturnGuard;
 import net.jamezo97.clonecraft.clone.ai.EntityAIShare;
@@ -143,14 +144,19 @@ public class EntityClone extends EntityLiving implements RenderableManager{
 	
 	EntityAIShare aiShareItems;
 	
+	EntityAICommand aiCommand;
+	
 	public void initAI(){
 		
 		this.tasks.addTask(0, new EntityAISwimming(this));
 		this.tasks.addTask(1, new EntityAIAttackEnemies(this));
 		this.tasks.addTask(2, new EntityAIFollowCloneOwner(this));
-		this.tasks.addTask(3, aiBreakBlocks = new EntityAIBreakBlock(this, 16));
-		this.tasks.addTask(4, new EntityAICloneWalkToItems(this));
-		this.tasks.addTask(5, new EntityAIReturnGuard(this));
+		
+		this.tasks.addTask(3, aiCommand = new EntityAICommand(this));
+		
+		this.tasks.addTask(4, aiBreakBlocks = new EntityAIBreakBlock(this, 16));
+		this.tasks.addTask(5, new EntityAICloneWalkToItems(this));
+		this.tasks.addTask(6, new EntityAIReturnGuard(this));
 		
 		this.tasks.addTask(18, aiShareItems = new EntityAIShare(this));
 		this.tasks.addTask(19, new EntityAICloneLookIdle(this));
@@ -163,6 +169,10 @@ public class EntityClone extends EntityLiving implements RenderableManager{
 	
 	public EntityAIBreakBlock getBlockAI(){
 		return aiBreakBlocks;
+	}
+	
+	public EntityAICommand getCommandAI(){
+		return aiCommand;
 	}
 	
 	protected void applyEntityAttributes()

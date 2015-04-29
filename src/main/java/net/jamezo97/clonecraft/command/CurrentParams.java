@@ -57,7 +57,7 @@ public class CurrentParams {
 		{
 			for(int a = 0; a < params.length; a++)
 			{
-				if(this.isParameterSet(params[a]))
+				if(!this.isParameterSet(params[a]))
 				{
 					return params[a];
 				}
@@ -69,6 +69,10 @@ public class CurrentParams {
 	
 	public void clear(){
 		this.parameterToValue.clear();
+	}
+
+	public PGuess getParamValue(Parameter type) {
+		return this.parameterToValue.get(type);
 	}
 	
 

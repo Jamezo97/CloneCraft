@@ -10,14 +10,14 @@ import java.security.InvalidParameterException;
  * @author James
  *
  */
-public class ParamGuess {
+public class ParamGuess <E>{
 	
-	public Object value;
+	public E value;
 	
 	//Confidence level values of 0 should be confirmed by the command before execution.
 	public float confidence = 0.5f;
 	
-	public ParamGuess(Object value, float confidence){
+	public ParamGuess(E value, float confidence){
 		if(confidence < 0 || confidence > 1){
 			throw new InvalidParameterException("Confidence level must be between 0 and 1");
 		}
