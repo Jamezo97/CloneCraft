@@ -6,15 +6,16 @@ import net.jamezo97.clonecraft.command.task.CommandTask;
 import net.jamezo97.clonecraft.command.word.VerbSet;
 
 public class CommandFollow extends Command{
+	
+	
+
+	public CommandFollow() {
+		super(new Parameter[]{}, new Parameter[]{Parameters.p_player}, new Parameter[]{});
+	}
 
 	@Override
 	public VerbSet getRequiredVerb() {
 		return VerbSet.follow;
-	}
-
-	@Override
-	public Parameter[] getRequiredParameters() {
-		return new Parameter[]{Parameters.p_player};
 	}
 
 	@Override

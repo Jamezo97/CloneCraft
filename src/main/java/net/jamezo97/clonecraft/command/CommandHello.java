@@ -8,6 +8,10 @@ import net.minecraft.util.ChatComponentText;
 
 public class CommandHello extends Command{
 	
+	public CommandHello(){
+		super(null, null, null);
+	}
+	
 	String[] returnMessages = new String[]{
 			"Top of the morning to ye @PLAYER",
 			"G'Day @PLAYER",
@@ -50,10 +54,7 @@ public class CommandHello extends Command{
 	public VerbSet getRequiredVerb() {
 		return VerbSet.hello;
 	}
-
-	@Override
-	public Parameter[] getRequiredParameters() {
-		return null;
-	}
+	
+	
 
 }

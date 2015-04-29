@@ -18,7 +18,7 @@ public class ParamEntityType extends Parameter{
 
 	@Override
 	public PGuess findParameters(EntityClone clone, EntityPlayer sender, String[] words) {
-		PGuess guesses = new PGuess();
+		PGuess guesses = new PGuess(this);
 		for(int a = 0; a < words.length; a++)
 		{
 			String word = words[a];
@@ -73,6 +73,11 @@ public class ParamEntityType extends Parameter{
 			this.names = names;
 		}
 		
+	}
+
+	@Override
+	public String getDefaultAskString() {
+		return "What kind of entity? (me, you, creeper etc)";
 	}
 
 	

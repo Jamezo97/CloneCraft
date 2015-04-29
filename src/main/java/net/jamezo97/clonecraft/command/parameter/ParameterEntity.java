@@ -11,6 +11,11 @@ public class ParameterEntity extends Parameter{
 		return null;
 	}
 
+	@Override
+	public String getDefaultAskString() {
+		return "What kind of Entity? (me, you, Jamezo97, skeleton etc)";
+	}
+
 	
 	
 }

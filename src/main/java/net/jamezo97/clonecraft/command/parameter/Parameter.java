@@ -14,5 +14,7 @@ public abstract class Parameter {
 	 * @return
 	 */
 	public abstract PGuess findParameters(EntityClone clone, EntityPlayer sender, String[] preWords);
+
+	public abstract String getDefaultAskString();
 	
 }

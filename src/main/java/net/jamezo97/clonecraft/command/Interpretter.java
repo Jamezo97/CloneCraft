@@ -6,6 +6,7 @@ import java.util.Comparator;
 
 import net.jamezo97.clonecraft.clone.EntityClone;
 import net.jamezo97.clonecraft.command.parameter.PGuess;
+import net.jamezo97.clonecraft.command.parameter.ParamGuess;
 import net.jamezo97.clonecraft.command.parameter.Parameter;
 import net.jamezo97.clonecraft.command.task.CommandTask;
 import net.jamezo97.clonecraft.command.word.VerbSet;
@@ -18,7 +19,10 @@ public class Interpretter {
 	
 	Command currentCommand = null;
 	
-	CurrentParams params = null;
+	CurrentParams currentParams = null;
+	
+	Parameter missingParameter = null;
+	
 	
 	public Interpretter(EntityClone clone){
 		this.clone = clone;
@@ -30,23 +34,15 @@ public class Interpretter {
 			
 			String[] words = input.split(" ");
 			
-			/*ArrayList<VerbSet> keyWords = new ArrayList<VerbSet>();
-			for(int a = 0; a < VerbSet.size(); a++)
-			{
-				if(VerbSet.get(a).containsKeyWord(words))
-				{
-					keyWords.add(VerbSet.get(a));
-				}
-			}*/
-			
 			ArrayList<PossibleCommand> possibleCommands = new ArrayList<PossibleCommand>();
-			
-//			ArrayList<PossibleCommand> possibleCommands = new ArrayList<PossibleCommand>();
 			
 			for(int a = 0; a < Commands.size(); a++)
 			{
 				Command command = Commands.get(a);
+				CurrentParams paramSet = new CurrentParams();
+				
 				VerbSet requiredVerb = command.getRequiredVerb();
+				
 				if(requiredVerb == null/* || verbs.length == 0*/)
 				{
 					//If there are no keywords, there is nothing to distinguish
@@ -54,126 +50,189 @@ public class Interpretter {
 					System.err.println("Command must have a keyword, otherwise it's not distinguishable");
 					continue;
 				}
-				/*int found = 0;
-				
-				for(int b = 0; b < verbs.length; b++)
-				{
-					//If the keyword exists in the command string
-					if(verbs[b].containsVerb(words))
-					{
-						found++;
-					}
-				}*/
 				
 				int wordIndex;
 				
 				if((wordIndex = requiredVerb.containsVerb(words)) != -1/*found == verbs.length*/)
 				{
-					//This is a possible command.
-					//Let's find out how likely this is the command the player wants.
-					//The better the sum of the Parameter confidence levels, the better the chance
-//					possibleCommandsBase.add(command);
 					
-					Parameter[] reqParams = command.getRequiredParameters();
+					String[] objectParams = new String[wordIndex];
+					String[] subjectParams = new String[words.length-(wordIndex+1)];
+					
+					System.arraycopy(words, 0, objectParams, 0, objectParams.length);
+					System.arraycopy(words, wordIndex+1, subjectParams, 0, subjectParams.length);
 					
 					float confidence = 0f;
 					
-					if(reqParams != null)
+					int foundParams = 0;
+					
+					float[] subjectMultipliers = new float[]{0.8f, 1.0f, 1.0f};
+					float[] objectMultipliers = new float[]{1.0f, 0.8f, 1.0f};
+					
+					
+					
+					for(int b = 0; b < 3; b++)
 					{
+						Parameter[] theParams = null;
 						
-						for(int b = 0; b < reqParams.length; b++)
+						float objectMultiplier = objectMultipliers[b];
+						float subjectMultiplier = subjectMultipliers[b];
+						
+						switch(b){
+							case 0: theParams = command.getObjectParameters(); break;
+							case 1: theParams = command.getSubjectParameters(); break;
+							case 2: theParams = command.getOptionalParameters(); break;
+						}
+						
+						int requiredParams = 0;
+						
+						if(theParams != null && theParams.length > 0)
 						{
-							//This isn't a good way of determining parameter confidence.
-							//i.e. One really good parameter and 1 really bad one, will bring
-							//down the overall rating. Perhaps just choose the highest confidence level?
-							//Wait no, that's good. If it's only 50% sure, then it should only be 50% sure
-							//Not 100% sure, even though it completely doubts the second param...
-							PGuess guesses = reqParams[b].findParameters(clone, sender, words);
-							if(guesses != null)
+							if(b == 0 || b == 1)
 							{
+								requiredParams = theParams.length;
+							}
+							for(int c = 0; c < theParams.length; c++)
+							{
+								Parameter theParam = theParams[c];
+								
+								PGuess objects = theParam.findParameters(clone, sender, objectParams);
+								PGuess subjects = theParam.findParameters(clone, sender, subjectParams);
+								
+								PGuess params = new PGuess(theParam);
+								
+								objects.amplify(objectMultiplier);
+								subjects.amplify(subjectMultiplier);
+								
+								objects.addTo(params);
+								subjects.addTo(params);
+								
 								float subConfidence = 0;
 								
-								for(int c = 0; c < guesses.size(); c++)
+								for(int d = 0; d < params.size(); d++)
 								{
-									subConfidence += guesses.get(c).confidence;
+									ParamGuess guess = params.get(d);
+									subConfidence += guess.confidence * 1/(d+1);
 								}
 								
-								subConfidence /= guesses.size();
 								confidence += subConfidence;
+								
+								if(params.size() > 0)
+								{
+									requiredParams--;
+									paramSet.setParameter(theParam, params);
+								}
 							}
 						}
+						else
+						{
+							continue;
+						}
 					}
-					possibleCommands.add(new PossibleCommand(command, confidence));
+					//Valid command, parameters have been found.
+					possibleCommands.add(new PossibleCommand(command, paramSet, confidence));
 				}
 			}
 			
 			if(possibleCommands.size() == 0)
 			{
-				System.out.println("No Commands Found");
-				sender.addChatMessage(new ChatComponentText(clone.getCommandSenderName() + ": Sorry, I have no idea what you want me to do."));
-				return;
-			}
-			
-			Collections.sort(possibleCommands, new Comparator<PossibleCommand>(){
-
-				@Override
-				public int compare(PossibleCommand pc1, PossibleCommand pc2) {
-					if(pc1.chance > pc2.chance){
-						return 1;
-					}else if(pc2.chance > pc1.chance){
-						return -1;
+				if(this.currentCommand != null)
+				{
+					if(this.missingParameter != null)
+					{
+						PGuess params = this.missingParameter.findParameters(clone, sender, words);
+						
 					}
-					return 0;
+				}
+				else
+				{
+					System.out.println("No Commands Found");
+					sender.addChatMessage(new ChatComponentText(clone.getCommandSenderName() + ": Sorry, I have no idea what you want me to do."));
+					this.currentCommand = null;
+					this.currentParams = null;
+					this.missingParameter = null;
 				}
 				
-			});
+				return;
+			}
+			else
+			{
+				Collections.sort(possibleCommands, new Comparator<PossibleCommand>(){
+
+					@Override
+					public int compare(PossibleCommand pc1, PossibleCommand pc2) {
+						if(pc1.chance > pc2.chance){
+							return 1;
+						}else if(pc2.chance > pc1.chance){
+							return -1;
+						}
+						return 0;
+					}
+					
+				});
+				
+				PossibleCommand bestCommand = possibleCommands.get(0);
+				
+				Command theBestCommand = bestCommand.command;
+				
+				CurrentParams paramSet = bestCommand.paramSet;
+				
+				if(this.currentCommand != null){
+					if(this.currentCommand == theBestCommand)
+					{
+						this.currentParams.merge(paramSet);
+					}
+					else
+					{
+						this.currentCommand = theBestCommand;
+						this.currentParams = paramSet;
+					}
+				}
+				else
+				{
+					this.currentCommand = theBestCommand;
+					this.currentParams = paramSet;
+				}
+				
+				
+				this.missingParameter = theBestCommand.hasRequiredParams(paramSet);
+			}
 			
-			Command theBestCommand = ((PossibleCommand)possibleCommands.get(0)).command;
-			
-			CommandTask ct = theBestCommand.getCommandExecutionDelegate();
-			
-			clone.getLookHelper().setLookPositionWithEntity(sender, 10, clone.getVerticalFaceSpeed());
-			
-			ct.setClone(clone);
-			ct.setSender(sender);
-			
-			ct.startExecuting();
-			
-			
-//			for(int a = 0; a < possibleCommands.size(); a++)
-//			{
-//				
-//			}
-			
-			
-//			ArrayList<PossibleCommand> possibleCommands = new ArrayList<PossibleCommand>();
-//			for(int a = 0; a < possibleCommandsBase.size(); a++)
-//			{
-//				Command compossibleCommandsBase.get(a);
-//			}
-			
+			if(this.missingParameter != null)
+			{
+				String ask = this.currentCommand.getAskStringFor(this.missingParameter);
+				sender.addChatComponentMessage(new ChatComponentText(ask));
+			}
+			else if(this.currentCommand != null && this.currentParams != null)
+			{
+				this.currentCommand = null;
+				this.currentParams = null;
+				this.missingParameter = null;
+				
+				CommandTask ct = this.currentCommand.getCommandExecutionDelegate();
+				
+				clone.getLookHelper().setLookPositionWithEntity(sender, 10, clone.getVerticalFaceSpeed());
+				
+				ct.setClone(clone);
+				ct.setSender(sender);
+				
+				ct.startExecuting();
+			}
 		}
 	}
+	
 	
 	public static class PossibleCommand{
 		
 		Command command;
+		CurrentParams paramSet;
 		float chance;
 		
-		public PossibleCommand(Command command, float chance){
+		public PossibleCommand(Command command, CurrentParams paramSet, float chance){
 			this.command = command;
 			this.chance = chance;
 		}
 		
-	}
-	
-	public Command interpretCommand(String command){
-		
-		
-		
-		
-		
-		return null;
 	}
 	
 	

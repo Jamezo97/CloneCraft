@@ -11,13 +11,31 @@ import net.jamezo97.clonecraft.command.word.VerbSet;
  */
 public abstract class Command {
 	
-//	public VerbSet[] getVerbs(){
-//		return new VerbSet[]{getRequiredVerb()};
-//	}
+	Parameter[] objectParams = null;
+	Parameter[] subjectParams = null;
+	Parameter[] optionalParams = null;
 	
+	public Command(Parameter[] objectParams, Parameter[] subjectParams, Parameter[] optionalParams) {
+		this.objectParams = objectParams;
+		this.subjectParams = subjectParams;
+		this.optionalParams = optionalParams;
+	}
+
 	public abstract CommandTask getCommandExecutionDelegate();
 	
 	public abstract VerbSet getRequiredVerb();
+	
+	public Parameter hasRequiredParams(CurrentParams params){
+		Parameter objParam = params.getMissingParam(objectParams);
+		if(objParam != null)
+		{
+			return objParam;
+		}
+		Parameter subParam = params.getMissingParam(subjectParams);
+		return subParam;
+	}
+	
+	
 	
 	/**
 	 * If these words are found in the command string, then it is more likely that this command is to be chosen
@@ -28,6 +46,24 @@ public abstract class Command {
 		return null;
 	}
 	
-	public abstract Parameter[] getRequiredParameters();
+	/**
+	 * Gets the Parameters that define the subject of the command. i.e. Go kill some creepers 
+	 * @return
+	 */
+	public Parameter[] getSubjectParameters(){
+		return subjectParams;
+	}
+	
+	public Parameter[] getOptionalParameters(){
+		return optionalParams;
+	}
+	
+	public Parameter[] getObjectParameters(){
+		return objectParams;
+	}
+
+	public String getAskStringFor(Parameter missingParam) {
+		return missingParam.getDefaultAskString();
+	}
 
 }
