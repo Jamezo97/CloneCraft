@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Map.Entry;
 
 import net.jamezo97.clonecraft.clone.EntityClone;
+import net.jamezo97.clonecraft.command.word.WordSet;
 import net.jamezo97.util.SimpleList;
 import net.minecraft.entity.EntityList;
 import net.minecraft.entity.player.EntityPlayer;
@@ -29,7 +30,7 @@ public class ParamEntityType extends Parameter{
 				
 				for(int c = 0; c < entry.names.length; c++)
 				{
-					if(entry.names[c].equals(word))
+					if(WordSet.areWordsSimilar(entry.names[c], word, true))
 					{
 						guesses.add(new ParamGuess(entry.clazz, 0.5f));
 					}
@@ -47,7 +48,7 @@ public class ParamEntityType extends Parameter{
 	
 	static{
 		registerKeyword(EntityPlayer.class, "me", "him", "her", "them");
-		registerKeyword(EntityClone.class, "yourself", "you");
+		registerKeyword(EntityClone.class, "yourself");
 		for(Object objEntry : EntityList.stringToClassMapping.entrySet())
 		{
 			if(objEntry instanceof Entry)

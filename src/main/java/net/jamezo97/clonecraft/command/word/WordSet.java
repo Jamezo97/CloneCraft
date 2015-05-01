@@ -2,6 +2,8 @@ package net.jamezo97.clonecraft.command.word;
 
 import java.util.ArrayList;
 
+import scala.util.Random;
+
 public class WordSet {
 	public static final ArrayList<WordSet> registeredWordSets = new ArrayList<WordSet>();
 	
@@ -140,4 +142,27 @@ public class WordSet {
 	public float getStrength(){
 		return this.strength;
 	}
+	
+	int lastChosen = 0;
+	
+	public String getRandom(){
+		if(this.alias.length > 0)
+		{
+			int chosen = rand.nextInt(this.alias.length);
+			
+			if(chosen == lastChosen)
+			{
+				chosen++;
+				if(chosen >= this.alias.length)
+				{
+					chosen = 0;
+				}
+			}
+			
+			return this.alias[lastChosen=chosen];
+		}
+		return "";
+	}
+	
+	private static Random rand = new Random();
 }

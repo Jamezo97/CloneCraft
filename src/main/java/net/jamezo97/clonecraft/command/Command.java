@@ -25,6 +25,19 @@ public abstract class Command {
 	
 	public abstract WordSet getRequiredVerbs();
 	
+	private int id = 0;
+	
+	public Command setId(int id){
+		this.id = id;
+		return this;
+	}
+	
+	public int getId(){
+		return this.id;
+	}
+	
+	
+	
 	public Parameter hasRequiredParams(CurrentParams params){
 		Parameter objParam = params.getMissingParam(objectParams);
 		if(objParam != null)

@@ -21,7 +21,10 @@ import net.jamezo97.clonecraft.clone.ai.EntityAIFollowCloneOwner;
 import net.jamezo97.clonecraft.clone.ai.EntityAIReturnGuard;
 import net.jamezo97.clonecraft.clone.ai.EntityAIShare;
 import net.jamezo97.clonecraft.clone.sync.Syncer;
+import net.jamezo97.clonecraft.command.Command;
+import net.jamezo97.clonecraft.command.Commands;
 import net.jamezo97.clonecraft.command.Interpretter;
+import net.jamezo97.clonecraft.command.task.CommandTask;
 import net.jamezo97.clonecraft.entity.EntityExplodeCollapseFX;
 import net.jamezo97.clonecraft.musics.MusicBase;
 import net.jamezo97.clonecraft.render.Renderable;
@@ -67,6 +70,7 @@ import net.minecraft.nbt.NBTTagList;
 import net.minecraft.pathfinding.PathEntity;
 import net.minecraft.potion.Potion;
 import net.minecraft.potion.PotionEffect;
+import net.minecraft.util.ChatComponentText;
 import net.minecraft.util.ChunkCoordinates;
 import net.minecraft.util.DamageSource;
 import net.minecraft.util.EntityDamageSource;
@@ -1132,6 +1136,20 @@ public class EntityClone extends EntityLiving implements RenderableManager{
 				guardPosition.posZ
 		});
 		
+		CommandTask task = this.getCommandAI().getRunningTask();
+		
+		if(task != null)
+		{
+			NBTTagCompound nbtBase = new NBTTagCompound();
+			nbtBase.setInteger("CommAITaskID", task.commandBase.getId());
+			if(task.getPlayerName() != null && task.getPlayerName().length() > 0){
+				nbtBase.setString("CommAITaskPlayer", task.getPlayerName());
+			}
+			task.saveTask(nbtBase);
+			
+			nbt.setTag("CommAITask", nbtBase);
+		}
+		
 		this.foodStats.writeNBT(nbt);
 		this.options.writeNBT(nbt);
 	}
@@ -1161,6 +1179,36 @@ public class EntityClone extends EntityLiving implements RenderableManager{
 					guardPos[2]
 					);
 		}
+
+		
+		if(nbt.hasKey("CommAITask"))
+		{
+			NBTTagCompound nbtBase = nbt.getCompoundTag("CommAITask");
+			
+			if(nbtBase.hasKey("CommAITaskID"))
+			{
+				int id = nbtBase.getInteger("CommAITaskID");
+				Command command = Commands.getCommandById(id);
+				
+				if(command != null)
+				{
+					CommandTask task = command.getCommandExecutionDelegate();
+					
+					if(task != null)
+					{
+						task.loadTask(nbtBase);
+						task.setClone(this);
+						task.setPlayerName(nbtBase.getString(""));
+						this.getCommandAI().setTask(task);
+					}
+				}
+			}
+		
+			
+			
+			
+		}
+		
 		
 		this.foodStats.readNBT(nbt);
 		this.options.readFromNBT(nbt);
@@ -1952,6 +2000,38 @@ public class EntityClone extends EntityLiving implements RenderableManager{
 	
 	
 	public final static int ID_OPTIONS = 12;
+	
+	public void say(String string, int radius)
+	{
+		ChatComponentText chat = new ChatComponentText("<" + this.getName() + "> " + string);
+		List lstPlayers = this.worldObj.getEntitiesWithinAABB(EntityPlayer.class, this.boundingBox.expand(radius, radius, radius));
+		
+		for(int a = 0; a < lstPlayers.size(); a++)
+		{
+			if(lstPlayers.get(a) instanceof EntityPlayer)
+			{
+				((EntityPlayer)lstPlayers.get(a)).addChatMessage(chat);
+			}
+		}
+	}
+
+	public void say(String string, EntityPlayer... sender) {
+		ChatComponentText chat = new ChatComponentText("<" + this.getName() + "> " + string);
+		if(sender != null){
+			for(int a = 0; a < sender.length; a++)
+			{
+				sender[a].addChatComponentMessage(chat);
+			}
+		}
+		else
+		{
+			for(int a = 0; a < this.worldObj.playerEntities.size(); a++)
+			{
+				((EntityPlayer)this.worldObj.playerEntities.get(a)).addChatMessage(chat);
+			}
+		}
+		
+	}
 
 
 	

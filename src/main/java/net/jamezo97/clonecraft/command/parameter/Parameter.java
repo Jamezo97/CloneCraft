@@ -13,7 +13,7 @@ public abstract class Parameter <E> {
 	 * @param words
 	 * @return
 	 */
-	public abstract PGuess findParameters(EntityClone clone, EntityPlayer sender, String[] preWords);
+	public abstract PGuess findParameters(EntityClone clone, EntityPlayer sender, String[] words);
 
 	public abstract String getDefaultAskString();
 	

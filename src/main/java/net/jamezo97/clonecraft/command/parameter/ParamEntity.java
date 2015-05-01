@@ -15,7 +15,7 @@ import net.minecraft.util.AxisAlignedBB;
 
 public class ParamEntity extends Parameter{
 
-	WordSet wsClone = new WordSet("you", "yourself");
+	WordSet wsClone = new WordSet("yourself");
 	WordSet wsPlayer = new WordSet("myself", "me");
 	
 	@Override

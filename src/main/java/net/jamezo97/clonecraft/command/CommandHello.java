@@ -38,7 +38,7 @@ public class CommandHello extends Command{
 
 			@Override
 			public void execute() {
-				this.commander.addChatMessage(new ChatComponentText("<" + this.clone.getCommandSenderName() + "> " + returnMessages[this.clone.getRNG().nextInt(returnMessages.length)].replace("@PLAYER", this.commander.getCommandSenderName())));
+				clone.say(returnMessages[this.clone.getRNG().nextInt(returnMessages.length)].replace("@PLAYER", this.commander.getCommandSenderName()), this.commander);
 				
 				if(this.clone.isCollidedVertically){
 					this.clone.motionY += 0.5;

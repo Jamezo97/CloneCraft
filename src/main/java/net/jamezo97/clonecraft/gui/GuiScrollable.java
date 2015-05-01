@@ -1,6 +1,7 @@
 package net.jamezo97.clonecraft.gui;
 
 
+import net.jamezo97.framebuffer.FBException;
 import net.jamezo97.framebuffer.FrameBuffer;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Gui;
@@ -20,6 +21,8 @@ public abstract class GuiScrollable extends Gui{
 
 	int xPosition, yPosition, width, height;
 
+	boolean useFrameBuffer = false;
+	
 	FrameBuffer frameBuffer;
 	
 	int scrollBarWidth;
@@ -43,8 +46,13 @@ public abstract class GuiScrollable extends Gui{
 		
 		this.setDimensions(width, height, resource, scrollBarWidth, scrollBarBorder, buttonHeight, textureSize);
 		
-		frameBuffer = new FrameBuffer((int)((width-scrollBarWidth))*2, (int)((height))*2);
-		frameBuffer.setClearColour(0x00000000);
+//		try {
+			frameBuffer = new FrameBuffer((int)((width-scrollBarWidth))*2, (int)((height))*2);
+			frameBuffer.setClearColour(0x00000000);
+//		} catch (FBException e) {
+//			useFrameBuffer = false;
+//			e.printStackTrace();
+//		}
 	}
 	
 	public GuiScrollable(int xPosition, int yPosition, int width, int height) {

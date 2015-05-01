@@ -1,12 +1,17 @@
 package net.jamezo97.framebuffer;
 
+import java.awt.Color;
+import java.awt.Font;
+import java.awt.FontMetrics;
+import java.awt.Graphics;
+import java.awt.image.BufferedImage;
 import java.nio.ByteBuffer;
 import java.nio.FloatBuffer;
 
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.ScaledResolution;
 
 import org.lwjgl.BufferUtils;
+import org.lwjgl.opengl.EXTFramebufferObject;
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL30;
 
@@ -22,6 +27,16 @@ public class FrameBuffer {
 	int GLDepthBufferId;
 	
 	public FrameBuffer(int width, int height){
+
+		checkStatus();
+		
+		if(this.FBO_TYPE == -1)
+		{
+			//Frame buffers aren't supported.. Maybe.. Throw an error?
+			//Maybe change this to a texture that just tells you it's invalid?
+//			throw new FBException("Frame Buffer's Aren't Supported!");
+		}
+		
 		this.renderWidth = width;
 		this.renderHeight = height;
 		
@@ -33,69 +48,133 @@ public class FrameBuffer {
 		
 //		System.out.println(texWidth + ", " + texHeight);
 		
-
+		ByteBuffer beginImage = null;
 		
+		if(this.FBO_TYPE == -1)
+		{
+			BufferedImage image = this.getMissingImage(texWidth, texHeight, width, height);
+			beginImage = convertedImageToByteBuffer(image);
+		}
+		
+
 		GL11.glDisable(GL11.GL_TEXTURE_2D);
 		
 		GLTexBufferId = GL11.glGenTextures();
 		GL11.glBindTexture(GL11.GL_TEXTURE_2D, GLTexBufferId);
-		GL11.glTexImage2D(GL11.GL_TEXTURE_2D, 0, GL11.GL_RGBA, texWidth, texHeight, 0, GL11.GL_RGBA, GL11.GL_UNSIGNED_BYTE, (ByteBuffer)null);
+		GL11.glTexImage2D(GL11.GL_TEXTURE_2D, 0, GL11.GL_RGBA, texWidth, texHeight, 0, GL11.GL_RGBA, GL11.GL_UNSIGNED_BYTE, beginImage);
 		GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MAG_FILTER, GL11.GL_NEAREST);
 		GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MIN_FILTER, GL11.GL_NEAREST);
 		
-		
-		GLFrameBufferId = GL30.glGenFramebuffers();
-		GL30.glBindFramebuffer(GL30.GL_FRAMEBUFFER, GLFrameBufferId);
-		
-		
-		GL30.glFramebufferTexture2D(GL30.GL_FRAMEBUFFER, GL30.GL_COLOR_ATTACHMENT0, GL11.GL_TEXTURE_2D, this.GLTexBufferId, 0);
-		
-		
-		GLDepthBufferId = GL30.glGenRenderbuffers();
-		GL30.glBindRenderbuffer(GL30.GL_RENDERBUFFER, GLDepthBufferId);
-		GL30.glRenderbufferStorage(GL30.GL_RENDERBUFFER, GL11.GL_DEPTH_COMPONENT, texWidth, texHeight);
-		GL30.glFramebufferRenderbuffer(GL30.GL_FRAMEBUFFER, GL30.GL_DEPTH_ATTACHMENT, GL30.GL_RENDERBUFFER, GLDepthBufferId);
+		if(this.FBO_TYPE == 0)
+		{
+			GLFrameBufferId = GL30.glGenFramebuffers();
+			GL30.glBindFramebuffer(GL30.GL_FRAMEBUFFER, GLFrameBufferId);
+			
+			
+			GL30.glFramebufferTexture2D(GL30.GL_FRAMEBUFFER, GL30.GL_COLOR_ATTACHMENT0, GL11.GL_TEXTURE_2D, this.GLTexBufferId, 0);
+			
+			
+			GLDepthBufferId = GL30.glGenRenderbuffers();
+			GL30.glBindRenderbuffer(GL30.GL_RENDERBUFFER, GLDepthBufferId);
+			GL30.glRenderbufferStorage(GL30.GL_RENDERBUFFER, GL11.GL_DEPTH_COMPONENT, texWidth, texHeight);
+			GL30.glFramebufferRenderbuffer(GL30.GL_FRAMEBUFFER, GL30.GL_DEPTH_ATTACHMENT, GL30.GL_RENDERBUFFER, GLDepthBufferId);
 
-		
-		
-		int status = GL30.glCheckFramebufferStatus(GL30.GL_FRAMEBUFFER);
-		try{
-			switch(status) {
-			    case GL30.GL_FRAMEBUFFER_COMPLETE:
-//			    	System.out.println("AAALLLLLLLLLLGGGGGGGGOOOOOOOOOOODDDDDDDDDDDDD!!!");
-			        break;
-				case GL30.GL_FRAMEBUFFER_INCOMPLETE_ATTACHMENT:
-				    throw new Exception("An attachment could not be bound to frame buffer object!");
-				case GL30.GL_FRAMEBUFFER_INCOMPLETE_MISSING_ATTACHMENT:
-				    throw new Exception("Attachments are missing! At least one image (texture) must be bound to the frame buffer object!");
-				case GL30.GL_FRAMEBUFFER_INCOMPLETE_DRAW_BUFFER:
-				    throw new Exception("A Draw buffer is incomplete or undefinied. All draw buffers must specify attachment points that have images attached.");
-				case GL30.GL_FRAMEBUFFER_INCOMPLETE_READ_BUFFER:
-				    throw new Exception("A Read buffer is incomplete or undefinied. All read buffers must specify attachment points that have images attached.");
-				case GL30.GL_FRAMEBUFFER_INCOMPLETE_MULTISAMPLE:
-				    throw new Exception("All images must have the same number of multisample samples.");
-				case GL30.GL_FRAMEBUFFER_UNSUPPORTED:
-				    throw new Exception("Attempt to use an unsupported format combinaton!");
-				default:
-				    throw new Exception("Unknown error while attempting to create frame buffer object!");
+			
+			
+			int status = GL30.glCheckFramebufferStatus(GL30.GL_FRAMEBUFFER);
+			try{
+				switch(status) {
+				    case GL30.GL_FRAMEBUFFER_COMPLETE:
+//				    	System.out.println("AAALLLLLLLLLLGGGGGGGGOOOOOOOOOOODDDDDDDDDDDDD!!!");
+				        break;
+					case GL30.GL_FRAMEBUFFER_INCOMPLETE_ATTACHMENT:
+					    throw new Exception("An attachment could not be bound to frame buffer object!");
+					case GL30.GL_FRAMEBUFFER_INCOMPLETE_MISSING_ATTACHMENT:
+					    throw new Exception("Attachments are missing! At least one image (texture) must be bound to the frame buffer object!");
+					case GL30.GL_FRAMEBUFFER_INCOMPLETE_DRAW_BUFFER:
+					    throw new Exception("A Draw buffer is incomplete or undefinied. All draw buffers must specify attachment points that have images attached.");
+					case GL30.GL_FRAMEBUFFER_INCOMPLETE_READ_BUFFER:
+					    throw new Exception("A Read buffer is incomplete or undefinied. All read buffers must specify attachment points that have images attached.");
+					case GL30.GL_FRAMEBUFFER_INCOMPLETE_MULTISAMPLE:
+					    throw new Exception("All images must have the same number of multisample samples.");
+					case GL30.GL_FRAMEBUFFER_UNSUPPORTED:
+					    throw new Exception("Attempt to use an unsupported format combinaton!");
+					default:
+					    throw new Exception("Unknown error while attempting to create frame buffer object!");
+				}
+			}catch(Exception e){
+				e.printStackTrace();
 			}
-		}catch(Exception e){
-			e.printStackTrace();
+			
+			
+			GL30.glBindFramebuffer(GL30.GL_FRAMEBUFFER, 1);
+			
 		}
-		
-		
-		GL30.glBindFramebuffer(GL30.GL_FRAMEBUFFER, 1);
-		
+		else if(this.FBO_TYPE == 1)
+		{
+			GLFrameBufferId = EXTFramebufferObject.glGenFramebuffersEXT();
+			EXTFramebufferObject.glBindFramebufferEXT(EXTFramebufferObject.GL_FRAMEBUFFER_EXT, GLFrameBufferId);
+			
+			
+			EXTFramebufferObject.glFramebufferTexture2DEXT(EXTFramebufferObject.GL_FRAMEBUFFER_EXT, EXTFramebufferObject.GL_COLOR_ATTACHMENT0_EXT, GL11.GL_TEXTURE_2D, this.GLTexBufferId, 0);
+			
+			
+			GLDepthBufferId = EXTFramebufferObject.glGenRenderbuffersEXT();
+			EXTFramebufferObject.glBindRenderbufferEXT(EXTFramebufferObject.GL_RENDERBUFFER_EXT, GLDepthBufferId);
+			EXTFramebufferObject.glRenderbufferStorageEXT(EXTFramebufferObject.GL_RENDERBUFFER_EXT, GL11.GL_DEPTH_COMPONENT, texWidth, texHeight);
+			EXTFramebufferObject.glFramebufferRenderbufferEXT(EXTFramebufferObject.GL_FRAMEBUFFER_EXT, EXTFramebufferObject.GL_DEPTH_ATTACHMENT_EXT, EXTFramebufferObject.GL_RENDERBUFFER_EXT, GLDepthBufferId);
+
+			
+			
+			int status = EXTFramebufferObject.glCheckFramebufferStatusEXT(EXTFramebufferObject.GL_FRAMEBUFFER_EXT);
+			try{
+				switch(status) {
+				    case EXTFramebufferObject.GL_FRAMEBUFFER_COMPLETE_EXT:
+//				    	System.out.println("AAALLLLLLLLLLGGGGGGGGOOOOOOOOOOODDDDDDDDDDDDD!!!");
+				        break;
+					case EXTFramebufferObject.GL_FRAMEBUFFER_INCOMPLETE_ATTACHMENT_EXT:
+					    throw new Exception("An attachment could not be bound to frame buffer object!");
+					case EXTFramebufferObject.GL_FRAMEBUFFER_INCOMPLETE_MISSING_ATTACHMENT_EXT:
+					    throw new Exception("Attachments are missing! At least one image (texture) must be bound to the frame buffer object!");
+					case EXTFramebufferObject.GL_FRAMEBUFFER_INCOMPLETE_DRAW_BUFFER_EXT:
+					    throw new Exception("A Draw buffer is incomplete or undefinied. All draw buffers must specify attachment points that have images attached.");
+					case EXTFramebufferObject.GL_FRAMEBUFFER_INCOMPLETE_READ_BUFFER_EXT:
+					    throw new Exception("A Read buffer is incomplete or undefinied. All read buffers must specify attachment points that have images attached.");
+					case EXTFramebufferObject.GL_FRAMEBUFFER_INCOMPLETE_FORMATS_EXT:
+					    throw new Exception("All images must have the same number of multisample samples.");
+					case EXTFramebufferObject.GL_FRAMEBUFFER_UNSUPPORTED_EXT:
+					    throw new Exception("Attempt to use an unsupported format combinaton!");
+					default:
+					    throw new Exception("Unknown error while attempting to create frame buffer object!");
+				}
+			}catch(Exception e){
+				e.printStackTrace();
+			}
+			
+			
+			EXTFramebufferObject.glBindFramebufferEXT(EXTFramebufferObject.GL_FRAMEBUFFER_EXT, 1);
+		}
 		GL11.glEnable(GL11.GL_TEXTURE_2D);
-		
 		setClearColour(0xff000000);
 	}
 	
 	public void destroy(){
 		GL11.glDeleteTextures(GLTexBufferId);
-		GL30.glDeleteRenderbuffers(GLDepthBufferId);
-		GL30.glBindFramebuffer(GL30.GL_FRAMEBUFFER, 1);
-		GL30.glDeleteFramebuffers(GLFrameBufferId);
+		
+		if(this.FBO_TYPE == 0)
+		{
+			GL30.glDeleteRenderbuffers(GLDepthBufferId);
+			GL30.glBindFramebuffer(GL30.GL_FRAMEBUFFER, 1);
+			GL30.glDeleteFramebuffers(GLFrameBufferId);
+		}
+		else if(this.FBO_TYPE == 1)
+		{
+			EXTFramebufferObject.glDeleteRenderbuffersEXT(GLDepthBufferId);
+			EXTFramebufferObject.glBindFramebufferEXT(EXTFramebufferObject.GL_FRAMEBUFFER_EXT, 1);
+			EXTFramebufferObject.glDeleteFramebuffersEXT(GLFrameBufferId);
+		}
+		
+		
 	}
 
 	
@@ -108,11 +187,26 @@ public class FrameBuffer {
 	}
 
 	public void bindFrameBuffer() {
-		GL30.glBindFramebuffer(GL30.GL_FRAMEBUFFER, GLFrameBufferId);
+		if(this.FBO_TYPE == 0)
+		{
+			GL30.glBindFramebuffer(GL30.GL_FRAMEBUFFER, GLFrameBufferId);
+		}
+		else if(this.FBO_TYPE == 1)
+		{
+			EXTFramebufferObject.glBindFramebufferEXT(EXTFramebufferObject.GL_FRAMEBUFFER_EXT, GLFrameBufferId);
+		}
 	}
 	
 	public void unbindFrameBuffer() {
-		GL30.glBindFramebuffer(GL30.GL_FRAMEBUFFER, 1);
+		if(this.FBO_TYPE == 0)
+		{
+			GL30.glBindFramebuffer(GL30.GL_FRAMEBUFFER, 1);
+		}
+		else if(this.FBO_TYPE == 1)
+		{
+			EXTFramebufferObject.glBindFramebufferEXT(EXTFramebufferObject.GL_FRAMEBUFFER_EXT, 1);
+		}
+		
 	}
 	
 	public void bindTexture() {
@@ -136,8 +230,6 @@ public class FrameBuffer {
 		GL11.glMatrixMode(GL11.GL_PROJECTION);
 		GL11.glLoadIdentity();
 		GL11.glOrtho(0.0, renderWidth, renderHeight, 0.0, -2000.0, 3000.0); 
-
-//		GL11.glOrtho(0.0, renderWidth, 0.0, renderHeight, -2000.0, 3000.0); 
 		GL11.glMatrixMode(GL11.GL_MODELVIEW);
 		GL11.glLoadIdentity();
 		GL11.glShadeModel( GL11.GL_SMOOTH );
@@ -145,13 +237,10 @@ public class FrameBuffer {
 		GL11.glDisable(GL11.GL_BLEND);
 		GL11.glScalef(1, -1.0f, 1);
 		GL11.glTranslatef(0, -this.renderHeight, 0);
-//		GL11.glDisable(GL11.GL_DEPTH_TEST);
 	}
 	
 	public void revertRender() {
 		GL11.glEnable(GL11.GL_BLEND);
-//		GL11.glEnable(GL11.GL_DEPTH_TEST);
-		
 		GL11.glViewport(0, 0, Minecraft.getMinecraft().displayWidth, Minecraft.getMinecraft().displayHeight);
 		
 		GL11.glMatrixMode(GL11.GL_PROJECTION);
@@ -160,29 +249,36 @@ public class FrameBuffer {
 		GL11.glMatrixMode(GL11.GL_MODELVIEW);
 		GL11.glLoadIdentity();
         GL11.glLoadMatrix(modelMatrix);
-        
-        
-        
-//        ScaledResolution scaledresolution = new ScaledResolution(this.mc, this.mc.displayWidth, this.mc.displayHeight);
-//        GL11.glClear(GL11.GL_DEPTH_BUFFER_BIT);
-//        GL11.glMatrixMode(GL11.GL_PROJECTION);
-//        GL11.glLoadIdentity();
-//        GL11.glOrtho(0.0D, scaledresolution.getScaledWidth_double(), scaledresolution.getScaledHeight_double(), 0.0D, 1000.0D, 3000.0D);
-//        GL11.glMatrixMode(GL11.GL_MODELVIEW);
-//        GL11.glLoadIdentity();
-//        GL11.glTranslatef(0.0F, 0.0F, -2000.0F);
+
 	}
 	
 	public void beginRender(){
-		bindFrameBuffer();
-		GL11.glPushMatrix();
-		setupRender();
+		if(FBO_TYPE != -1)
+		{
+			bindFrameBuffer();
+			GL11.glPushMatrix();
+			setupRender();
+		}
+		else
+		{
+			GL11.glPushMatrix();
+			GL11.glTranslated(0, 0, -10000);
+		}
+		
 	}
 	
 	public void endRender(){
-		revertRender();
-		GL11.glPopMatrix();
-		unbindFrameBuffer();
+		if(FBO_TYPE != -1)
+		{
+			revertRender();
+			GL11.glPopMatrix();
+			unbindFrameBuffer();
+		}
+		else
+		{
+			GL11.glPopMatrix();
+		}
+		
 	}
 
 	public float getUMax(){
@@ -202,4 +298,91 @@ public class FrameBuffer {
 		clearB = (float)(i & 0xff) / 255.0f;
 	}
 	
+	
+	public static ByteBuffer convertedImageToByteBuffer(BufferedImage image){
+		int[] pixels = image.getRGB(0, 0, image.getWidth(), image.getHeight(), new int[image.getWidth()*image.getHeight()], 0, image.getWidth());
+		
+		ByteBuffer bb = BufferUtils.createByteBuffer(image.getWidth()*image.getHeight()*4);
+		
+		for(int i = 0; i < pixels.length; i++){
+			byte a = (byte)((pixels[i] >> 24) & 0xff);
+			byte r = (byte)((pixels[i] >> 16) & 0xff);
+			byte g = (byte)((pixels[i] >> 8) & 0xff);
+			byte b = (byte)(pixels[i] & 0xff);
+			bb.put(r);
+			bb.put(g);
+			bb.put(b);
+			bb.put(a);
+		}
+		
+		bb.flip();
+		
+		return bb;
+	}
+	
+	public static BufferedImage getMissingImage(int texWidth, int texHeight, int width, int height)
+	{
+		String[] messages = new String[]{"FRAME BUFFERS", "ARE NOT SUPPORTED", "",
+				"Who ever programmed this", "should have accounted for this.", ""};
+		BufferedImage theImage = new BufferedImage(texWidth, texHeight, BufferedImage.TYPE_INT_ARGB);
+		
+		Graphics g = theImage.getGraphics();
+		
+		g.setColor(Color.MAGENTA);
+		g.fillRect(0, 0, texWidth, texHeight);
+		
+		g.setFont(new Font("Arial", Font.BOLD, 16));
+		
+		g.setColor(Color.BLACK);
+		
+		FontMetrics fm = g.getFontMetrics();
+		
+		int fontHeight = fm.getHeight();
+		
+		int beginY = (height - (messages.length * fontHeight))/2;
+		
+		
+		
+		for(int a = 0; a < messages.length; a++)
+		{
+			String message = messages[a];
+			int beginX = (width-fm.stringWidth(message))/2;
+
+			g.drawString(message, beginX, beginY + a*fontHeight);
+			
+		}
+		
+		g.dispose();
+		
+		return theImage;
+	}
+	
+	//No FrameBuffer type is supported.
+	static int FBO_TYPE = -1;
+	
+	private static boolean checkedStatus = false;
+	
+	public static void checkStatus(){
+		if(checkedStatus)
+		{
+			return;
+		}
+		checkedStatus = true;
+		
+		int code = GL30.glCheckFramebufferStatus(GL30.GL_FRAMEBUFFER);
+		if(code != GL30.GL_FRAMEBUFFER_UNSUPPORTED){
+			//Frame Buffers should be supported?
+			FBO_TYPE = 0;
+			return;
+		}
+		code = EXTFramebufferObject.glCheckFramebufferStatusEXT(EXTFramebufferObject.GL_FRAMEBUFFER_EXT);
+		if(code != EXTFramebufferObject.GL_FRAMEBUFFER_UNSUPPORTED_EXT){
+			//Frame Buffer Objects should be supported?
+			FBO_TYPE = 1;
+			return;
+		}
+		
+		//They're not supported at all!
+		FBO_TYPE = -1;
+	}
 }

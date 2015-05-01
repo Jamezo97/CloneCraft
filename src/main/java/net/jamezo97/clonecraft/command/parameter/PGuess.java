@@ -1,34 +1,27 @@
 package net.jamezo97.clonecraft.command.parameter;
 
-import net.jamezo97.util.SimpleList;
+import java.util.ArrayList;
+import java.util.Collections;
+
+import scala.Array;
+import net.minecraft.entity.EntityLivingBase;
 
 public class PGuess{
 	
 	public final Parameter param;
 	
-	
-	
-/*	@Override
-	public boolean equals(Object obj) {
-		if(obj instanceof PGuess)
-		{
-			return ((PGuess)obj).param == param;
-		}
-		if(obj instanceof Parameter)
-		{
-			return ((Parameter)obj)==param;
-		}
-		return super.equals(obj);
-	}*/
-
 	public PGuess(Parameter param){
 		this.param = param;
 	}
 	
-	public SimpleList<ParamGuess> guesses = new SimpleList<ParamGuess>();
+	public ArrayList<ParamGuess> guesses = new ArrayList<ParamGuess>();
 
 	public void add(ParamGuess p){
 		this.guesses.add(p);
+	}
+	
+	public void sort(){
+		Collections.sort(guesses);
 	}
 	
 	public ParamGuess getBestGuess(){
@@ -74,6 +67,26 @@ public class PGuess{
 	
 	public int size(){
 		return this.guesses.size();
+	}
+
+	public <E> E[] castToArray(Class<? extends E> theClass) {
+		
+		ArrayList<E> casted = new ArrayList<E>();
+		
+		for(int a = 0; a < size(); a++)
+		{
+			ParamGuess guess = get(a);
+			if(guess.value != null && theClass.isAssignableFrom(guess.value.getClass()))
+			{
+				casted.add(theClass.cast(guess.value));
+			}
+		}
+
+		E[] array = (E[]) java.lang.reflect.Array.newInstance(theClass, casted.size());
+		
+		casted.toArray(array);
+		
+		return array;
 	}
 	
 }

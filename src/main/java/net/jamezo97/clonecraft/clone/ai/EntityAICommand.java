@@ -53,6 +53,14 @@ public class EntityAICommand extends EntityAIBase{
 		}
 	}
 
+	public CommandTask getRunningTask() {
+		return theTask;
+	}
+
+	public void clear() {
+		this.theTask = null;
+	}
+
 	
 	
 }

@@ -1,28 +1,35 @@
 package net.jamezo97.clonecraft.command.task;
 
 import net.jamezo97.clonecraft.clone.EntityClone;
+import net.jamezo97.clonecraft.command.Command;
 import net.jamezo97.clonecraft.command.CurrentParams;
 import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.nbt.NBTTagCompound;
 
 public abstract class CommandTask {
+
+	protected EntityClone clone;
 	
-	/**
-	 * The poor bugger who gets to be on the front end of my AI system
-	 */
-	protected EntityClone clone = null;
+	protected String commanderName;
 	
-	/**
-	 * The player who executed the command.
-	 */
-	protected EntityPlayer commander = null;
+	public final Command commandBase;
+	
+	public CommandTask(Command commandBase) {
+		this.commandBase = commandBase;
+	}
 	
 	public void setClone(EntityClone clone){
 		this.clone = clone;
 	}
 	
-	public void setSender(EntityPlayer commander){
-		this.commander = commander;
+	public void setPlayerName(String name){
+		this.commanderName = name;
 	}
+	
+	public String getPlayerName(){
+		return this.commanderName;
+	}
+
 
 	/**
      * Returns whether the EntityAIBase should begin execution.
@@ -60,10 +67,12 @@ public abstract class CommandTask {
      */
     public void updateTask() {}
     
-    protected CurrentParams paramSet = null;
-
-	public void setParams(CurrentParams currentParams) {
-		this.paramSet = currentParams;
-	}
+	
+	public abstract void taskInit(EntityClone clone, EntityPlayer sender, CurrentParams params);
+	
+	public abstract void saveTask(NBTTagCompound nbt);
+	
+	public abstract void loadTask(NBTTagCompound nbt);
+	
 	
 }

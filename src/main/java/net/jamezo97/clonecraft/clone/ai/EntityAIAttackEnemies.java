@@ -69,7 +69,7 @@ public class EntityAIAttackEnemies extends EntityAIBase {
 	
 	@Override
 	public void updateTask() {
-		if(clone.getAttackTarget().isEntityAlive()){
+		if(clone.getAttackTarget() != null && clone.getAttackTarget().isEntityAlive()){
 			if(clone.getRNG().nextInt(10) == 0){
 				EntityLivingBase attack = this.getClosestEntityToAttackExcluding(null);
 				if(attack != null && attack != clone.getAttackTarget()){

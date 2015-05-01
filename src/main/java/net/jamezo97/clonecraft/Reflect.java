@@ -4,12 +4,15 @@ import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.particle.EffectRenderer;
 import net.minecraft.client.renderer.entity.Render;
 import net.minecraft.client.renderer.texture.TextureManager;
 import net.minecraft.client.resources.IResourceManager;
+import net.minecraft.entity.EntityList;
 import net.minecraft.entity.ai.EntityAINearestAttackableTarget;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.Session;
@@ -18,6 +21,8 @@ import cpw.mods.fml.relauncher.SideOnly;
 
 public class Reflect {
 
+	
+	public static Map EntityList_classToIDMapping = null;
 
 	public static Method Render_getEntityTexture;
 	
@@ -48,6 +53,14 @@ public class Reflect {
 		if(!commonLoaded){
 			commonLoaded = true;
 			EntityAINearestAttackableTarget_targetClass = getFieldByType(EntityAINearestAttackableTarget.class, Class.class, 0);
+			try {
+				EntityList_classToIDMapping = (Map)getFieldByMapValueTypes(EntityList.class, null, Class.class, Integer.class).get(null);
+			} catch (IllegalArgumentException e) {
+				e.printStackTrace();
+			} catch (IllegalAccessException e) {
+				e.printStackTrace();
+			}
+			System.out.println("I GOT THIS:" + EntityList_classToIDMapping);
 		}
 	}
 	
@@ -123,15 +136,39 @@ public class Reflect {
 		return null;
 	}
 	
-/*	public static Field getFieldViaMapValueTypes(Class from, Object instance, Class keyType, Class valueType, int index){
+	public static Field getFieldByMapValueTypes(Class from, Object instance, Class keyType, Class valueType){
 		Field[] fields = from.getDeclaredFields();
-		for(int a = 0; a < fields.length; a++){
+		for(int a = 0; a < fields.length; a++)
+		{
 			Field f = fields[a];
-			if(f.)
+			if(Map.class.isAssignableFrom(f.getType()))
+			{
+				f.setAccessible(true);
+				try {
+					Map map = (Map)f.get(instance);
+					Object entry = map.entrySet().iterator().next();
+					if(entry instanceof Entry)
+					{
+						Entry theEntry = (Entry)entry;
+						if(theEntry.getKey() != null && theEntry.getValue() != null)
+						{
+							if(keyType.isAssignableFrom(theEntry.getKey().getClass()) &&
+									valueType.isAssignableFrom(theEntry.getValue().getClass()))
+							{
+								return f;
+							}
+						}
+					}
+				} catch (IllegalArgumentException e) {
+					e.printStackTrace();
+				} catch (IllegalAccessException e) {
+					e.printStackTrace();
+				}
+			}
 		}
 		return null;
 	}
-	*/
+	
 	public static Method getMethodViaReturnType(Class from, Class returnType, int index){
 		Method[] methods = from.getDeclaredMethods();
 		for(int a = 0; a < methods.length; a++){

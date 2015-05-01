@@ -10,7 +10,7 @@ import java.security.InvalidParameterException;
  * @author James
  *
  */
-public class ParamGuess <E>{
+public class ParamGuess <E> implements Comparable<ParamGuess>{
 	
 	public E value;
 	
@@ -18,11 +18,26 @@ public class ParamGuess <E>{
 	public float confidence = 0.5f;
 	
 	public ParamGuess(E value, float confidence){
-		if(confidence < 0 || confidence > 1){
-			throw new InvalidParameterException("Confidence level must be between 0 and 1");
+		if(confidence < 0){
+			throw new InvalidParameterException("Confidence level must be non-negative");
 		}
 		this.value = value;
 		this.confidence = confidence;
 	}
+
+	@Override
+	public int compareTo(ParamGuess p) {
+		if(this.confidence > p.confidence)
+		{
+			return 1;
+		}
+		else if(this.confidence < p.confidence)
+		{
+			return -1;
+		}
+		return 0;
+	}
+	
+	
 
 }

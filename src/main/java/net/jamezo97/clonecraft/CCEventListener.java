@@ -168,7 +168,7 @@ public class CCEventListener {
 					
 					for(int a = 0; a < clones.length; a++)
 					{
-						if(clones[a].getInterpretter().parseInput(command, event.player, false))
+						if(clones[a].getInterpretter().parseInput(command, event.player, true))
 						{
 							remove = true;
 						}
@@ -178,6 +178,7 @@ public class CCEventListener {
 				{
 					playerToCurrent.remove(event.player.getCommandSenderName());
 				}
+				event.setCanceled(true);
 				return;
 			}
 			

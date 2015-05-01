@@ -13,6 +13,8 @@ import net.minecraft.util.EnumChatFormatting;
 
 public class CommandFollow extends Command{
 	
+	WordSet confirmation = new WordSet("Okay!", "Okay @PLAYER!", "Okey Dokey!", "Sure can do", "I'll follow you anywhere.",
+			"Fiine. If I have to", "Okay then. Let's go!", "Sure thing.", "Let's go @PLAYER");
 	
 
 	public CommandFollow() {
@@ -40,8 +42,8 @@ public class CommandFollow extends Command{
 					this.clone.getOptions().follow.set(true);
 					this.clone.getOptions().setDirty();
 					
-					((EntityPlayer)player).addChatMessage(new ChatComponentText("I'll follow you to the ends of the earth, friend.").setChatStyle(new ChatStyle().setColor(EnumChatFormatting.GREEN)));
-					
+					this.clone.say(confirmation.getRandom().replace("@PLAYER", this.commanderName), this.commander);
+			
 				}
 			}
 			

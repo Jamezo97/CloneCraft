@@ -100,7 +100,6 @@ public class Interpretter {
 					
 					float objectMultiplier = objectMultipliers[b];
 					float subjectMultiplier = subjectMultipliers[b];
-					
 					switch(b){
 						case 0: theParams = command.getObjectParameters(); break;
 						case 1: theParams = command.getSubjectParameters(); break;
@@ -139,6 +138,8 @@ public class Interpretter {
 							}
 							
 							confidence += subConfidence;
+							
+							
 							
 							if(params.size() > 0)
 							{
@@ -181,7 +182,7 @@ public class Interpretter {
 			else
 			{
 				
-				sender.addChatMessage(new ChatComponentText(clone.getCommandSenderName() + ": Sorry, I have no idea what you want me to do."));
+				clone.say("Sorry, I have no idea what you want me to do.", sender);
 				this.currentCommand = null;
 				this.currentParams = null;
 				this.missingParameter = null;
@@ -246,12 +247,12 @@ public class Interpretter {
 			if(ct != null)
 			{
 				ct.setClone(clone);
-				ct.setSender(sender);
-				ct.setParams(this.currentParams);
-				
+				ct.setPlayerName(sender.getCommandSenderName());
+//				ct.setParams(this.currentParams);
+				ct.taskInit(clone, sender, this.currentParams);
 				if(ct instanceof CommandTaskOnce){
 					ct.startExecuting();
-					clone.getCommandAI().setTask(null);
+//					clone.getCommandAI().setTask(null);
 				}
 				else
 				{
