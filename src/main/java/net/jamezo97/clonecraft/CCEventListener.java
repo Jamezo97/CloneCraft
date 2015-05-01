@@ -1,16 +1,16 @@
 package net.jamezo97.clonecraft;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.List;
 
 import net.jamezo97.clonecraft.clone.EntityClone;
+import net.jamezo97.clonecraft.command.word.WordSet;
 import net.jamezo97.clonecraft.recipe.CloneCraftCraftingHandler;
 import net.minecraft.client.Minecraft;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLivingBase;
-import net.minecraft.entity.item.EntityItemFrame;
 import net.minecraft.util.AxisAlignedBB;
 import net.minecraft.util.MovingObjectPosition;
 import net.minecraft.util.Vec3;
@@ -123,6 +123,30 @@ public class CCEventListener {
 	
 	EntityClone selectedClone = null;
 	
+	private static class CurrentEntry{
+		
+		EntityClone[] clones = null;
+		
+		long timeoutAt = 0;
+		
+		public CurrentEntry(EntityClone[] clones, long timeoutAt){
+			this.clones = clones;
+			this.timeoutAt = timeoutAt;
+		}
+		
+		public CurrentEntry(EntityClone[] clones){
+			this(clones, System.currentTimeMillis() + 60000);
+		}
+		
+		public boolean hasTimedOut(){
+			return System.currentTimeMillis() >= timeoutAt;
+		}
+		
+		
+		
+	}
+	
+	HashMap<String, CurrentEntry> playerToCurrent = new HashMap<String, CurrentEntry>();
 	
 	
 
@@ -133,6 +157,34 @@ public class CCEventListener {
 			//CloneCraft commands begins with a backward slash
 			String command = event.message.substring(1);
 			
+			
+			if(playerToCurrent.containsKey(event.player.getCommandSenderName()))
+			{
+				CurrentEntry entry = playerToCurrent.get(event.player.getCommandSenderName());
+				boolean remove = false;
+				if(entry == null || entry.hasTimedOut())
+				{
+					EntityClone[] clones = entry.clones;
+					
+					for(int a = 0; a < clones.length; a++)
+					{
+						if(clones[a].getInterpretter().parseInput(command, event.player, false))
+						{
+							remove = true;
+						}
+					}
+				}
+				if(remove)
+				{
+					playerToCurrent.remove(event.player.getCommandSenderName());
+				}
+				return;
+			}
+			
+			
+			
+			
+			
 			List clonesRaw = event.player.worldObj.getEntitiesWithinAABB(EntityClone.class, event.player.boundingBox.expand(64, 48, 64));
 			
 			if(clonesRaw.size() == 0)
@@ -142,7 +194,37 @@ public class CCEventListener {
 			
 			EntityClone clone;
 			
+			boolean selectEveryone = false;
+			
 			ArrayList<CloneEntry> cloneEntries = null;
+			
+			{
+				int index;
+				String[] words = command.toLowerCase().replace("!", " ").replace("?", " ").replace(",", " ").split(" ");
+				for(int a = 0; a < WordSet.size(); a++)
+				{
+					
+					if((index = WordSet.get(a).containsWord(words)) != -1)
+					{
+						int point = index & 0xffff;
+						int size = (index >> 16) & 0xffff;
+						//Set the verb, and the potential subject to nothing.
+						//i.e. Only has to erase the quantity of 'everyone' from the word.
+						
+						for(int b = point; b < size && (b) < words.length; b++){
+							words[b] = "";
+						}
+					}
+				}
+				
+				WordSet pluralWordset = new WordSet("everyone", "every one", "everybody", "every body", "all of you");
+				
+				if((index = pluralWordset.containsWord(words)) != -1)
+				{
+					selectEveryone = true;
+				}
+			}
+			
 			
 			for(int a = 0; a < clonesRaw.size(); a++)
 			{
@@ -155,7 +237,11 @@ public class CCEventListener {
 						cloneEntries = new ArrayList<CloneEntry>();
 					}
 					
-					if(command.toLowerCase().contains(clone.getCommandSenderName().toLowerCase()))
+					if(selectEveryone)
+					{
+						cloneEntries.add(new CloneEntry(clone,0));
+					}
+					else if(command.toLowerCase().contains(clone.getCommandSenderName().toLowerCase()))
 					{
 //						System.out.println("Contains");
 						cloneEntries.add(new CloneEntry(clone, (8192+(float)clone.getDistanceSqToEntity(event.player))));
@@ -175,29 +261,52 @@ public class CCEventListener {
 			}
 			
 //			Collections.sort(cloneEntries, CloneEntry.cloneEntryCompare);
-			
-			float largest = 0f;
-			
-			EntityClone bestClone = null;
-			
-			for(int a = 0; a < cloneEntries.size(); a++)
+			if(selectEveryone)
 			{
-				if(bestClone == null)
+				float largest = 0f;
+				
+				EntityClone[] bestClones = new EntityClone[cloneEntries.size()];
+				boolean success = false;
+				for(int a = 0; a < cloneEntries.size(); a++)
 				{
-					largest = cloneEntries.get(a).confidence;
-					bestClone = cloneEntries.get(a).clone;
+					bestClones[a] = cloneEntries.get(a).clone;
+					if(bestClones[a].getInterpretter().parseInput(command, event.player, true)){
+						success = true;
+					}
 				}
-				else if(cloneEntries.get(a).confidence > largest)
-				{
-					largest = cloneEntries.get(a).confidence;
-					bestClone = cloneEntries.get(a).clone;
-				}
-			}
-			
-			if(bestClone != null)
-			{
-				bestClone.getInterpretter().parseInput(command, event.player);
 				event.setCanceled(true);
+				
+				if(!success)
+				{
+					playerToCurrent.put(event.player.getCommandSenderName(), new CurrentEntry(bestClones));
+				}
+			
+			}
+			else
+			{
+				float largest = 0f;
+				
+				EntityClone bestClone = null;
+				
+				for(int a = 0; a < cloneEntries.size(); a++)
+				{
+					if(bestClone == null)
+					{
+						largest = cloneEntries.get(a).confidence;
+						bestClone = cloneEntries.get(a).clone;
+					}
+					else if(cloneEntries.get(a).confidence > largest)
+					{
+						largest = cloneEntries.get(a).confidence;
+						bestClone = cloneEntries.get(a).clone;
+					}
+				}
+				
+				if(bestClone != null)
+				{
+					bestClone.getInterpretter().parseInput(command, event.player, true);
+					event.setCanceled(true);
+				}
 			}
 		}
 	}

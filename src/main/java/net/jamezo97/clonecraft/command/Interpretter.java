@@ -24,14 +24,32 @@ public class Interpretter {
 	
 	Parameter missingParameter = null;
 	
+	long timeout = 0;
+	
 	
 	public Interpretter(EntityClone clone){
 		this.clone = clone;
 	}
 	
-	public void parseInput(String input, EntityPlayer sender)
+	/**
+	 * Returns true if the command was executed succesfully.
+	 * Returns false if the command is still in progress
+	 * 
+	 * @param input
+	 * @param sender
+	 * @return
+	 */
+	public boolean parseInput(String input, EntityPlayer sender, boolean displayMessageIfNoCommand)
 	{
 //		if(currentCommand == null){
+		
+		if(System.currentTimeMillis() > timeout)
+		{
+			this.currentCommand = null;
+			this.currentParams = null;
+			this.missingParameter = null;
+		}
+		timeout = System.currentTimeMillis() + 60000;
 			
 		input = input.replace("?", "").replace("!", "").replace(".", "").replace(",", "");
 		
@@ -54,16 +72,18 @@ public class Interpretter {
 				continue;
 			}
 			
-			int wordIndex;
+			int wordResult;
 			
-			if((wordIndex = requiredVerb.containsWord(words)) != -1/*found == verbs.length*/)
+			if((wordResult = requiredVerb.containsWord(words)) != -1/*found == verbs.length*/)
 			{
+				int wordIndex = wordResult & 0xffff;
+				int wordCount = (wordResult >> 16) & 0xffff;
 				
 				String[] objectParams = new String[wordIndex];
-				String[] subjectParams = new String[words.length-(wordIndex+1)];
+				String[] subjectParams = new String[words.length-(wordIndex+wordCount)];
 				
 				System.arraycopy(words, 0, objectParams, 0, objectParams.length);
-				System.arraycopy(words, wordIndex+1, subjectParams, 0, subjectParams.length);
+				System.arraycopy(words, wordIndex+wordCount, subjectParams, 0, subjectParams.length);
 				
 				float confidence = 0f;
 				
@@ -165,7 +185,7 @@ public class Interpretter {
 				this.currentCommand = null;
 				this.currentParams = null;
 				this.missingParameter = null;
-				return;
+				return true;
 			}
 			
 			
@@ -242,7 +262,9 @@ public class Interpretter {
 			this.currentCommand = null;
 			this.currentParams = null;
 			this.missingParameter = null;
+			return true;
 		}
+		return this.currentCommand == null;
 	}
 	
 	
