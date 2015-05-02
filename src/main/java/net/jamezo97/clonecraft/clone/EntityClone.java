@@ -133,6 +133,9 @@ public class EntityClone extends EntityLiving implements RenderableManager{
 		if(!world.isRemote){
 			interpretter = new Interpretter(this);
 		}
+		
+		System.out.println("A CLONE WAS SPAWNED");
+		
 	}
 	
 	public Interpretter getInterpretter(){
@@ -293,11 +296,13 @@ public class EntityClone extends EntityLiving implements RenderableManager{
 			{
 				this.setSprinting(false);
 			}
-			else if(this.getOptions().sprint.get())
+			else if(this.getOptions().sprint.get() && !this.getNavigator().noPath())
 			{
 				this.setSprinting(true);
 			}
+			
 			this.makeOthersAttackMe();
+			
 			if(this.getOptions().guard.get())
 			{
 				if(!this.isGuardPositionSet())
@@ -401,6 +406,10 @@ public class EntityClone extends EntityLiving implements RenderableManager{
 		if(isGuardPositionSet()){
 			setPosition(this.getGuardPosition().posX+0.5, this.getGuardPosition().posY+1, this.getGuardPosition().posZ+0.5);
 		}
+	}
+	
+	public void setGuardPosition(ChunkCoordinates cc){
+		this.guardPosition = cc;
 	}
 	
 	//==================================================================================================================
@@ -917,26 +926,36 @@ public class EntityClone extends EntityLiving implements RenderableManager{
     
     @Override
 	public boolean attackEntityFrom(DamageSource damageSource, float damageAmount) {
-		if(damageSource instanceof EntityDamageSource){
-			EntityDamageSource entityDamageSource = (EntityDamageSource)damageSource;
-			
-			Entity damager = entityDamageSource.getEntity();
-			
-			if(damager instanceof EntityPlayer)
+		if(damageSource instanceof EntityDamageSource)
+		{
+			if(this.getOptions().retaliate.get() && this.getOptions().fight.get())
 			{
-				if(this.canUseThisEntity((EntityPlayer)damager))
+				EntityDamageSource entityDamageSource = (EntityDamageSource)damageSource;
+				
+				Entity damager = entityDamageSource.getEntity();
+				
+				
+				
+				if(damager instanceof EntityPlayer)
 				{
-					return super.attackEntityFrom(damageSource, damageAmount);
+					EntityPlayer player = ((EntityPlayer)damager);
+					
+					System.out.println("asdasd");
+					
+					if(player.capabilities.isCreativeMode || (this.ownerName != null && this.ownerName.equals(player.getCommandSenderName())))
+					{
+						return super.attackEntityFrom(damageSource, damageAmount);
+					}
+				}
+				if(damager instanceof EntityLivingBase)
+				{
+					if(this.canAttackEntity((EntityLivingBase)damager))
+					{
+						this.setAttackTarget((EntityLivingBase)damager);
+						this.setPath(this.getNavigator().getPathToEntityLiving(damager));
+					}
 				}
 			}
-			if(damager instanceof EntityLivingBase){
-				if(this.canAttackEntity((EntityLivingBase)damager)){
-					this.setAttackTarget((EntityLivingBase)damager);
-					this.setPath(this.getNavigator().getPathToEntityLiving(damager));
-				}
-			}
-			
-			
 		}
 		return super.attackEntityFrom(damageSource, damageAmount);
 	}
@@ -1247,7 +1266,8 @@ public class EntityClone extends EntityLiving implements RenderableManager{
 	{
 		if(hasOwner())
 		{
-			Object player;
+			return getPlayerByName(ownerName);
+			/*Object player;
 			for(int a = 0; a < worldObj.playerEntities.size(); a++)
 			{
 				player = (EntityPlayer)worldObj.playerEntities.get(a);
@@ -1255,10 +1275,25 @@ public class EntityClone extends EntityLiving implements RenderableManager{
 				{
 					return (EntityPlayer)player;
 				}
+			}*/
+		}
+		return null;
+	}
+	
+	public EntityPlayer getPlayerByName(String name)
+	{
+		Object player;
+		for(int a = 0; a < worldObj.playerEntities.size(); a++)
+		{
+			player = (EntityPlayer)worldObj.playerEntities.get(a);
+			if(player != null && player instanceof EntityPlayer && ((EntityPlayer)player).getCommandSenderName().equals(name))
+			{
+				return (EntityPlayer)player;
 			}
 		}
 		return null;
 	}
+	
 	public String getOwnerName()
 	{
 		return ownerName;
@@ -1267,7 +1302,7 @@ public class EntityClone extends EntityLiving implements RenderableManager{
 	//TODO Items & Experience
 	//==================================================================================================================
 	private void pickupNearbyItems() {
-		if(!this.isEntityAlive())
+		if(!this.isEntityAlive() || !this.getOptions().pickUp.get())
 		{
 			return;
 		}

@@ -26,6 +26,14 @@ public class EntitySpawnEgg extends EntityThrowable{
 		this.dataWatcher.updateObject(3, stack);
 		spawnedBy = username;
 	}
+	
+	public EntitySpawnEgg(World par1World, double x, double y, double z, ItemStack stack)
+    {
+        super(par1World, x, y, z);
+        this.stack = stack.copy();
+		this.dataWatcher.updateObject(3, stack);
+		spawnedBy = "";
+    }
 
 	public EntitySpawnEgg(World par1World) {
 		super(par1World);

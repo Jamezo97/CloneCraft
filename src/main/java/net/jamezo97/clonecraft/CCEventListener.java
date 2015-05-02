@@ -231,7 +231,7 @@ public class CCEventListener {
 			{
 				clone = ((EntityClone)clonesRaw.get(a));
 				
-				if(clone.getOptions().command.get() && clone.canUseThisEntity(event.player))
+				if(clone.isEntityAlive() && clone.getOptions().command.get() && clone.canUseThisEntity(event.player))
 				{
 					if(cloneEntries == null)
 					{

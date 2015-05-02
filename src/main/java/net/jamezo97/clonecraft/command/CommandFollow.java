@@ -40,6 +40,7 @@ public class CommandFollow extends Command{
 				if(player instanceof EntityPlayer){
 					this.clone.setOwner(((EntityPlayer)player).getCommandSenderName());
 					this.clone.getOptions().follow.set(true);
+					this.clone.getOptions().guard.set(false);
 					this.clone.getOptions().setDirty();
 					
 					this.clone.say(confirmation.getRandom().replace("@PLAYER", this.commanderName), this.commander);

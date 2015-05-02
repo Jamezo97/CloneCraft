@@ -1,5 +1,7 @@
 package net.minecraft.world;
 
+import java.util.Set;
+
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.particle.EntityFX;
 import net.minecraft.entity.Entity;
@@ -88,6 +90,10 @@ public class CloneCraftWorld {
 	
 	public static void onEntityAdded(WorldServer world, Entity e){
 		world.onEntityAdded(e);
+	}
+	
+	public Set getActiveChunks(World world){
+		return world.activeChunkSet;
 	}
 
 }

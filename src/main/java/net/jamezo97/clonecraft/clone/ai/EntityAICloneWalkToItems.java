@@ -1,13 +1,12 @@
 package net.jamezo97.clonecraft.clone.ai;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
 import java.util.List;
 
 import net.jamezo97.clonecraft.clone.EntityClone;
+import net.minecraft.entity.Entity;
 import net.minecraft.entity.ai.EntityAIBase;
 import net.minecraft.entity.item.EntityItem;
+import net.minecraft.entity.item.EntityXPOrb;
 
 public class EntityAICloneWalkToItems extends EntityAIBase {
 
@@ -18,18 +17,19 @@ public class EntityAICloneWalkToItems extends EntityAIBase {
 		this.setMutexBits(1);
 	}
 	
-	EntityItem itemToGet = null;
+	Entity itemToGet = null;
+	
+	int maxDist = 1;
 	
 	@Override
 	public boolean shouldExecute() {
 		boolean states = clone.getOptions().pickUp.get() && clone.getOptions().walkToItems.get() && clone.getAttackTarget() == null && clone.getNavigator().noPath();
 		if(states){
-			
-			List<EntityItem> items = clone.worldObj.getEntitiesWithinAABB(EntityItem.class, clone.boundingBox.expand(16, 8, 16));
-			if(items.size() == 0){
+			List entities = clone.worldObj.getEntitiesWithinAABBExcludingEntity(clone, clone.boundingBox.expand(16, 8, 16));
+			if(entities.size() == 0){
 				return false;
 			}
-			Collections.sort(items, new Comparator<EntityItem>(){
+			/*Collections.sort(items, new Comparator<EntityItem>(){
 
 				@Override
 				public int compare(EntityItem item1, EntityItem item2) {
@@ -42,20 +42,52 @@ public class EntityAICloneWalkToItems extends EntityAIBase {
 					}
 					return -1;
 				}
-			});
+			});*/
 			
-			for(int a = 0; a < items.size(); a++)
+			double d = Double.MAX_VALUE;
+			
+			double temp;
+			
+			itemToGet = null;
+			
+			for(int a = 0; a < entities.size(); a++)
 			{
-				EntityItem item = items.get(a);
+				Entity item = (Entity)entities.get(a);
 				
-				if(clone.canEntityBeSeen(item))
+				if(item instanceof EntityItem || item instanceof EntityXPOrb)
 				{
-					itemToGet = item;
-					return true;
+					if(clone.canEntityBeSeen(item))
+					{
+						temp=clone.getDistanceSqToEntity(item);
+						if(itemToGet == null || (temp) < d)
+						{
+							d = temp;
+							itemToGet = item;
+							if(item instanceof EntityXPOrb)
+							{
+								//Which is actually 3
+								maxDist = 9;
+							}
+							else
+							{
+								maxDist = 1;
+							}
+						}
+						
+						
+					}
 				}
 			}
+			return itemToGet != null;
 		}
 		return false;
+	}
+	
+	
+
+	@Override
+	public void resetTask() {
+		itemToGet = null;
 	}
 
 	int counter = 0;
@@ -64,10 +96,11 @@ public class EntityAICloneWalkToItems extends EntityAIBase {
 	public void updateTask() {
 	
 		
-		if(counter % 5 == 0)
+		if(counter % 10 == 0)
 		{
 			double distance = clone.getDistanceSqToEntity(itemToGet);
-			if(distance >= 1){
+			if(distance >= maxDist)
+			{
 				clone.moveTo(itemToGet.posX, itemToGet.posY, itemToGet.posZ);
 			}
 		}

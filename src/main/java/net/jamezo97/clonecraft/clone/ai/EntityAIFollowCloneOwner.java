@@ -7,6 +7,7 @@ import net.minecraft.entity.ai.EntityAIBase;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.pathfinding.PathEntity;
 import net.minecraft.util.MathHelper;
+import net.minecraft.world.World;
 
 public class EntityAIFollowCloneOwner extends EntityAIBase
 {
@@ -22,11 +23,16 @@ public class EntityAIFollowCloneOwner extends EntityAIBase
 		clone = entityMyPerson;
 		this.setMutexBits(1);
 	}
+    
 
 	@Override
 	public boolean shouldExecute() {
-		if(clone != null && clone.getOptions() != null && clone.getOptions().follow != null && clone.getOptions().follow.get() && clone.getAttackTarget() == null && clone.getOwner() != null && !clone.getOptions().guard.get()){
-			return true;
+		if(clone.getOptions().follow.get() && clone.getOwner() != null && !clone.getOptions().guard.get()){
+			EntityPlayer owner = clone.getOwner();
+			
+			double distance = clone.getDistanceSqToEntity(owner);
+			
+			return distance > 50;
 		}
 		return false;
 	}
@@ -35,13 +41,36 @@ public class EntityAIFollowCloneOwner extends EntityAIBase
 	
 	//A timer which increments whilst the player is being followed. Reset when not.
 	int followingCount = 0;
+	
+//	int runningTick = 0;
+	
+	
 
+//	@Override
+//	public void startExecuting() {
+//		runningTick = 0;
+//	}
+//
+//
+//	@Override
+//	public void resetTask() {
+//		runningTick = 0;
+//	}
+
+	//long timer = 0;
+	
 	@Override
 	public boolean continueExecuting() {
 		EntityPlayer owner = clone.getOwner();
-		if(owner != null){
+		if(owner != null)
+		{
 			double distance = clone.getDistanceSqToEntity(owner);
-			if(distance > 400){
+
+			
+			//30 blocks (30*30 = 900)
+			if(distance > 900)
+			{
+				//If Clone is really far away, teleport.
                 int var1 = MathHelper.floor_double(owner.posX) - 2;
                 int var2 = MathHelper.floor_double(owner.posZ) - 2;
                 int var3 = MathHelper.floor_double(owner.boundingBox.minY);
@@ -54,26 +83,91 @@ public class EntityAIFollowCloneOwner extends EntityAIBase
                         {
                             clone.setLocationAndAngles((double)((float)(var1 + var4) + 0.5F), (double)var3, (double)((float)(var2 + var5) + 0.5F), clone.rotationYaw, clone.rotationPitch);
                             clone.getNavigator().clearPathEntity();
+                            followingCount = 0;
                             return true;
                         }
                     }
                 }
 			}
-			else if(followingPlayer && distance < 4)
+/*			else if(followingPlayer && distance < 4)
 			{
 				//If the clone is standing too close to the player, make the clone move out of the way and stop following
 				double x = owner.posX + rand.nextInt(4)-2;
+				double y = owner.posY;
 				double z = owner.posZ + rand.nextInt(4)-2;
-				PathEntity path = clone.moveTo(x, owner.posY, z);
-				followingPlayer = false;
-			}else if(distance > 25 || (followingPlayer && (lastSetPath != clone.getNavigator().getPath() || followingCount % 10 == 0))){
-				lastSetPath = clone.moveToEntity(owner);
-				followingPlayer = true;
+				
+				int blockX = 
+				
+				while(y > 1 && clone.worldObj.doesBlockHaveSolidTopSurface(clone.worldObj, var1 + var4, var3 - 1, var2 + var5))
+				
+					
+				if(y < 1)
+				{
+					PathEntity path = clone.moveTo(x, owner.posY, z);
+					followingPlayer = false;
+				}
+				
+			}*/
+			else if(distance > 49 && followingCount++ >= 10/* || (followingPlayer && (lastSetPath != clone.getNavigator().getPath() || followingCount % 10 == 0))*/)
+			{		
+				long l1 = System.currentTimeMillis();
+				double x = owner.posX + rand.nextInt(4)-2;
+				double y = owner.posY;
+				double z = owner.posZ + rand.nextInt(4)-2;
+				
+				int blockX = (int)Math.floor(x);
+				int blockY = (int)Math.floor(y);
+				y = -1;
+				int blockZ = (int)Math.floor(z);
+				
+				for(int a = 0; a < 5; a++)
+				{
+					if(World.doesBlockHaveSolidTopSurface(clone.worldObj, blockX, blockY+a, blockZ))
+					{
+						y = blockY + a + 1;
+						break;
+					}
+					if(World.doesBlockHaveSolidTopSurface(clone.worldObj, blockX, blockY-a, blockZ))
+					{
+						y = blockY - a + 1;
+						break;
+					}
+				}
+				
+				
+				
+				if(y >= 1)
+				{
+					System.out.println(y);
+					lastSetPath = clone.moveTo(x, y, z);
+					followingCount = 0;
+					followingPlayer = true;
+				}
+				else
+				{
+					followingCount = 5;
+					followingPlayer = false;
+				}
+				long l2 = System.currentTimeMillis();
+				
+				l2 -= l1;
+				//timer += l2;
+				
+				
 			}
-			followingCount++;
+			
 		}
-		return super.continueExecuting();
+		else
+		{
+			return false;
+		}
+//		runningTick++;
+		return clone.getOptions().follow.get() && clone.getOwner() != null && !clone.getOptions().guard.get();
 	}
+
+
+	
+	
 	
 	
 

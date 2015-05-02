@@ -16,8 +16,8 @@ public class WordSet {
 	public static final WordSet jump = new WordSet(true, "jump");
 	public static final WordSet follow = new WordSet(true, "follow", "track", "lead");
 	public static final WordSet stop = new WordSet(true, "stop", "cancel", "forget", "nevermind");
-	public static final WordSet stay = new WordSet(true, "stay", "remain", "still");
-	public static final WordSet guard = new WordSet(true, "guard", "defend");
+	public static final WordSet stay = new WordSet(true, "stay", "remain", "still", "guard", "defend");
+//	public static final WordSet guard = new WordSet(true, );
 //	public static final VerbSet farm = new VerbSet("farm");
 	public static final WordSet come = new WordSet(true, "come");
 	public static final WordSet give = new WordSet(true, "give", "bring");

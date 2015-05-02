@@ -27,6 +27,7 @@ public class Parameters {
 	public static final Parameter p_integer = new ParamInteger();
 	public static final Parameter p_quantity = new ParamQuantity();
 	public static final Parameter p_courtesy = new ParameterCourtesy();
+	public static final Parameter p_position = new ParamPosition();
 	
 //	static
 //	{

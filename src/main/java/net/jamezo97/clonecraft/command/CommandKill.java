@@ -174,6 +174,9 @@ public class CommandKill extends Command{
 				if(amountToKill == 0)
 				{
 					clone.getCommandAI().clear();
+					clone.setAttackTarget(null);
+					clone.getNavigator().clearPathEntity();
+					clone.say("Okay! I'm done!", clone.getPlayerByName(this.commanderName));
 				}
 				lastAttacked = null;
 			}
