@@ -104,7 +104,7 @@ public class EntityClone extends EntityLiving implements RenderableManager{
 	
 	public PlayerTeam team = PlayerTeam.Good;
 	
-	String[] names = {"Jamezo97", "joshua576", "freefaller", "milg8", "philbrush", "CaptainSparklez", "honeydew", "BlueXephos"};
+//	String[] names = {"Jamezo97", "joshua576", "freefaller", "milg8", "philbrush", "CaptainSparklez", "honeydew", "BlueXephos"};
 	
 	public InventoryClone inventory;
 	Syncer watcher;
@@ -113,6 +113,8 @@ public class EntityClone extends EntityLiving implements RenderableManager{
 	Interpretter interpretter;
 	
 	float maxScale = 1.0f;
+	
+	float growthFactor = 0.0001f;
 	
 	float lastScaleUpdate = 0.5f;
 	float preciseScale = 0.5f;
@@ -134,7 +136,10 @@ public class EntityClone extends EntityLiving implements RenderableManager{
 			interpretter = new Interpretter(this);
 		}
 		
-		System.out.println("A CLONE WAS SPAWNED");
+		this.setName(options.female.get()?NameRegistry.getGirlName():NameRegistry.getBoyName());
+		
+		
+		
 		
 	}
 	
@@ -181,6 +186,8 @@ public class EntityClone extends EntityLiving implements RenderableManager{
 	public EntityAICommand getCommandAI(){
 		return aiCommand;
 	}
+	
+	
 	
 	protected void applyEntityAttributes()
     {
@@ -275,17 +282,14 @@ public class EntityClone extends EntityLiving implements RenderableManager{
 		return this.getHealth() > 0.0F && this.getHealth() < getMaxHealth();
 	}
 	
-	RenderSelection renderSelection = null;
+//	RenderSelection renderSelection = null;
 	
 	@Override
 	public void onUpdate()
 	{
 		super.onUpdate();
 		
-		
-		
-		
-		
+
 		
 		if(!worldObj.isRemote){
 
@@ -322,12 +326,12 @@ public class EntityClone extends EntityLiving implements RenderableManager{
 				this.getLookHelper().setLookPositionWithEntity(this.getAttackTarget(), 10, this.getVerticalFaceSpeed());
 			}
 		}else{
-			if(renderSelection == null){
+			/*if(renderSelection == null){
 				renderSelection = new RenderSelection(this);
 				CCPostRender.addRenderable(this, renderSelection);
 			}else{
 				renderSelection.tick();
-			}
+			}*/
 		}
 		this.updateScale();
 		this.updateExperience();
@@ -378,9 +382,9 @@ public class EntityClone extends EntityLiving implements RenderableManager{
 
 	public void onSpawnedBy(String spawnedBy) {
 		this.setOwner(spawnedBy);
-		if(!worldObj.isRemote){
+		/*if(!worldObj.isRemote){
 			this.setName(names[worldObj.rand.nextInt(names.length)]);
-		}
+		}*/
 	}
 	
 	//==================================================================================================================
@@ -418,8 +422,17 @@ public class EntityClone extends EntityLiving implements RenderableManager{
 	
 	//preciseScale, visibleScale
 	
+	private float lastScale = 0.5f;
+	
+	public float getInterpolatedScale(float partial)
+	{
+		return (preciseScale-lastScale)*partial + lastScale;
+	}
+	
 	public void updateScale(){
-		setScale(preciseScale + 0.0001f);
+		lastScale = preciseScale;
+		
+		setScale(preciseScale + growthFactor);
 		
 		if(lastScaleUpdate != preciseScale)
 		{
@@ -432,7 +445,11 @@ public class EntityClone extends EntityLiving implements RenderableManager{
 	public void setScale(float scale){
 		if(scale > maxScale)
 		{
-			return;
+			if(preciseScale > maxScale)
+			{
+				preciseScale = maxScale;
+			}
+			scale = maxScale;
 		}
 		double lastMaxHealth = Math.round(this.getEntityAttribute(SharedMonsterAttributes.maxHealth).getAttributeValue());
 
@@ -1495,11 +1512,14 @@ public class EntityClone extends EntityLiving implements RenderableManager{
 
 	@SideOnly(value = Side.CLIENT)
 	public void updateSkin(String username){
+		
 		ResourceLocation resource = new ResourceLocation("skins/" + username);
 		TextureManager texturemanager = Minecraft.getMinecraft().getTextureManager();
 		ITextureObject object = texturemanager.getTexture(resource);
-		if(object == null || !(object instanceof ThreadDownloadImageData)){
-			object = new ThreadDownloadImageData(null, "http://skins.minecraft.net/MinecraftSkins/" + username + ".png", defaultResource, new ImageBufferDownload());
+		
+		if(object == null || !(object instanceof ThreadDownloadImageData))
+		{
+			object = new ThreadDownloadImageData(null, "http://skins.minecraft.net/MinecraftSkins/" + username + ".png", NameRegistry.getDefaultSkinForClone(this), new ImageBufferDownload());
 			texturemanager.loadTexture(resource, object);
 		}
 		currentResource = resource;

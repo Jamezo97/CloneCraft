@@ -1,18 +1,99 @@
 package net.jamezo97.clonecraft.clone;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
+import java.util.Random;
+
+import net.minecraft.util.ResourceLocation;
 
 public class NameRegistry {
+	
+
+//	public static final ResourceLocation guiImage = new ResourceLocation("CloneCraft:textures/skins/male/male1.png");
+//	public static final ResourceLocation guiImage = new ResourceLocation("CloneCraft:textures/skins/female/female1.png");
+	
+	
+	
+	public static final ResourceLocation defaultResource = new ResourceLocation("textures/entity/steve.png");
+	
+	static Random rand = new Random();
+	
+	
+	private static ResourceLocation[] femaleSkins;
+	private static ResourceLocation[] maleSkins;
+	
+	public static ResourceLocation getDefaultSkinForClone(EntityClone clone)
+	{
+		boolean gender = clone.getOptions().female.get();
+		
+		String name = clone.getName();
+		
+		if(name != null)
+		{
+			int hash = name.hashCode();
+			
+			int sum = 0;
+			
+			for(int a = 0; a < 32; a++)
+			{
+				sum += (hash >> a)&1;
+			}
+			sum /= 2;
+			
+			if(gender)
+			{
+				return femaleSkins[sum];
+			}
+			else
+			{
+				return maleSkins[sum];
+			}
+			
+			
+		}
+		
+		return defaultResource;
+	}
 	
 	
 	private static void init()
 	{
+		int q = 16;
 		
+		for(int a = 0; a < 2; a++)
+		{
+			ResourceLocation[] list;
+			String prefix = "CloneCraft:textures/skins/";
+			
+			if(a == 0)
+			{
+				femaleSkins = new ResourceLocation[q];
+				list = femaleSkins;
+				prefix += "female/female";
+			}
+			else
+			{
+				maleSkins = new ResourceLocation[q];
+				list = maleSkins;
+				prefix += "male/male";
+			}
+
+			for(int b = 1; b <= q; b++)
+			{
+				list[b-1] = new ResourceLocation(prefix + (b) + ".png");
+			}
+		}
 	}
 	
-	String[] boyNames = new String[]{
+	public static String getGirlName()
+	{
+		return girlNames[rand.nextInt(girlNames.length)];
+	}
+	
+	public static String getBoyName()
+	{
+		return boyNames[rand.nextInt(boyNames.length)];
+	}
+	
+	static String[] boyNames = new String[]{
 			"Noah",
 			"Liam",
 			"Jacob",
@@ -1015,7 +1096,7 @@ public class NameRegistry {
 			"Darien"
 	};
 	
-	String[] girlNames = new String[]{
+	static String[] girlNames = new String[]{
 			"Sophia",
 			"Emma",
 			"Olivia",

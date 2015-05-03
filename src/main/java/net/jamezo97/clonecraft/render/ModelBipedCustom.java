@@ -72,13 +72,16 @@ public class ModelBipedCustom extends ModelBiped{
         	
             if(p_78088_1_ instanceof EntityClone){
             	EntityClone clone = (EntityClone)p_78088_1_;
+            	
+//            	System.out.println(p_78088_2_);
+            	
             	float scale = clone.getScale();
             	float max = clone.getMaxScale();
             	
-            	scaleHead = 0.5f + max/scale * (0.5f);
+            	scaleHead = 0.5f + 1/scale * (0.5f);
             	
             }
-        	if(scaleHead != 1.0f){
+        	if(scaleHead > 1.0f){
         		
         		
         		GL11.glScalef(scaleHead,  scaleHead, scaleHead);

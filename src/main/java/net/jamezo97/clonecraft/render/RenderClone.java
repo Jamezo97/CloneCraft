@@ -583,7 +583,10 @@ public class RenderClone extends RendererLivingEntity {
      */
     protected void preRenderCallback(EntityClone p_77041_1_, float p_77041_2_)
     {
-        float f1 = 0.9375F * p_77041_1_.getScale();
+    	
+//    	System.out.println(p_77041_2_);
+    	
+        float f1 = 0.9375F * p_77041_1_.getInterpolatedScale(p_77041_2_);
         GL11.glScalef(f1, f1, f1);
     }
 
