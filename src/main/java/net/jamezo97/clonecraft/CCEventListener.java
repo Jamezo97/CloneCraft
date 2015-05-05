@@ -121,10 +121,46 @@ public class CCEventListener {
 		}
 	}
 	
+	EntityPlayer shooting = null;
+	
 	@SideOnly(value = Side.CLIENT)
 	@SubscribeEvent
 	public void onClientTick(TickEvent.ClientTickEvent event){
 		CCPostRender.checkRenderables();
+		
+		if(shooting != null){
+			EntityPlayer p = shooting;
+			
+			
+			
+			Vector from = new Vector(p.posX, p.posY+ p.getEyeHeight(), p.posZ);
+			
+			for(int b = 1; b <= 1; b++)
+			{
+				Vec3 look = p.getLook(1);
+				Vector lookVector = new Vector(look.xCoord, look.yCoord, look.zCoord);
+				lookVector = lookVector.multiply(100).add(from);
+				long l1 = System.currentTimeMillis();
+				ChunkCoordinates[] ccs = RayTrace.rayTraceBlocks(from, lookVector);
+				long l2 = System.currentTimeMillis()-l1;
+				
+				System.out.println(l2);
+				World world = p.worldObj;
+				
+				for(int a = 0; a < ccs.length; a++)
+				{
+					ChunkCoordinates cc = ccs[a];
+
+					world.setBlock(cc.posX, cc.posY, cc.posZ, Blocks.air);
+				}
+			}
+			
+//			shooting = null;
+			
+		}
+		
+		
+		
 	}
 	
 	EntityClone selectedClone = null;
@@ -320,19 +356,13 @@ public class CCEventListener {
 		{
 			EntityPlayer p = event.player;
 			
-			Vector from = new Vector(p.posX, p.posY+ p.getEyeHeight(), p.posZ);
-			Vec3 look = p.getLookVec();
-			Vector lookVector = new Vector(look.xCoord, look.yCoord, look.zCoord);
-			lookVector = lookVector.multiply(500).add(from);
-			ChunkCoordinates[] ccs = RayTrace.rayTraceBlocks(from, lookVector);
-			
-			World world = p.worldObj;
-			
-			for(int a = 0; a < ccs.length; a++)
+			if(shooting == p)
 			{
-				ChunkCoordinates cc = ccs[a];
-//				System.out.println(cc.)
-				world.setBlock(cc.posX, cc.posY, cc.posZ, Blocks.air);
+				shooting = null;
+			}
+			else
+			{
+				shooting = p;
 			}
 			
 		}
