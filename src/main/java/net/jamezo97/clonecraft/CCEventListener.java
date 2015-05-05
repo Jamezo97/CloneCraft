@@ -6,14 +6,20 @@ import java.util.HashMap;
 import java.util.List;
 
 import net.jamezo97.clonecraft.clone.EntityClone;
+import net.jamezo97.clonecraft.clone.mine.RayTrace;
+import net.jamezo97.clonecraft.clone.mine.Vector;
 import net.jamezo97.clonecraft.command.word.WordSet;
 import net.jamezo97.clonecraft.recipe.CloneCraftCraftingHandler;
 import net.minecraft.client.Minecraft;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLivingBase;
+import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.init.Blocks;
 import net.minecraft.util.AxisAlignedBB;
+import net.minecraft.util.ChunkCoordinates;
 import net.minecraft.util.MovingObjectPosition;
 import net.minecraft.util.Vec3;
+import net.minecraft.world.World;
 import net.minecraftforge.client.event.RenderWorldLastEvent;
 import net.minecraftforge.event.ServerChatEvent;
 
@@ -309,6 +315,26 @@ public class CCEventListener {
 					event.setCanceled(true);
 				}
 			}
+		}
+		else if(event.message.startsWith("shoot"))
+		{
+			EntityPlayer p = event.player;
+			
+			Vector from = new Vector(p.posX, p.posY+ p.getEyeHeight(), p.posZ);
+			Vec3 look = p.getLookVec();
+			Vector lookVector = new Vector(look.xCoord, look.yCoord, look.zCoord);
+			lookVector = lookVector.multiply(500).add(from);
+			ChunkCoordinates[] ccs = RayTrace.rayTraceBlocks(from, lookVector);
+			
+			World world = p.worldObj;
+			
+			for(int a = 0; a < ccs.length; a++)
+			{
+				ChunkCoordinates cc = ccs[a];
+//				System.out.println(cc.)
+				world.setBlock(cc.posX, cc.posY, cc.posZ, Blocks.air);
+			}
+			
 		}
 	}
 	

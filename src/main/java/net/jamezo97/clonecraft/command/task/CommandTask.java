@@ -3,6 +3,7 @@ package net.jamezo97.clonecraft.command.task;
 import net.jamezo97.clonecraft.clone.EntityClone;
 import net.jamezo97.clonecraft.command.Command;
 import net.jamezo97.clonecraft.command.CurrentParams;
+import net.jamezo97.clonecraft.command.parameter.Parameter;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.nbt.NBTTagCompound;
 
@@ -67,8 +68,14 @@ public abstract class CommandTask {
      */
     public void updateTask() {}
     
-	
-	public abstract void taskInit(EntityClone clone, EntityPlayer sender, CurrentParams params);
+	/**
+	 * 
+	 * @param clone
+	 * @param sender
+	 * @param params
+	 * @return Null if command can execute, Parameter if a certain parameter is incorrect.
+	 */
+	public abstract Parameter taskInit(EntityClone clone, EntityPlayer sender, CurrentParams params);
 	
 	public abstract void saveTask(NBTTagCompound nbt);
 	

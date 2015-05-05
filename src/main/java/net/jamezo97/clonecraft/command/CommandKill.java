@@ -21,7 +21,7 @@ public class CommandKill extends Command{
 	
 
 	public CommandKill() {
-		super(null, new Parameter[]{Parameters.p_entityType/*, Parameters.p_courtesy*/}, new Parameter[]{Parameters.p_quantity/*, Parameters.p_courtesy*/});
+		super(null, new Parameter[]{Parameters.p_entityType/*, Parameters.p_courtesy*/}, new Parameter[]{Parameters.p_quantity, Parameters.p_courtesy});
 	}
 
 	@Override
@@ -87,7 +87,7 @@ public class CommandKill extends Command{
 		}
 
 		@Override
-		public void taskInit(EntityClone clone, EntityPlayer sender, CurrentParams params) {
+		public Parameter taskInit(EntityClone clone, EntityPlayer sender, CurrentParams params) {
 			PGuess p_entityType = params.getParamValue(Parameters.p_entityType);
 			
 			p_entityType.sort();
@@ -99,14 +99,25 @@ public class CommandKill extends Command{
 			
 			if(classes.length == 1 && classes[0] == EntityClone.class)
 			{
-				clone.say("Okay then!", sender);
+				PGuess p_courtesy = params.getParamValue(Parameters.p_courtesy);
+				
+				if(p_courtesy != null && p_courtesy.getBestGuess() != null)
+				{
+					clone.say("Okay then!", sender);
+					
+					
+					clone.commitSuicide();
+					
+					new Handler6KillClone(clone).sendToAllWatching(clone);
+					amountToKill = 0;
+					return null;
+				}
+				else
+				{
+					return Parameters.p_courtesy;
+				}
 				
 				
-				clone.commitSuicide();
-				
-				new Handler6KillClone(clone).sendToAllWatching(clone);
-				amountToKill = 0;
-				return;
 			}
 			else if(classes.length == 1)
 			{
@@ -131,7 +142,7 @@ public class CommandKill extends Command{
 
 			clone.say("Okay, I'll try and kill " + amountToKill + " " + name + (amountToKill>1?"s":"") + "!", sender);
 			
-			
+			return null;
 		}
 
 		

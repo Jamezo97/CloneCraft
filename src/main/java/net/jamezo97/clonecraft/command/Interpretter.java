@@ -237,7 +237,7 @@ public class Interpretter {
 		if(this.missingParameter != null)
 		{
 			String ask = this.currentCommand.getAskStringFor(this.missingParameter);
-			sender.addChatComponentMessage(new ChatComponentText(ask));
+			clone.say(ask, sender);
 		}
 		else if(this.currentCommand != null && this.currentParams != null)
 		{
@@ -249,20 +249,31 @@ public class Interpretter {
 				ct.setClone(clone);
 				ct.setPlayerName(sender.getCommandSenderName());
 //				ct.setParams(this.currentParams);
-				ct.taskInit(clone, sender, this.currentParams);
-				if(ct instanceof CommandTaskOnce){
-					ct.startExecuting();
-//					clone.getCommandAI().setTask(null);
+				Parameter missing = ct.taskInit(clone, sender, this.currentParams);
+				
+				if(missing != null)
+				{
+					String ask = this.currentCommand.getAskStringFor(this.missingParameter);
+					clone.say(ask, sender);
+					this.missingParameter = missing;
 				}
 				else
 				{
-					clone.getCommandAI().setTask(ct);
+					if(ct instanceof CommandTaskOnce)
+					{
+						ct.startExecuting();
+					}
+					else
+					{
+						clone.getCommandAI().setTask(ct);
+					}
+					this.currentCommand = null;
+					this.currentParams = null;
+					this.missingParameter = null;
 				}
+				
+				
 			}
-			
-			this.currentCommand = null;
-			this.currentParams = null;
-			this.missingParameter = null;
 			return true;
 		}
 		return this.currentCommand == null;

@@ -2,6 +2,7 @@ package net.jamezo97.clonecraft.command.task;
 
 import net.jamezo97.clonecraft.clone.EntityClone;
 import net.jamezo97.clonecraft.command.CurrentParams;
+import net.jamezo97.clonecraft.command.parameter.Parameter;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.nbt.NBTTagCompound;
 
@@ -64,11 +65,11 @@ public abstract class CommandTaskOnce extends CommandTask{
 	protected CurrentParams paramSet = null;
 	
 	@Override
-	public void taskInit(EntityClone clone, EntityPlayer commander, CurrentParams paramset) {
+	public Parameter taskInit(EntityClone clone, EntityPlayer commander, CurrentParams paramset) {
 		this.clone = clone;
 		this.commander = commander;
 		this.paramSet = paramset;
-		
+		return null;
 	}
 	
 	
