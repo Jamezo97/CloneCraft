@@ -49,6 +49,9 @@ public class FakePlayer extends EntityPlayer{
 		this.foodStats = clone.foodStats;
 	}
 	
+	public void updateFrom(EntityClone clone) {
+		this.onGround = clone.onGround;
+	}
 	
 
 	@Override
@@ -390,6 +393,10 @@ public class FakePlayer extends EntityPlayer{
 		
 		return clone.getEyeHeight();
 	}
+
+
+
+
 	
 //	@Override
 //	protected boolean isMovementBlocked() {

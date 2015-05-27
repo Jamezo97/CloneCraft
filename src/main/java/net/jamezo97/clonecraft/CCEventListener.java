@@ -31,7 +31,7 @@ import cpw.mods.fml.common.gameevent.PlayerEvent.ItemCraftedEvent;
 import cpw.mods.fml.common.gameevent.TickEvent;
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
-//import cpw.mods.fml.common.event.
+
 
 public class CCEventListener {
 	
@@ -133,18 +133,18 @@ public class CCEventListener {
 			
 			
 			
-			Vector from = new Vector(p.posX, p.posY+ p.getEyeHeight(), p.posZ);
+			Vector vecFrom = new Vector(p.posX, p.posY+ p.getEyeHeight(), p.posZ);
 			
 			for(int b = 1; b <= 1; b++)
 			{
 				Vec3 look = p.getLook(1);
-				Vector lookVector = new Vector(look.xCoord, look.yCoord, look.zCoord);
-				lookVector = lookVector.multiply(100).add(from);
-				long l1 = System.currentTimeMillis();
-				ChunkCoordinates[] ccs = RayTrace.rayTraceBlocks(from, lookVector);
-				long l2 = System.currentTimeMillis()-l1;
+				Vector vecTo = new Vector(look.xCoord, look.yCoord, look.zCoord);
+				vecTo = vecTo.multiply(5).add(vecFrom);
+//				long l1 = System.currentTimeMillis();
+				ChunkCoordinates[] ccs = RayTrace.rayTraceBlocks(vecFrom, vecTo, p.worldObj);
+//				long l2 = System.currentTimeMillis()-l1;
 				
-				System.out.println(l2);
+				
 				World world = p.worldObj;
 				
 				for(int a = 0; a < ccs.length; a++)

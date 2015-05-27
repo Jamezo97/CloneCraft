@@ -253,7 +253,7 @@ public class Interpretter {
 				
 				if(missing != null)
 				{
-					String ask = this.currentCommand.getAskStringFor(this.missingParameter);
+					String ask = this.currentCommand.getAskStringFor(missing);
 					clone.say(ask, sender);
 					this.missingParameter = missing;
 				}

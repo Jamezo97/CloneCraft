@@ -1,5 +1,7 @@
 package net.jamezo97.clonecraft.clone.mine;
 
+import net.minecraft.util.Vec3;
+
 public class Vector {
 
 	public double x, y, z;
@@ -54,6 +56,10 @@ public class Vector {
 		Vector unit = inDirectionOf.toUnitVector();
 		//Just the component multiplied by the unit verctor.
 		return unit.multiply(this.dotProduct(unit));
+	}
+
+	public static Vector fromVec3(Vec3 vec3) {
+		return new Vector(vec3.xCoord, vec3.yCoord, vec3.zCoord);
 	}
 	
 }

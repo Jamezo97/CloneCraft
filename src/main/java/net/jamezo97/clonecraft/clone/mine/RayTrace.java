@@ -2,9 +2,11 @@ package net.jamezo97.clonecraft.clone.mine;
 
 import java.util.ArrayList;
 
-import net.jamezo97.clonecraft.clone.mine.RayTrace.Collision;
+import net.minecraft.block.Block;
 import net.minecraft.entity.Entity;
+import net.minecraft.util.AxisAlignedBB;
 import net.minecraft.util.ChunkCoordinates;
+import net.minecraft.world.World;
 
 public class RayTrace {
 	
@@ -14,23 +16,23 @@ public class RayTrace {
 	 * @param v1 The Vector to start tracing from
 	 * @param v2 The Vector to trace to
 	 */
-	public static ChunkCoordinates[] rayTraceBlocks(Vector v1, Vector v2){
+	public static ChunkCoordinates[] rayTraceBlocks(Vector v1, Vector v2, World world){
 		Vector directionVector = v2.subtract(v1);
 		//Length of 1 unit.
 		Vector unitDirectionVector = directionVector.toUnitVector();
 		
 		//For every one unit of distance traveled, this is how much x, y and z change.
-		double xComp = unitDirectionVector.x;
-		double yComp = unitDirectionVector.y;
-		double zComp = unitDirectionVector.z;
+		double xPerUnit = unitDirectionVector.x; //xPerUnit
+		double yPerUnit = unitDirectionVector.y; //yPerUnit
+		double zPerUnit = unitDirectionVector.z; //zPerUnit
 		
-		double unitPerX = xComp==0?Double.MAX_VALUE:1/xComp;
-		double unitPerY = yComp==0?Double.MAX_VALUE:1/yComp;
-		double unitPerZ = zComp==0?Double.MAX_VALUE:1/zComp;
+		double unitPerX = xPerUnit==0?Double.MAX_VALUE:1/xPerUnit;
+		double unitPerY = yPerUnit==0?Double.MAX_VALUE:1/yPerUnit;
+		double unitPerZ = zPerUnit==0?Double.MAX_VALUE:1/zPerUnit;
 		
-		int xSign = xComp >= 0?1:-1;
-		int ySign = yComp >= 0?1:-1;
-		int zSign = zComp >= 0?1:-1;
+		int xSign = xPerUnit >= 0?1:-1;
+		int ySign = yPerUnit >= 0?1:-1;
+		int zSign = zPerUnit >= 0?1:-1;
 		
 		//Starting Positions
 		double x = v1.x;
@@ -39,7 +41,7 @@ public class RayTrace {
 		
 		ArrayList<ChunkCoordinates> hitBlocks = new ArrayList<ChunkCoordinates>();
 		
-		double maxAddedUnits = directionVector.getLength();
+		double maxAddedUnits = directionVector.getModulus();
 		
 		double addedUnits = 0;
 		
@@ -54,6 +56,7 @@ public class RayTrace {
 		int xCoord, yCoord, zCoord;
 		
 		ChunkCoordinates c1, c2;
+		
 		//Perform the opposite operations to begin with
 		nextWholeX = xSign==1?Math.ceil(x):Math.floor(x);
 		nextWholeY = ySign==1?Math.ceil(y):Math.floor(y);
@@ -61,22 +64,8 @@ public class RayTrace {
 		
 		boolean contains;
 		
-//		boolean allAreWhole = false;
-		
 		while(maxIterations-- > 0)
 		{
-//			nextWholeX = xSign==1?Math.ceil(x):Math.floor(x);
-//			if(nextWholeX == x){nextWholeX += xSign;}
-//			nextWholeY = ySign==1?Math.ceil(y):Math.floor(y);
-//			if(nextWholeY == y){nextWholeY += ySign;}
-//			nextWholeZ = zSign==1?Math.ceil(z):Math.floor(z);
-//			if(nextWholeZ == z){nextWholeZ += zSign;}
-			
-//			double dx = nextWholeX - x;
-//			double dy = nextWholeY - y;
-//			double dz = nextWholeZ - z;
-			
-			//System.out.println(dx + ", " + xSign + "," + (nextWholeX == x));
 			
 			//Change in the unit vector for the components to move the amount they need to reach
 			//the next wholeNumber
@@ -84,14 +73,12 @@ public class RayTrace {
 			dyu = (nextWholeY - y) * unitPerY;
 			dzu = (nextWholeZ - z) * unitPerZ;
 			
-//			int theNextType = dxu<dyu?(dxu<dzu?0:2):(dyu<dzu?1:2);
-			
 			//Change in unit vector. We want the smallest change
 			du = dxu<dyu?(dxu<dzu?dxu:dzu):(dyu<dzu?dyu:dzu);
 			
-			x += du * xComp;
-			y += du * yComp;
-			z += du * zComp;
+			x += du * xPerUnit;
+			y += du * yPerUnit;
+			z += du * zPerUnit;
 			
 			//System.out.println(addedUnits + ", " + maxAddedUnits);
 			
@@ -191,24 +178,119 @@ public class RayTrace {
 				
 			}
 			
-			/*if(!hitBlocks.contains(c1))
-			{
-				hitBlocks.add(c1);
-			}
-			if(c2 != null && !hitBlocks.contains(c2))
-			{
-				hitBlocks.add(c2);
-			}*/
-			
 		}
 		
 		if(maxIterations <= 0)
 		{
 			System.err.println("RAY TRACE BLOCKS RAN OVERTIME");
 		}
+
+		AxisAlignedBB bb = null;
 		
+		
+		//The vector goes from these points
+		double xBegin = v1.x;
+		double yBegin = v1.y;
+		double zBegin = v1.z;
+		
+		
+		for(int a = 0; a < hitBlocks.size(); a++)
+		{
+			ChunkCoordinates cc = hitBlocks.get(a);
+			
+			if(cc.posY > 255 || cc.posY < 0)
+			{
+				hitBlocks.remove(a);
+				a--;
+
+//				System.out.println("REMOVEY: " + cc.posY);
+				continue;
+			}
+			Block block = world.getBlock(cc.posX, cc.posY, cc.posZ);
+			
+			int meta = world.getBlockMetadata(cc.posX, cc.posY, cc.posZ);
+			
+			if((bb = block.getCollisionBoundingBoxFromPool(world, cc.posX, cc.posY, cc.posZ)) != null && block.canCollideCheck(meta, false))
+			{	
+				if((bb.maxX-bb.minX) == 1 && (bb.maxY-bb.minY) == 1 && (bb.maxZ-bb.minZ) == 1)
+				{
+					//It's a solid block
+					continue;
+				}
+				
+				
+				//Calculate at what times the x component will be inside the bb, the ycomp, and z comp. Then if they all overlap at some point, it intersect.
+				//The vector lengths to reach the 3 components faces of the bounding box
+//				double xuMin, xuMax, yuMin, yuMax, zuMin, zuMax;
+				
+				//			X How much x has to travel to reach the minX and maxX positions
+				//How  many units the vector needs to move to extend this far
+				double dxMax, dxMin;
+				if(unitPerX != 0)
+				{
+					double dxu1 = (bb.minX - xBegin) * unitPerX;
+					double dxu2 = (bb.maxX - xBegin) * unitPerX;
+					dxMax = Math.max(dxu1, dxu2);
+					dxMin = Math.min(dxu1, dxu2);
+				}
+				else
+				{
+					dxMax = Double.MAX_VALUE;
+					dxMin = -Double.MAX_VALUE;
+				}
+				
+				double dyMax, dyMin;
+				if(unitPerY != 0)
+				{
+					double dyu1 = (bb.minY - yBegin) * unitPerY;
+					double dyu2 = (bb.maxY - yBegin) * unitPerY;
+					dyMax = Math.max(dyu1, dyu2);
+					dyMin = Math.min(dyu1, dyu2);
+				}
+				else
+				{
+					dyMax = Double.MAX_VALUE;
+					dyMin = -Double.MAX_VALUE;
+				}
+				
+				double dzMax, dzMin;
+				if(unitPerZ != 0)
+				{
+					double dzu1 = (bb.minZ - zBegin) * unitPerZ;
+					double dzu2 = (bb.maxZ - zBegin) * unitPerZ;
+					dzMax = Math.max(dzu1, dzu2);
+					dzMin = Math.min(dzu1, dzu2);
+				}
+				else
+				{
+					dzMax = Double.MAX_VALUE;
+					dzMin = -Double.MAX_VALUE;
+				}
+				
+				double dMin = Math.max(Math.max(dxMin, dyMin), dzMin);
+				double dMax = Math.min(Math.min(dxMax, dyMax), dzMax);
+				
+				//It does collide
+				if(dMin > dMax)
+				{
+					hitBlocks.remove(a);
+					a--;
+					continue;
+				}
+			}
+			else
+			{
+				hitBlocks.remove(a);
+				a--;
+				continue;
+			}
+		}
 		return hitBlocks.toArray(new ChunkCoordinates[hitBlocks.size()]);
 	}
+	
+/*	public static boolean rayTraceBB(AxisAlignedBB aabb, Vector from, Vector to){
+		
+	}*/
 	/*public static ChunkCoordinates[] rayTraceBlocks(Vector v1, Vector v2){
 		Vector directionVector = v2.subtract(v1);
 		//Length of 1 unit.

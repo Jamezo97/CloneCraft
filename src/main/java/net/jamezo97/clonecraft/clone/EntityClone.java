@@ -1,18 +1,17 @@
 package net.jamezo97.clonecraft.clone;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map.Entry;
 import java.util.Random;
 import java.util.Set;
 
-import net.jamezo97.clonecraft.CCPostRender;
 import net.jamezo97.clonecraft.CloneCraft;
 import net.jamezo97.clonecraft.GuiHandler;
 import net.jamezo97.clonecraft.Reflect;
 import net.jamezo97.clonecraft.clone.ai.EntityAIAttackEnemies;
-import net.jamezo97.clonecraft.clone.ai.EntityAIBreakBlock;
 import net.jamezo97.clonecraft.clone.ai.EntityAICloneLookIdle;
 import net.jamezo97.clonecraft.clone.ai.EntityAICloneWalkToItems;
 import net.jamezo97.clonecraft.clone.ai.EntityAICloneWander;
@@ -20,6 +19,10 @@ import net.jamezo97.clonecraft.clone.ai.EntityAICommand;
 import net.jamezo97.clonecraft.clone.ai.EntityAIFollowCloneOwner;
 import net.jamezo97.clonecraft.clone.ai.EntityAIReturnGuard;
 import net.jamezo97.clonecraft.clone.ai.EntityAIShare;
+import net.jamezo97.clonecraft.clone.ai.block.BlockFinder;
+import net.jamezo97.clonecraft.clone.ai.block.EntityAIMine;
+import net.jamezo97.clonecraft.clone.mine.RayTrace;
+import net.jamezo97.clonecraft.clone.mine.Vector;
 import net.jamezo97.clonecraft.clone.sync.Syncer;
 import net.jamezo97.clonecraft.command.Command;
 import net.jamezo97.clonecraft.command.Commands;
@@ -30,6 +33,8 @@ import net.jamezo97.clonecraft.musics.MusicBase;
 import net.jamezo97.clonecraft.render.Renderable;
 import net.jamezo97.clonecraft.render.RenderableManager;
 import net.jamezo97.util.SimpleList;
+import net.minecraft.block.Block;
+import net.minecraft.block.material.Material;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.particle.EntitySmokeFX;
 import net.minecraft.client.renderer.ImageBufferDownload;
@@ -57,16 +62,25 @@ import net.minecraft.entity.item.EntityItem;
 import net.minecraft.entity.item.EntityXPOrb;
 import net.minecraft.entity.monster.IMob;
 import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.entity.projectile.EntityArrow;
 import net.minecraft.entity.projectile.EntityFishHook;
+import net.minecraft.init.Blocks;
 import net.minecraft.init.Items;
 import net.minecraft.item.EnumAction;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemArmor;
+import net.minecraft.item.ItemAxe;
 import net.minecraft.item.ItemFood;
+import net.minecraft.item.ItemPickaxe;
+import net.minecraft.item.ItemShears;
+import net.minecraft.item.ItemSpade;
 import net.minecraft.item.ItemStack;
+import net.minecraft.item.ItemSword;
+import net.minecraft.item.ItemTool;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.nbt.NBTTagList;
+import net.minecraft.network.Packet;
 import net.minecraft.pathfinding.PathEntity;
 import net.minecraft.potion.Potion;
 import net.minecraft.potion.PotionEffect;
@@ -152,7 +166,7 @@ public class EntityClone extends EntityLiving implements RenderableManager{
         return true;
     }
 	
-	EntityAIBreakBlock aiBreakBlocks;
+	EntityAIMine aiBreakBlocks;
 	
 	EntityAIShare aiShareItems;
 	
@@ -166,20 +180,64 @@ public class EntityClone extends EntityLiving implements RenderableManager{
 		
 		this.tasks.addTask(3, aiCommand = new EntityAICommand(this));
 		
-		this.tasks.addTask(4, aiBreakBlocks = new EntityAIBreakBlock(this, 16));
+		this.tasks.addTask(4, aiBreakBlocks = new EntityAIMine(this));
 		this.tasks.addTask(5, new EntityAICloneWalkToItems(this));
 		this.tasks.addTask(6, new EntityAIReturnGuard(this));
 		
 		this.tasks.addTask(18, aiShareItems = new EntityAIShare(this));
 		this.tasks.addTask(19, new EntityAICloneLookIdle(this));
 		this.tasks.addTask(20, new EntityAICloneWander(this, 1.0F));
+		
+		
+		/*this.aiBreakBlocks.setBlockFinder(new BlockFinder(){
+
+			@Override
+			public boolean hasNextBlock() {
+				return true;
+			}
+
+			@Override
+			public ChunkCoordinates getNextBlock(EntityAIMine ai) {
+				EntityClone clone = ai.getClone();
+				int x = (int)Math.floor(clone.posX);
+				int y = (int)Math.floor(clone.posY);
+				int z = (int)Math.floor(clone.posZ);
+				
+				y+=3;
+				
+				clone.worldObj.setBlock(x, y, z, Blocks.diamond_block);
+				return new ChunkCoordinates(x, y, z);
+			}
+
+			@Override
+			public void onFinished(EntityAIMine entityAI) {
+			}
+
+			@Override
+			public boolean mustBeCloseToBreak() {
+				return false;
+			}
+
+			@Override
+			public void saveState(NBTTagCompound nbt) {
+				// TODO Auto-generated method stub
+				
+			}
+			@Override
+			public void loadState(NBTTagCompound nbt) {
+				// TODO Auto-generated method stub
+				
+			}
+			@Override
+			public void cantBreakBlock(ChunkCoordinates cc, Block break_block) {}
+		});*/
 	}
 	
 	public EntityAIShare getShareAI(){
 		return aiShareItems;
 	}
 	
-	public EntityAIBreakBlock getBlockAI(){
+	public EntityAIMine getBlockAI(){
 		return aiBreakBlocks;
 	}
 	
@@ -325,6 +383,10 @@ public class EntityClone extends EntityLiving implements RenderableManager{
 			if(this.getAttackTarget() != null){
 				this.getLookHelper().setLookPositionWithEntity(this.getAttackTarget(), 10, this.getVerticalFaceSpeed());
 			}
+			
+			this.getPlayerInterface().updateFrom(this);
+			
+			
 		}else{
 			/*if(renderSelection == null){
 				renderSelection = new RenderSelection(this);
@@ -1066,7 +1128,267 @@ public class EntityClone extends EntityLiving implements RenderableManager{
         	}
     	}
     }
+    
+    
+	//==================================================================================================================
+	//TODO Block Breaking / Building
+	//==================================================================================================================
+	
+    Material[] pickaxeMaterials = new Material[]{
+    	Material.anvil,
+    	Material.iron,
+    	Material.piston,
+    	Material.rock
+    };
+    
+    Material[] shovelMaterials = new Material[]{
+    	Material.clay,
+    	Material.craftedSnow,
+    	Material.grass,
+    	Material.ground,
+    	Material.sand,
+    	Material.snow
+    };
+    
+    Material[] axeMaterials = new Material[]{
+    	Material.plants,
+    	Material.wood
+    };
+    
+    Material[] swordMaterials = new Material[]{
+    	Material.web
+    };
+    
+    Material[] shearMaterials = new Material[]{
+    	Material.cactus,
+    	Material.sponge,
+    	Material.leaves,
+    	Material.cloth
+    };
+    
+    /**
+     * Tries to select the best item/tool in the clone's inventory for the given block
+     * If it finds a tool, that is capable of harvesting the block, then it returns true.
+     * Otherwise false
+     * @param block The block you wish to break
+     * @return True if the clone can currently break the block.
+     */
+    public boolean selectBestItemForBlock(Block block){
+    	if(block == Blocks.air)
+    	{
+    		return true;
+    	}
+    	Material material = block.getMaterial();
+    	if(material.isLiquid())
+    	{
+    		return true;
+    	}
+    	
+    	ArrayList<ItemSelectEntry> itemList = new ArrayList<ItemSelectEntry>();
+    	if(isMaterial(pickaxeMaterials, material))
+    	{
+    		ArrayList<ItemSelectEntry<ItemPickaxe>> list = this.selectItemByClass(ItemPickaxe.class);
+    		for(int a = 0; a < list.size(); a++){itemList.add(list.get(a));}
+    	}
+    	else if(isMaterial(axeMaterials, material))
+    	{
+    		ArrayList<ItemSelectEntry<ItemAxe>> list = this.selectItemByClass(ItemAxe.class);
+    		for(int a = 0; a < list.size(); a++){itemList.add(list.get(a));}
+    	}
+    	else if(isMaterial(shovelMaterials, material))
+    	{
+    		ArrayList<ItemSelectEntry<ItemSpade>> list = this.selectItemByClass(ItemSpade.class);
+    		for(int a = 0; a < list.size(); a++){itemList.add(list.get(a));}
+    	}
+    	else if(isMaterial(swordMaterials, material))
+    	{
+    		ArrayList<ItemSelectEntry<ItemSword>> list = this.selectItemByClass(ItemSword.class);
+    		for(int a = 0; a < list.size(); a++){itemList.add(list.get(a));}
+    	}
+    	else if(isMaterial(shearMaterials, material))
+    	{
+    		ArrayList<ItemSelectEntry<ItemShears>> list = this.selectItemByClass(ItemShears.class);
+    		for(int a = 0; a < list.size(); a++){itemList.add(list.get(a));}
+    	}
+    	
+    	for(int a = 0; a < itemList.size(); a++)
+    	{
+    		ItemSelectEntry entry = itemList.get(a);
+    		Item item = entry.theItem;
+    		if(!item.canHarvestBlock(block, entry.stack)){
+    			itemList.remove(a);
+    			a--;
+    			continue;
+    		}
+    		
+    		if(item instanceof ItemTool)
+    		{
+    			ItemTool tool = (ItemTool)item;
+    			entry.priority = tool.func_150893_a(entry.stack, block);
+    		}
+    	}
+    	
+    	if(itemList.size() > 0)
+    	{
+    		Collections.sort(itemList);
+    		int slot = inventory.putStackOnHotbar(itemList.get(0).inventoryIndex);
+    		this.inventory.currentItem = slot;
+    		return true;
+    	}
+    	
+    	return material.isToolNotRequired();
+    }
+    
+    public static class ItemSelectEntry<E extends Item> implements Comparable<ItemSelectEntry>{
 
+    	public E theItem;
+    	public int inventoryIndex;
+    	public ItemStack stack;
+    	
+    	public float priority = 0;
+    	
+		public ItemSelectEntry(int inventoryIndex, ItemStack stack, E item) {
+			this.theItem = item;
+			this.inventoryIndex = inventoryIndex;
+			this.stack = stack;
+		}
+
+		@Override
+		public int compareTo(ItemSelectEntry entry) {
+			if(priority > entry.priority)
+			{
+				return 1;
+			}
+			else if(priority < entry.priority)
+			{
+				return -1;
+			}
+			return 0;
+		}
+		
+		
+		
+    }
+    
+    public <E extends Item> ArrayList<ItemSelectEntry<E>> selectItemByClass(Class<? extends E> type)
+    {
+    	ArrayList<ItemSelectEntry<E>> list = new ArrayList<ItemSelectEntry<E>>();
+    	
+    	for(int a = 0; a < this.inventory.mainInventory.length; a++)
+    	{
+    		ItemStack theStack = this.inventory.mainInventory[a];
+    		if(theStack != null)
+    		{
+    			if(theStack.getItem() != null && type.isAssignableFrom(theStack.getItem().getClass()))
+    			{
+    				ItemSelectEntry<E> entry = new ItemSelectEntry<E>(a, theStack, (E) theStack.getItem());
+    				list.add(entry);
+    			}
+    		}
+    	}
+    	
+    	return list;
+    }
+    
+    private boolean isMaterial(Material[] materials, Material material){
+    	for(int a = 0; a < materials.length; a++)
+    	{
+    		if(material == materials[a])
+    		{
+    			return true;
+    		}
+    	}
+    	return false;
+    }
+
+    
+	//==================================================================================================================
+	//TODO Packet Handling
+	//==================================================================================================================
+	
+	public void sendToServer(Packet packet){
+		if(Minecraft.getMinecraft().thePlayer != null)
+		{
+			Minecraft.getMinecraft().thePlayer.sendQueue.addToSendQueue(packet);
+		}
+	}
+	
+	public void sendToPlayers(Packet packet, Object... players)
+	{
+		if(players == null)return;
+		for(int a = 0; a < players.length; a++)
+		{
+			if(players[a] != null && players[a] instanceof EntityPlayerMP)
+			{
+				((EntityPlayerMP)players[a]).playerNetServerHandler.sendPacket(packet);
+			}
+		}
+	}
+	
+	public void sendToAllWatching(Packet packet)
+	{
+		Set<EntityPlayer> watching = this.getWatchingEntities();
+		if(watching != null)
+		{
+			for(EntityPlayer p : watching)
+			{
+				if(p instanceof EntityPlayerMP)
+				{
+					((EntityPlayerMP)p).playerNetServerHandler.sendPacket(packet);
+				}
+			}
+		}
+	}
+	
+	public void sendToOwnersWatching(Packet packet)
+	{
+		Set<EntityPlayer> watching = this.getWatchingEntities();
+		if(watching != null)
+		{
+			for(EntityPlayer p : watching)
+			{
+				if(p instanceof EntityPlayerMP && this.canUseThisEntity(p))
+				{
+					((EntityPlayerMP)p).playerNetServerHandler.sendPacket(packet);
+				}
+			}
+		}
+	}
+	
+	public void sendToOwnersWatchingExcluding(Packet packet, EntityPlayer exclude)
+	{
+		Set<EntityPlayer> watching = this.getWatchingEntities();
+		
+		if(watching != null)
+		{
+			for(EntityPlayer p : watching)
+			{
+				if(p != exclude && p instanceof EntityPlayerMP && this.canUseThisEntity(p))
+				{
+					((EntityPlayerMP)p).playerNetServerHandler.sendPacket(packet);
+				}
+			}
+		}
+	}
+
+	
+	public void sendToPlayer(Packet p, Object player)
+	{
+		if(player != null && player instanceof EntityPlayerMP)
+		{
+			((EntityPlayerMP)player).playerNetServerHandler.sendPacket(p);
+		}
+	}
+	
+	public void sendToPlayers(Packet p, EntityPlayerMP... players)
+	{
+		for(int a = 0; a < players.length; a++)
+		{
+			players[a].playerNetServerHandler.sendPacket(p);
+		}
+	}
+    
+    
 	//==================================================================================================================
 	//TODO CloneOptions Updates
 	//==================================================================================================================
@@ -1081,9 +1403,9 @@ public class EntityClone extends EntityLiving implements RenderableManager{
 	//TODO EntityPlayerInterface
 	//==================================================================================================================
 	
-	EntityPlayer playerInterface = null;
+	FakePlayer playerInterface = null;
 	
-	public EntityPlayer getPlayerInterface(){
+	public FakePlayer getPlayerInterface(){
 		if(playerInterface == null){
 			playerInterface = new FakePlayer(this);
 		}
@@ -2086,6 +2408,51 @@ public class EntityClone extends EntityLiving implements RenderableManager{
 			}
 		}
 		
+	}
+
+	public boolean canSeeBlock(ChunkCoordinates cc, Block break_block) {
+		Vector from = Vector.fromVec3(this.getPosition(1));
+		Vector to = new Vector(cc.posX, cc.posY, cc.posZ);
+		
+		ChunkCoordinates[] collisions = RayTrace.rayTraceBlocks(from, to, worldObj);
+		
+		if(collisions == null || collisions.length == 0)
+		{
+			return true;
+		}
+		
+		for(int a = 0; a < collisions.length; a++)
+		{
+			Block atPos = worldObj.getBlock(collisions[a].posX, collisions[a].posY, collisions[a].posZ);
+			
+			if(!isBlockSeeThru(atPos, collisions[a]))
+			{
+				return false;
+			}
+		}
+		return true;
+	}
+	
+	Material[] seeThruMaterials = new Material[]{
+			Material.glass,
+			Material.ice,
+			Material.leaves,
+			Material.portal,
+			Material.water,
+			Material.vine,
+			Material.web,
+	};
+	
+	public boolean isBlockSeeThru(Block block, ChunkCoordinates cc)
+	{
+		Material m = block.getMaterial();
+		
+		if(block.isOpaqueCube() || m.isOpaque())
+		{
+			return false;
+		}
+		
+		return this.isMaterial(seeThruMaterials, m);
 	}
 
 
