@@ -30,12 +30,20 @@ public interface BlockFinder{
 	public void loadState(NBTTagCompound nbt);
 
 	/**
-	 * Called when a block providedby this finder is unbreakable by the clone.
-	 * THis may be because the clone lacks the required tools, or perhaps the block
-	 * is just impossible to destroy.
+	 * Called when a block provided by this finder is unbreakable by the clone.
+	 * This may be because the clone lacks the required tools, or perhaps the block
+	 * is just impossible to destroy. You should handle this function so that
+	 * subsequent calls to 'getNextBlock' don't return the same block, otherwise the
+	 * clone will be stuck in a loop forever trying to break the block.
 	 * @param cc ChunkCoordinate of the block that couldn't be broken
 	 * @param break_block The Block object representing the block that couldn't be broken.
 	 */
 	public void cantBreakBlock(ChunkCoordinates cc, Block break_block);
+	
+	/**
+	 * Called when the clone receives a new item, and thus might be able to
+	 * break a previously found block that couldn't be (and thus called 'cantBreakBlock')
+	 */
+	public void cloneStateChanged();
 	
 }

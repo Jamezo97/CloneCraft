@@ -189,7 +189,7 @@ public class EntityClone extends EntityLiving implements RenderableManager{
 		this.tasks.addTask(20, new EntityAICloneWander(this, 1.0F));
 		
 		
-		/*this.aiBreakBlocks.setBlockFinder(new BlockFinder(){
+		this.aiBreakBlocks.setBlockFinder(new BlockFinder(){
 
 			@Override
 			public boolean hasNextBlock() {
@@ -230,7 +230,7 @@ public class EntityClone extends EntityLiving implements RenderableManager{
 			}
 			@Override
 			public void cantBreakBlock(ChunkCoordinates cc, Block break_block) {}
-		});*/
+		});
 	}
 	
 	public EntityAIShare getShareAI(){

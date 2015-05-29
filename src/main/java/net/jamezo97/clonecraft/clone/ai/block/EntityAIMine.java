@@ -42,7 +42,13 @@ public class EntityAIMine extends EntityAIBase{
 
 	@Override
 	public boolean shouldExecute() {
-		return currentFinder != null && currentFinder.hasNextBlock() && clone.getOptions().breakBlocks.get();
+		return currentFinder != null && clone.getOptions().breakBlocks.get() && currentFinder.hasNextBlock();
+	}
+	
+	public boolean selectNextBlock(int iterations)
+	{
+		
+		return false;
 	}
 
 	@Override
