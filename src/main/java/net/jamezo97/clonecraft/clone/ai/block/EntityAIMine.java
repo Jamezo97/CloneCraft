@@ -5,13 +5,16 @@ import net.minecraft.block.Block;
 import net.minecraft.block.material.Material;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.audio.PositionedSoundRecord;
+import net.minecraft.enchantment.EnchantmentHelper;
 import net.minecraft.entity.ai.EntityAIBase;
 import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.init.Blocks;
 import net.minecraft.item.ItemStack;
 import net.minecraft.network.play.server.S23PacketBlockChange;
 import net.minecraft.util.ChunkCoordinates;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.world.World;
+import net.minecraftforge.common.ForgeHooks;
 
 public class EntityAIMine extends EntityAIBase{
 
@@ -42,26 +45,80 @@ public class EntityAIMine extends EntityAIBase{
 
 	@Override
 	public boolean shouldExecute() {
-		return currentFinder != null && clone.getOptions().breakBlocks.get() && currentFinder.hasNextBlock();
+		return currentFinder != null && clone.getOptions().breakBlocks.get() && selectNextBlock(5);
 	}
 	
 	public boolean selectNextBlock(int iterations)
 	{
-		
+		for(int a = 0; a < iterations; a++)
+		{
+			ChunkCoordinates theCoords = currentFinder.getNextBlock(this);
+			if(theCoords == null)
+			{
+				return false;
+			}
+			
+			Block theBlock = this.clone.worldObj.getBlock(theCoords.posX, theCoords.posY, theCoords.posZ);
+			
+			if(theBlock == Blocks.air)
+			{
+				continue;
+			}
+			
+			int theMeta = this.clone.worldObj.getBlockMetadata(theCoords.posX, theCoords.posY, theCoords.posZ);
+			
+			boolean canBreak = this.clone.selectBestItemForBlock(theCoords, theBlock, theMeta);
+			
+			if(canBreak)
+			{
+				this.breakCoord = theCoords;
+				this.breakItem = this.clone.getCurrentEquippedItem();
+				this.breakBlock = theBlock;
+				this.breakMeta = theMeta;
+				
+				return true;
+			}
+			else
+			{
+				this.currentFinder.cantBreakBlock(theCoords, theBlock);
+			}
+		}
 		return false;
 	}
+	/**/
 
 	@Override
 	public boolean continueExecuting() {
-		return breakCoord == null && shouldExecute();
+		return breakCoord != null && breakBlock != null && breakMeta != -1;
 	}
 
 	@Override
 	public void startExecuting() {
+		if(this.currentFinder.mustBeCloseToBreak())
+		{
+			clone.setPath(clone.getNavigator().getPathToXYZ(breakCoord.posX, breakCoord.posY, breakCoord.posZ));
+		}
+		else
+		{
+			startBreakingBlock();
+		}
+		
+		lookAtBlock();
+		
+		lastTickTime = -1;
+	}
+	
+	public void lookAtBlock()
+	{
+		clone.getLookHelper().setLookPosition(breakCoord.posX+0.5, breakCoord.posY+0.5, breakCoord.posZ+0.5, 10, clone.getVerticalFaceSpeed());
 	}
 
 	@Override
 	public void resetTask() {
+		breakCoord = null;
+		breakBlock = null;
+		breakItem = null;
+		lastTickTime = -1;
 	}
 
 	/**
@@ -69,79 +126,77 @@ public class EntityAIMine extends EntityAIBase{
 	 */
 	ChunkCoordinates breakCoord = null;
 	
+	/**
+	 * The block object which is currently being broken
+	 */
 	Block breakBlock = null;
+	
+	/**
+	 * The metadata of the block being broken
+	 */
+	int breakMeta = -1;
 	
 	/**
 	 * The Item currently being used to destroy a block
 	 */
-    private ItemStack currentItemHittingBlock;
+    private ItemStack breakItem;
     
     public boolean sameItemAndBlock()
     {
     	Block currentBlock = clone.worldObj.getBlock(this.breakCoord.posX,  this.breakCoord.posY, this.breakCoord.posZ);
-    	if(currentBlock != breakBlock)
+    	
+    	int currentMeta = clone.worldObj.getBlockMetadata(this.breakCoord.posX, this.breakCoord.posY, this.breakCoord.posZ);
+    	
+    	if(currentBlock != breakBlock || currentMeta != breakMeta)
     	{
     		return false;
     	}
+    	
     	ItemStack currentItem = clone.inventory.getCurrentItem();
-    	if(currentItem == null && currentItemHittingBlock == null)
+    	
+    	
+    	if(currentItem == null && breakItem == null)
     	{
     		return true;
     	}
-    	else if(currentItem != null && currentItemHittingBlock != null)
+    	else if(currentItem != null && breakItem != null)
     	{
-    		return currentItem.isItemEqual(currentItemHittingBlock);
+    		return currentItem.isItemEqual(breakItem);
     	}
+    	
     	return false;
     }
 	
 	@Override
-	public void updateTask() {
-		if(breakCoord != null)
+	public void updateTask()
+	{
+		if(breakCoord != null && breakBlock != null && breakMeta != -1)
 		{
 			this.continueBreakingBlock();
 		}
-		
-		if(breakCoord == null && this.currentFinder.hasNextBlock())
-		{
-			//Try to find a block 3 times.
-			for(int a = 0; a < 3; a++)
-			{
-				ChunkCoordinates cc = this.currentFinder.getNextBlock(this);
-				Block break_block = this.clone.worldObj.getBlock(cc.posX, cc.posY, cc.posZ);
-				boolean canBreak = this.clone.selectBestItemForBlock(break_block);
-				
-				if(canBreak)
-				{
-					this.breakCoord = cc;
-					
-					if(this.currentFinder.mustBeCloseToBreak())
-					{
-						clone.setPath(clone.getNavigator().getPathToXYZ(cc.posX, cc.posY, cc.posZ));
-					}
-					else
-					{
-						startBreakingBlock();
-					}
-					this.breakBlock = break_block;
-					break;
-				}
-				else
-				{
-					this.currentFinder.cantBreakBlock(cc, break_block);
-				}
-			}
-		}
 	}
+	
+	/**
+	 * The time in milliseconds since the last time a the method 'continueBreakingBlock' was called.
+	 * Used to calibrate the amplifier, as it's called every 3 or so ticks.
+	 */
+	long lastTickTime = -1;
 	
 	public void continueBreakingBlock()
 	{
+		if(!sameItemAndBlock())
+		{
+			if(this.isHittingBlock)
+			{
+				this.stopBreakingBlock();
+			}
+			breakCoord = null;
+			return;
+		}
 		
 		//Flag is true if we're close enough to break the block
 		boolean closeFlag = !currentFinder.mustBeCloseToBreak() || 
 				clone.getDistanceSq(breakCoord.posX+0.5, breakCoord.posY+0.5, breakCoord.posZ+0.5) <= 10;
-		
-//		System.out.println(closeFlag);
 		
 		if(!closeFlag && clone.ticksExisted % 5 == 0)
 		{
@@ -159,7 +214,7 @@ public class EntityAIMine extends EntityAIBase{
 		
 		//If we're currently breaking a block.
 		//And we're using the same item we had at the beginning, and the block hasn't changed
-		if(sameItemAndBlock() && this.isHittingBlock)
+		if(this.isHittingBlock)
 		{
 			if(blockHitDelay > 0)
 			{
@@ -171,36 +226,64 @@ public class EntityAIMine extends EntityAIBase{
 				
 				Block block = clone.worldObj.getBlock(breakCoord.posX, breakCoord.posY, breakCoord.posZ);
 				
-				this.curBlockDamageMP += block.getPlayerRelativeBlockHardness(thePlayer, thePlayer.worldObj, breakCoord.posX, breakCoord.posY, breakCoord.posZ);
+				//Must be modified to take into account the tick rate of the ai class
+				
+				double amplifier = 1.0;
+				
+				if(this.lastTickTime != -1)
+				{
+					long tickTime = System.currentTimeMillis();
+					double tickDiff = tickTime - this.lastTickTime;
+					
+					lastTickTime = tickTime;
+					
+					amplifier = Math.round(tickDiff / 50.0d);
+					//Each time, it should be called 50 milliseconds after the last
+					//If it's called, for example, 100 milliseconds later, then the block should
+					//be twice as much broken. Thus 100/50 = 2 = the amplification factor.
+					//This should roughly equal the 'EntityAITasks.tickRate' value
+					if(amplifier > 5)
+					{
+						amplifier = 5;
+					}
+					else if(amplifier < 1)
+					{
+						amplifier = 1;
+					}
+				}
+				else
+				{
+					lastTickTime = System.currentTimeMillis();
+				}
+				
+				this.curBlockDamageMP += amplifier * (block.getPlayerRelativeBlockHardness(thePlayer, thePlayer.worldObj, breakCoord.posX, breakCoord.posY, breakCoord.posZ));
 				
 				this.clone.swingItem();
 				
                 if (this.stepSoundTickCounter % 4.0F == 0.0F)
                 {
-                	
-                    //this.mc.getSoundHandler().playSound(new PositionedSoundRecord(new ResourceLocation(block.stepSound.getStepResourcePath()), (block.stepSound.getVolume() + 1.0F) / 8.0F, block.stepSound.getPitch() * 0.5F, (float)blockToBreak.posX + 0.5F, (float)blockToBreak.posY + 0.5F, (float)blockToBreak.posZ + 0.5F));
+                	this.clone.worldObj.playSoundEffect(breakCoord.posX, breakCoord.posY, breakCoord.posZ, block.stepSound.getStepResourcePath(), block.stepSound.getPitch(), 0.3f);
                 }
 
+                this.lookAtBlock();
+                
                 ++this.stepSoundTickCounter;
 
                 if (this.curBlockDamageMP >= 1.0F)
                 {
-                    this.isHittingBlock = false;
-                    //clone.sendToAllWatching(new C07PacketPlayerDigging(2, blockToBreak.posX, blockToBreak.posY, blockToBreak.posZ, /*side*/2));
-                    //this.destroyBlock(blockToBreak.posX, blockToBreak.posY, blockToBreak.posZ);
                     
                     this.harvestBlock(breakCoord.posX, breakCoord.posY, breakCoord.posZ);
                     
-                    this.curBlockDamageMP = 0.0F;
+                    this.clone.worldObj.destroyBlockInWorldPartially(this.clone.getEntityId(), breakCoord.posX, breakCoord.posY, breakCoord.posZ, (int)(this.curBlockDamageMP * 10.0F) - 1);
+
+                    this.stopBreakingBlock();
+                    
                     this.stepSoundTickCounter = 0.0F;
                     this.blockHitDelay = 5;
                     
-                    this.clone.worldObj.destroyBlockInWorldPartially(this.clone.getEntityId(), breakCoord.posX, breakCoord.posY, breakCoord.posZ, (int)(this.curBlockDamageMP * 10.0F) - 1);
-
-                    
-                    
-                    this.breakCoord = null;
-                    this.currentItemHittingBlock = null;
+                    clone.inventory.currentItem = 0;
+                    lastTickTime = -1;
+                    this.currentFinder.onFinished(this, breakCoord, breakItem, breakBlock, breakMeta);
                 }
                 else
                 {
@@ -216,11 +299,6 @@ public class EntityAIMine extends EntityAIBase{
 	
 	public void stopBreakingBlock()
     {
-        if (this.isHittingBlock)
-        {
-//            this.clone.sendToAllWatching(new C07PacketPlayerDigging(1, this.blockToBreak.posX, this.blockToBreak.posY, this.blockToBreak.posZ, -1));
-        }
-
         this.isHittingBlock = false;
         this.curBlockDamageMP = 0.0F;
         
@@ -230,54 +308,77 @@ public class EntityAIMine extends EntityAIBase{
             this.breakCoord = null;
         }
         
+        this.breakCoord = null;
+        this.breakItem = null;
         this.breakBlock = null;
-        
-        this.currentItemHittingBlock = null;
+        this.breakMeta = -1;
     }
+	
 	//From ItemInWorldManager
-	public boolean harvestBlock(int p_73084_1_, int p_73084_2_, int p_73084_3_)
+	public boolean harvestBlock(int blockX, int blockY, int blockZ)
 	{
 		EntityPlayer thisPlayerMP = this.clone.getPlayerInterface();
 		World theWorld = this.clone.worldObj;
 		
 		ItemStack stack = thisPlayerMP.getCurrentEquippedItem();
-        if (stack != null && stack.getItem().onBlockStartBreak(stack, p_73084_1_, p_73084_2_, p_73084_3_, thisPlayerMP))
+        
+		if (stack != null && stack.getItem().onBlockStartBreak(stack, blockX, blockY, blockZ, thisPlayerMP))
         {
             return false;
         }
-        Block block = theWorld.getBlock(p_73084_1_, p_73084_2_, p_73084_3_);
-        int l = theWorld.getBlockMetadata(p_73084_1_, p_73084_2_, p_73084_3_);
-        theWorld.playAuxSFXAtEntity(thisPlayerMP, 2001, p_73084_1_, p_73084_2_, p_73084_3_, Block.getIdFromBlock(block) + (theWorld.getBlockMetadata(p_73084_1_, p_73084_2_, p_73084_3_) << 12));
+        
+        Block block = theWorld.getBlock(blockX, blockY, blockZ);
+        int l = theWorld.getBlockMetadata(blockX, blockY, blockZ);
+        theWorld.playAuxSFXAtEntity(thisPlayerMP, 2001, blockX, blockY, blockZ, Block.getIdFromBlock(block) + (theWorld.getBlockMetadata(blockX, blockY, blockZ) << 12));
         boolean flag = false;
 
+        ItemStack itemstack = thisPlayerMP.getCurrentEquippedItem();
+        boolean flag1 = block.canHarvestBlock(thisPlayerMP, l);
+
+        if (itemstack != null)
         {
-            ItemStack itemstack = thisPlayerMP.getCurrentEquippedItem();
-            boolean flag1 = block.canHarvestBlock(thisPlayerMP, l);
+            itemstack.func_150999_a(theWorld, block, blockX, blockY, blockZ, thisPlayerMP);
 
-            if (itemstack != null)
+            if (itemstack.stackSize == 0)
             {
-                itemstack.func_150999_a(theWorld, block, p_73084_1_, p_73084_2_, p_73084_3_, thisPlayerMP);
-
-                if (itemstack.stackSize == 0)
-                {
-                    thisPlayerMP.destroyCurrentEquippedItem();
-                }
+                thisPlayerMP.destroyCurrentEquippedItem();
             }
+        }
 
-            flag = removeBlock(p_73084_1_, p_73084_2_, p_73084_3_, flag1);
-            if (flag && flag1)
-            {
-                block.harvestBlock(theWorld, thisPlayerMP, p_73084_1_, p_73084_2_, p_73084_3_, l);
-            }
+        flag = removeBlock(blockX, blockY, blockZ, flag1);
+        
+        if (flag && flag1)
+        {
+            block.harvestBlock(theWorld, thisPlayerMP, blockX, blockY, blockZ, l);
         }
 
         // Drop experience
         if (flag)
         {
-            block.dropXpOnBlockBreak(theWorld, p_73084_1_, p_73084_2_, p_73084_3_, /*event.getExpToDrop()*/10);
+            block.dropXpOnBlockBreak(theWorld, blockX, blockY, blockZ, getEXPDrop());
         }
         return flag;
 	}
+	
+	private int getEXPDrop()
+	{
+		if (	breakBlock == null || 
+				!ForgeHooks.canHarvestBlock(breakBlock, clone.getPlayerInterface(), breakMeta) || 
+				breakBlock.canSilkHarvest(clone.worldObj, clone.getPlayerInterface(), this.breakCoord.posX, this.breakCoord.posY, this.breakCoord.posZ, breakMeta) && 
+				EnchantmentHelper.getSilkTouchModifier(clone)
+			)
+		{
+			return 0;
+		}
+		else
+        {
+			int meta = breakBlock.getDamageValue(clone.worldObj, this.breakCoord.posX, this.breakCoord.posY, this.breakCoord.posZ);
+            int bonusLevel = EnchantmentHelper.getFortuneModifier(clone);
+            return breakBlock.getExpDrop(clone.worldObj, meta, bonusLevel);
+        }
+	}
+	
+	
 	private boolean removeBlock(int blockX, int blockY, int blockZ, boolean canHarvest)
     {
 		EntityPlayer thisPlayerMP = this.clone.getPlayerInterface();
@@ -328,7 +429,7 @@ public class EntityAIMine extends EntityAIBase{
             /*this.blockToBreak.posX = blockX;
             this.blockToBreak.posY = blockY;
             this.blockToBreak.posZ = blockZ;*/
-            this.currentItemHittingBlock = this.clone.getHeldItem();
+            this.breakItem = this.clone.getHeldItem();
             this.curBlockDamageMP = 0.0F;
             this.stepSoundTickCounter = 0.0F;
             this.clone.worldObj.destroyBlockInWorldPartially(this.clone.getPlayerInterface().getEntityId(), this.breakCoord.posX, this.breakCoord.posY, this.breakCoord.posZ, (int)(this.curBlockDamageMP * 10.0F) - 1);

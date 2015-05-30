@@ -605,7 +605,7 @@ public class InventoryClone extends InventoryPlayer{//implements IInventory{
 		if(slotFrom < 9){
 			return slotFrom;
 		}
-		for(int a = 8; a >= 0; a++){
+		for(int a = 8; a >= 0; a--){
 			if(this.mainInventory[a] == null){
 				this.mainInventory[a] = this.mainInventory[slotFrom];
 				this.mainInventory[slotFrom] = null;
@@ -656,6 +656,33 @@ public class InventoryClone extends InventoryPlayer{//implements IInventory{
 		}
 		
 		return copy.stackSize <= 0;
+	}
+	
+	public boolean trySelectEmptySlot() {
+		//Try select an already empty slot.
+		for(int a = 0; a < 9; a++)
+		{
+			if(mainInventory[a] == null)
+			{
+				this.currentItem = a;
+				return true;
+			}
+		}
+		
+		//No empty slots found. Let's try swapping something out.
+		this.currentItem = 0;
+		
+		for(int a = 9; a < 36; a++)
+		{
+			if(mainInventory[a] == null)
+			{
+				mainInventory[a] = mainInventory[0];
+				mainInventory[0] = null;
+				return true;
+			}
+		}
+		
+		return false;
 	}
 	
 	
@@ -748,6 +775,8 @@ public class InventoryClone extends InventoryPlayer{//implements IInventory{
 	
 	
 	
+	
+	
 	public static interface TypeCheck{
 		/**
 		 * 
@@ -822,4 +851,6 @@ public class InventoryClone extends InventoryPlayer{//implements IInventory{
 		new TypeCheckItem(Items.diamond_shovel),
 		new TypeCheckItem(Items.diamond_sword)
 	};
+
+	
 }

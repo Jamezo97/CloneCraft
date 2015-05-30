@@ -18,6 +18,9 @@ public class RayTrace {
 	 */
 	public static ChunkCoordinates[] rayTraceBlocks(Vector v1, Vector v2, World world){
 		Vector directionVector = v2.subtract(v1);
+		
+		
+		
 		//Length of 1 unit.
 		Vector unitDirectionVector = directionVector.toUnitVector();
 		
@@ -45,7 +48,9 @@ public class RayTrace {
 		
 		double addedUnits = 0;
 		
-		int maxIterations = 5000;
+		int maxIterations = (int)Math.ceil(maxAddedUnits*2)+5;
+		
+//		System.out.println(maxIterations);
 		
 		double nextWholeX, nextWholeY, nextWholeZ;
 		
@@ -66,12 +71,27 @@ public class RayTrace {
 		
 		while(maxIterations-- > 0)
 		{
-			
+//			System.out.println(nextWholeX);
 			//Change in the unit vector for the components to move the amount they need to reach
 			//the next wholeNumber
 			dxu = (nextWholeX - x) * unitPerX;
+			if(dxu == 0)
+			{
+				dxu = 100;
+				nextWholeX += xSign;
+			}
 			dyu = (nextWholeY - y) * unitPerY;
+			if(dyu == 0)
+			{
+				dyu = 100;
+				nextWholeX += ySign;
+			}
 			dzu = (nextWholeZ - z) * unitPerZ;
+			if(dzu == 0)
+			{
+				dzu = 100;
+				nextWholeZ += zSign;
+			}
 			
 			//Change in unit vector. We want the smallest change
 			du = dxu<dyu?(dxu<dzu?dxu:dzu):(dyu<dzu?dyu:dzu);
@@ -80,11 +100,11 @@ public class RayTrace {
 			y += du * yPerUnit;
 			z += du * zPerUnit;
 			
-			//System.out.println(addedUnits + ", " + maxAddedUnits);
+//			System.out.println(du + ": " + addedUnits + ", " + maxAddedUnits);
 			
 			addedUnits += du;
 			
-			if(addedUnits >= maxAddedUnits){
+			if(addedUnits >= maxAddedUnits /*|| Math.abs(addedUnits - maxAddedUnits) < 0.0000000001*/){
 				break;
 			}
 			

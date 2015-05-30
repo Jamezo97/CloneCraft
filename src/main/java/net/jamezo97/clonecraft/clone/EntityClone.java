@@ -19,7 +19,7 @@ import net.jamezo97.clonecraft.clone.ai.EntityAICommand;
 import net.jamezo97.clonecraft.clone.ai.EntityAIFollowCloneOwner;
 import net.jamezo97.clonecraft.clone.ai.EntityAIReturnGuard;
 import net.jamezo97.clonecraft.clone.ai.EntityAIShare;
-import net.jamezo97.clonecraft.clone.ai.block.BlockFinder;
+import net.jamezo97.clonecraft.clone.ai.block.DefaultBlockFinder;
 import net.jamezo97.clonecraft.clone.ai.block.EntityAIMine;
 import net.jamezo97.clonecraft.clone.mine.RayTrace;
 import net.jamezo97.clonecraft.clone.mine.Vector;
@@ -189,12 +189,10 @@ public class EntityClone extends EntityLiving implements RenderableManager{
 		this.tasks.addTask(20, new EntityAICloneWander(this, 1.0F));
 		
 		
-		this.aiBreakBlocks.setBlockFinder(new BlockFinder(){
+		this.aiBreakBlocks.setBlockFinder(new DefaultBlockFinder());
+		
+		/*this.aiBreakBlocks.setBlockFinder(new BlockFinder(){
 
-			@Override
-			public boolean hasNextBlock() {
-				return true;
-			}
 
 			@Override
 			public ChunkCoordinates getNextBlock(EntityAIMine ai) {
@@ -205,7 +203,7 @@ public class EntityClone extends EntityLiving implements RenderableManager{
 				
 				y+=3;
 				
-				clone.worldObj.setBlock(x, y, z, Blocks.diamond_block);
+//				clone.worldObj.setBlock(x, y, z, Blocks.diamond_ore);
 				return new ChunkCoordinates(x, y, z);
 			}
 
@@ -230,7 +228,13 @@ public class EntityClone extends EntityLiving implements RenderableManager{
 			}
 			@Override
 			public void cantBreakBlock(ChunkCoordinates cc, Block break_block) {}
-		});
+
+			@Override
+			public void cloneStateChanged() {
+				// TODO Auto-generated method stub
+				
+			}
+		});*/
 	}
 	
 	public EntityAIShare getShareAI(){
@@ -1170,18 +1174,21 @@ public class EntityClone extends EntityLiving implements RenderableManager{
      * Tries to select the best item/tool in the clone's inventory for the given block
      * If it finds a tool, that is capable of harvesting the block, then it returns true.
      * Otherwise false
+     * @param theCoords 
      * @param block The block you wish to break
      * @return True if the clone can currently break the block.
      */
-    public boolean selectBestItemForBlock(Block block){
+    public boolean selectBestItemForBlock(ChunkCoordinates theCoords, Block block, int meta){
     	if(block == Blocks.air)
     	{
-    		return true;
+    		return false;
     	}
+    	
     	Material material = block.getMaterial();
+    	
     	if(material.isLiquid())
     	{
-    		return true;
+    		return false;
     	}
     	
     	ArrayList<ItemSelectEntry> itemList = new ArrayList<ItemSelectEntry>();
@@ -1215,7 +1222,22 @@ public class EntityClone extends EntityLiving implements RenderableManager{
     	{
     		ItemSelectEntry entry = itemList.get(a);
     		Item item = entry.theItem;
-    		if(!item.canHarvestBlock(block, entry.stack)){
+    		
+    		//If the relative hardness is 0, then it will never be broken.
+    		float hardness = block.getPlayerRelativeBlockHardness(this.getPlayerInterface(), this.worldObj, theCoords.posX, theCoords.posY, theCoords.posZ);
+    		
+    		if(hardness == 0)
+    		{
+    			itemList.remove(a);
+    			a--;
+    			continue;
+    		}
+    		
+    		int harvestLevel = block.getHarvestLevel(meta);
+    		String harvestTool = block.getHarvestTool(meta);
+    		
+    		if(harvestTool != null && entry.stack.getItem().getHarvestLevel(entry.stack, harvestTool) < harvestLevel)
+    		{
     			itemList.remove(a);
     			a--;
     			continue;
@@ -1230,13 +1252,24 @@ public class EntityClone extends EntityLiving implements RenderableManager{
     	
     	if(itemList.size() > 0)
     	{
+    		
     		Collections.sort(itemList);
-    		int slot = inventory.putStackOnHotbar(itemList.get(0).inventoryIndex);
+    		int slot = inventory.putStackOnHotbar(itemList.get(itemList.size()-1).inventoryIndex);
     		this.inventory.currentItem = slot;
     		return true;
     	}
     	
-    	return material.isToolNotRequired();
+    	if(material.isToolNotRequired())
+    	{
+    		//By this point, there is no specific tool we want to use.
+    		//So just fists will do.
+    		//To avoid damaging good items that don't need to be used,
+    		//try to select an empty slot, or at least make one.
+    		this.inventory.trySelectEmptySlot();
+    		return true;
+    	}
+    	
+    	return false;
     }
     
     public static class ItemSelectEntry<E extends Item> implements Comparable<ItemSelectEntry>{
@@ -1300,6 +1333,8 @@ public class EntityClone extends EntityLiving implements RenderableManager{
     	}
     	return false;
     }
+    
+    
 
     
 	//==================================================================================================================
@@ -2411,8 +2446,8 @@ public class EntityClone extends EntityLiving implements RenderableManager{
 	}
 
 	public boolean canSeeBlock(ChunkCoordinates cc, Block break_block) {
-		Vector from = Vector.fromVec3(this.getPosition(1));
-		Vector to = new Vector(cc.posX, cc.posY, cc.posZ);
+		Vector from = Vector.fromVec3(this.getPosition(1)).add(new Vector(0, this.getEyeHeight(),0));
+		Vector to = new Vector(cc.posX+0.5, cc.posY+0.5, cc.posZ+0.5);
 		
 		ChunkCoordinates[] collisions = RayTrace.rayTraceBlocks(from, to, worldObj);
 		
@@ -2423,10 +2458,17 @@ public class EntityClone extends EntityLiving implements RenderableManager{
 		
 		for(int a = 0; a < collisions.length; a++)
 		{
+			if(collisions[a].posX == cc.posX && collisions[a].posY == cc.posY && collisions[a].posZ == cc.posZ)
+			{
+				continue;
+			}
+			
+			
 			Block atPos = worldObj.getBlock(collisions[a].posX, collisions[a].posY, collisions[a].posZ);
 			
 			if(!isBlockSeeThru(atPos, collisions[a]))
 			{
+				
 				return false;
 			}
 		}

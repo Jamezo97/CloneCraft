@@ -1,12 +1,11 @@
 package net.jamezo97.clonecraft.clone.ai.block;
 
 import net.minecraft.block.Block;
+import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.ChunkCoordinates;
 
 public interface BlockFinder{
-	
-	public boolean hasNextBlock();
 	
 	/**
 	 * Assumes that the clone can see the block, or isnot meant to be able to see it, etc
@@ -16,7 +15,7 @@ public interface BlockFinder{
 	 */
 	public ChunkCoordinates getNextBlock(EntityAIMine ai);
 	
-	public void onFinished(EntityAIMine entityAI);
+	public void onFinished(EntityAIMine entityAI, ChunkCoordinates coordinates, ItemStack stack, Block block, int meta);
 	
 	/**
 	 * If returns true, then the clone will just stand in the same position, and break the blocks

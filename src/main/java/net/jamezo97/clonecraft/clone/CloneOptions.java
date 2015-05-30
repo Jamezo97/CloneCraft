@@ -114,11 +114,13 @@ public class CloneOptions {
 	public void readFromNBT(NBTTagCompound nbt) {
 		this.fromInteger(nbt.getInteger("CloneOptions"));
 		this.attackables.load(nbt);
+		this.breakables.load(nbt);
 	}
 
 	public void writeNBT(NBTTagCompound nbt) {
 		nbt.setInteger("CloneOptions", this.toInteger());
 		this.attackables.save(nbt);
+		this.breakables.save(nbt);
 	}
 
 	public static int getIdFromVal(int val) {
