@@ -60,7 +60,7 @@ public class Reflect {
 			} catch (IllegalAccessException e) {
 				e.printStackTrace();
 			}
-			System.out.println("I GOT THIS:" + EntityList_classToIDMapping);
+//			System.out.println("I GOT THIS:" + EntityList_classToIDMapping);
 		}
 	}
 	

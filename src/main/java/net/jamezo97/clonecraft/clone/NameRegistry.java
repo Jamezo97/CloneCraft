@@ -254,6 +254,12 @@ public class NameRegistry {
 			"Jesse",
 			"Jeremy",
 			"Marcus",
+			"Jamezo97",//Add some special names
+			"Notch",
+			"milg8",
+			"philbrush",
+			"joshua576",
+			"freefaller",
 			"Harrison",
 			"Jude",
 			"Weston",

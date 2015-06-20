@@ -116,6 +116,7 @@ public abstract class Handler{
 	
 	static HashMap<Integer, Class> idToClass = new HashMap<Integer, Class>();
 	static HashMap<Class, Integer> classToId = new HashMap<Class, Integer>();
+	
 	static{
 		registerHandler(0, Handler0SpinCentrifuge.class);
 		registerHandler(1, Handler1CentrifugeItemStacks.class);
@@ -128,6 +129,7 @@ public abstract class Handler{
 		registerHandler(8, Handler8UpdateAttackEntities.class);
 		registerHandler(9, Handler9UpdateBreakBlocks.class);
 		registerHandler(10, Handler10ChangeOwner.class);
+		registerHandler(11, Handler11SendSchematic.class);
 		
 		
 	}

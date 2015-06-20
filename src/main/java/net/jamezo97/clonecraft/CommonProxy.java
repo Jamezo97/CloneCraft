@@ -28,15 +28,15 @@ public class CommonProxy {
 
 	
 	
-	public void load(CloneCraft craft){
+	public void preInit(CloneCraft craft)
+	{
 		
-		
-		
-		NetworkRegistry.INSTANCE.registerGuiHandler(craft, new GuiHandler());
-
 		EntityRegistry.registerModEntity(EntitySpawnEgg.class, "EntitySpawnEgg", 0, craft, 80, 10, true);
 		
 		EntityRegistry.registerModEntity(EntityClone.class, "EntityClone", 1, craft, 512, 2, true);
+		
+		NetworkRegistry.INSTANCE.registerGuiHandler(craft, new GuiHandler());
+
 		
 		GameRegistry.registerTileEntity(TileEntitySterilizer.class, "Sterilizer");
 		
@@ -44,8 +44,10 @@ public class CommonProxy {
 		
 		GameRegistry.registerTileEntity(TileEntityLifeInducer.class, "LifeInducer");
 		
-		
-		
+	}
+	
+	public void init(CloneCraft craft)
+	{
 		
 	}
 
@@ -94,7 +96,33 @@ public class CommonProxy {
 		    }
         });
 		
-		/*EntityRegistry.*/addSpawn(EntityClone.class, 1, 1, 10, EnumCreatureType.creature, BiomeGenBase.getBiomeGenArray());
+		/*EntityRegistry.*/addSpawn(EntityClone.class, 1, 1, 10, EnumCreatureType.creature, new BiomeGenBase[]{
+			BiomeGenBase.beach,
+			BiomeGenBase.birchForest,
+			BiomeGenBase.birchForestHills,
+			BiomeGenBase.desert,
+			BiomeGenBase.desertHills,
+			BiomeGenBase.extremeHills,
+			BiomeGenBase.extremeHillsEdge,
+			BiomeGenBase.extremeHillsPlus,
+			BiomeGenBase.forest,
+			BiomeGenBase.forestHills,
+			BiomeGenBase.iceMountains,
+			BiomeGenBase.icePlains,
+			BiomeGenBase.jungle,
+			BiomeGenBase.jungleHills,
+			BiomeGenBase.megaTaiga,
+			BiomeGenBase.mesa,
+			BiomeGenBase.mesaPlateau,
+			BiomeGenBase.mushroomIsland,
+			BiomeGenBase.plains,
+			BiomeGenBase.roofedForest,
+			BiomeGenBase.savanna,
+			BiomeGenBase.stoneBeach,
+			BiomeGenBase.swampland,
+			BiomeGenBase.taiga,
+			BiomeGenBase.taigaHills
+		});
 	}
 	
 	

@@ -80,7 +80,7 @@ public class EntityAIMine extends EntityAIBase{
 			}
 			else
 			{
-				this.currentFinder.cantBreakBlock(theCoords, theBlock);
+				this.currentFinder.cantBreakBlock(theCoords, theBlock, theMeta);
 			}
 		}
 		return false;
@@ -182,8 +182,15 @@ public class EntityAIMine extends EntityAIBase{
 	 */
 	long lastTickTime = -1;
 	
+	double lastX = 0;
+	double lastY = 0;
+	double lastZ = 0;
+	
+	int noImprovement = 0;
+	
 	public void continueBreakingBlock()
 	{
+		
 		if(!sameItemAndBlock())
 		{
 			if(this.isHittingBlock)
@@ -196,11 +203,35 @@ public class EntityAIMine extends EntityAIBase{
 		
 		//Flag is true if we're close enough to break the block
 		boolean closeFlag = !currentFinder.mustBeCloseToBreak() || 
-				clone.getDistanceSq(breakCoord.posX+0.5, breakCoord.posY+0.5, breakCoord.posZ+0.5) <= 10;
+				clone.getDistanceSq(breakCoord.posX+0.5, breakCoord.posY+0.5-clone.getEyeHeight(), breakCoord.posZ+0.5) <= 25;
 		
 		if(!closeFlag && clone.ticksExisted % 5 == 0)
 		{
 			clone.setPath(clone.getNavigator().getPathToXYZ(breakCoord.posX, breakCoord.posY, breakCoord.posZ));
+			
+			if(Math.abs(clone.posX - lastX) < 5 && Math.abs(clone.posZ - lastZ) < 5 && Math.abs(clone.posZ - lastZ) < 5)
+			{
+				noImprovement++;
+			}
+			else
+			{
+				noImprovement = 0;
+				
+				lastX = clone.posX;
+				lastY = clone.posY;
+				lastZ = clone.posZ;
+			}
+			
+			
+		
+		
+			if(noImprovement > 20)
+			{
+				noImprovement = 0;
+				this.currentFinder.cantBreakBlock(breakCoord, breakBlock, breakMeta);
+				this.stopBreakingBlock();
+				return;
+			}
 		}
 		
 		if(closeFlag && !this.isHittingBlock)
@@ -216,6 +247,7 @@ public class EntityAIMine extends EntityAIBase{
 		//And we're using the same item we had at the beginning, and the block hasn't changed
 		if(this.isHittingBlock)
 		{
+			
 			if(blockHitDelay > 0)
 			{
 				--blockHitDelay;
@@ -293,7 +325,17 @@ public class EntityAIMine extends EntityAIBase{
 		}
 		else
 		{
-			stopBreakingBlock();
+			if(this.curBlockDamageMP > 0)
+			{
+				if (breakCoord != null) {
+					this.clone.worldObj.destroyBlockInWorldPartially(
+							this.clone.getEntityId(), this.breakCoord.posX,
+							this.breakCoord.posY, this.breakCoord.posZ, -1);
+				}
+				this.curBlockDamageMP = 0.0F;
+			}
+	        
+//			stopBreakingBlock();
 		}
 	}
 	

@@ -1,5 +1,6 @@
 package net.jamezo97.clonecraft.clone.ai.block;
 
+import net.jamezo97.clonecraft.clone.EntityClone;
 import net.minecraft.block.Block;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
@@ -37,12 +38,12 @@ public interface BlockFinder{
 	 * @param cc ChunkCoordinate of the block that couldn't be broken
 	 * @param break_block The Block object representing the block that couldn't be broken.
 	 */
-	public void cantBreakBlock(ChunkCoordinates cc, Block break_block);
+	public void cantBreakBlock(ChunkCoordinates cc, Block theBlock, int theMeta);
 	
 	/**
 	 * Called when the clone receives a new item, and thus might be able to
-	 * break a previously found block that couldn't be (and thus called 'cantBreakBlock')
+	 * break a previously found block that couldn't be broken before (and thus called 'cantBreakBlock' previously)
 	 */
-	public void cloneStateChanged();
+	public void clonePickedUp(EntityClone clone, ItemStack stack);
 	
 }

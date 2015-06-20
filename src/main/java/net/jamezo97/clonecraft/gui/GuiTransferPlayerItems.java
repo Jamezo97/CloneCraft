@@ -68,8 +68,10 @@ public class GuiTransferPlayerItems extends GuiContainer{
 		}else if(gb.id == 5){
 			mc.displayGuiScreen(new GuiChooseBlocksToBreak(clone, this));
 		}else if(gb.id == 6){
-			new Handler10ChangeOwner(clone.getEntityId()).sendToServer();
+			mc.displayGuiScreen(new GuiChooseSchematic(clone, this));
 		}else if(gb.id == 7){
+			new Handler10ChangeOwner(clone.getEntityId()).sendToServer();
+		}else if(gb.id == 8){
 			if(copyAmount != null){
 				try{
 					int amount = Integer.parseInt(copyAmount.getText());
@@ -102,23 +104,23 @@ public class GuiTransferPlayerItems extends GuiContainer{
 
 		buttonList.add(new GuiButton(4, 5, 135, 110, 20, "Entities To Attack"));
 		buttonList.add(new GuiButton(5, 5, 160, 110, 20, "Blocks To Break"));
+		buttonList.add(new GuiButton(6, 5, 185, 110, 20, "Things To Build"));
 
 		if(Minecraft.getMinecraft() != null){
 			if(Minecraft.getMinecraft().getSession() == null || Minecraft.getMinecraft().getSession().getSessionID() == null || 
 					Minecraft.getMinecraft().getSession().getSessionID().equals("-") || Minecraft.getMinecraft().thePlayer.capabilities.isCreativeMode){
-				buttonList.add(new GuiButton(6, width-120, height-30, 110, 20, "Claim clone"));
+				buttonList.add(new GuiButton(7, width-110, height-55, 100, 20, "Claim clone"));
 			}
 		}
 		GuiButton copy;
-		buttonList.add(copy = new GuiButton(7, width - 105, 30, 100, 20, "Copy Clone"));
+		buttonList.add(copy = new GuiButton(8, width - 105, 30, 100, 20, "Copy Clone"));
 		copyAmount = new GuiOnlyTextField(mc.fontRenderer, width-105, 5, 100, 20, "01234567890\b");
 		if(!mc.playerController.isInCreativeMode()){
 			copy.visible = false;
 			copyAmount.setVisible(false);
 		}
 
-
-		buttonList.add(coloured = new GuiColouredButton(3, 5, height - 35, 100, 20, "Kill", 0xffffff, 0));
+		buttonList.add(coloured = new GuiColouredButton(3, width-110, height-30, 100, 20, "Kill", 0xffffff, 0));
 		super.initGui();
 	}
 

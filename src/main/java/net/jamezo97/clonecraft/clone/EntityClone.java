@@ -1,5 +1,6 @@
 package net.jamezo97.clonecraft.clone;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
@@ -30,8 +31,10 @@ import net.jamezo97.clonecraft.command.Interpretter;
 import net.jamezo97.clonecraft.command.task.CommandTask;
 import net.jamezo97.clonecraft.entity.EntityExplodeCollapseFX;
 import net.jamezo97.clonecraft.musics.MusicBase;
+import net.jamezo97.clonecraft.network.Handler11SendSchematic;
 import net.jamezo97.clonecraft.render.Renderable;
 import net.jamezo97.clonecraft.render.RenderableManager;
+import net.jamezo97.clonecraft.schematic.Schematic;
 import net.jamezo97.util.SimpleList;
 import net.minecraft.block.Block;
 import net.minecraft.block.material.Material;
@@ -85,9 +88,11 @@ import net.minecraft.pathfinding.PathEntity;
 import net.minecraft.potion.Potion;
 import net.minecraft.potion.PotionEffect;
 import net.minecraft.util.ChatComponentText;
+import net.minecraft.util.ChatStyle;
 import net.minecraft.util.ChunkCoordinates;
 import net.minecraft.util.DamageSource;
 import net.minecraft.util.EntityDamageSource;
+import net.minecraft.util.EnumChatFormatting;
 import net.minecraft.util.IIcon;
 import net.minecraft.util.MathHelper;
 import net.minecraft.util.ResourceLocation;
@@ -118,8 +123,6 @@ public class EntityClone extends EntityLiving implements RenderableManager{
 	
 	public PlayerTeam team = PlayerTeam.Good;
 	
-//	String[] names = {"Jamezo97", "joshua576", "freefaller", "milg8", "philbrush", "CaptainSparklez", "honeydew", "BlueXephos"};
-	
 	public InventoryClone inventory;
 	Syncer watcher;
 	CloneOptions options;
@@ -146,13 +149,12 @@ public class EntityClone extends EntityLiving implements RenderableManager{
 		initSounds();
 		postInit();
 		
-		if(!world.isRemote){
+		if(!world.isRemote)
+		{
 			interpretter = new Interpretter(this);
+			
+			this.setName(options.female.get()?NameRegistry.getGirlName():NameRegistry.getBoyName());
 		}
-		
-		this.setName(options.female.get()?NameRegistry.getGirlName():NameRegistry.getBoyName());
-		
-		
 		
 		
 	}
@@ -190,51 +192,6 @@ public class EntityClone extends EntityLiving implements RenderableManager{
 		
 		
 		this.aiBreakBlocks.setBlockFinder(new DefaultBlockFinder());
-		
-		/*this.aiBreakBlocks.setBlockFinder(new BlockFinder(){
-
-
-			@Override
-			public ChunkCoordinates getNextBlock(EntityAIMine ai) {
-				EntityClone clone = ai.getClone();
-				int x = (int)Math.floor(clone.posX);
-				int y = (int)Math.floor(clone.posY);
-				int z = (int)Math.floor(clone.posZ);
-				
-				y+=3;
-				
-//				clone.worldObj.setBlock(x, y, z, Blocks.diamond_ore);
-				return new ChunkCoordinates(x, y, z);
-			}
-
-			@Override
-			public void onFinished(EntityAIMine entityAI) {
-			}
-
-			@Override
-			public boolean mustBeCloseToBreak() {
-				return false;
-			}
-
-			@Override
-			public void saveState(NBTTagCompound nbt) {
-				// TODO Auto-generated method stub
-				
-			}
-			@Override
-			public void loadState(NBTTagCompound nbt) {
-				// TODO Auto-generated method stub
-				
-			}
-			@Override
-			public void cantBreakBlock(ChunkCoordinates cc, Block break_block) {}
-
-			@Override
-			public void cloneStateChanged() {
-				// TODO Auto-generated method stub
-				
-			}
-		});*/
 	}
 	
 	public EntityAIShare getShareAI(){
@@ -325,6 +282,16 @@ public class EntityClone extends EntityLiving implements RenderableManager{
 	{
 		if(!player.isSneaking() && this.canUseThisEntity(player))
 		{
+			if(!worldObj.isRemote)
+			{
+				if(!this.hasOwner() && CloneCraft.INSTANCE.config.areOwnersEnabled())
+				{
+					setOwner(player.getCommandSenderName());
+					player.addChatComponentMessage(new ChatComponentText("You now own " + this.getName()).setChatStyle(new ChatStyle().setColor(EnumChatFormatting.GOLD)));
+				}
+			}
+			
+			
 			player.openGui(CloneCraft.INSTANCE, GuiHandler.CLONE, worldObj, this.getEntityId(), 0, 0);
 			return true;
 		}
@@ -344,7 +311,7 @@ public class EntityClone extends EntityLiving implements RenderableManager{
 		return this.getHealth() > 0.0F && this.getHealth() < getMaxHealth();
 	}
 	
-//	RenderSelection renderSelection = null;
+	
 	
 	@Override
 	public void onUpdate()
@@ -392,13 +359,9 @@ public class EntityClone extends EntityLiving implements RenderableManager{
 			
 			
 		}else{
-			/*if(renderSelection == null){
-				renderSelection = new RenderSelection(this);
-				CCPostRender.addRenderable(this, renderSelection);
-			}else{
-				renderSelection.tick();
-			}*/
+			
 		}
+		
 		this.updateScale();
 		this.updateExperience();
 		this.updateUsingItem();
@@ -448,9 +411,6 @@ public class EntityClone extends EntityLiving implements RenderableManager{
 
 	public void onSpawnedBy(String spawnedBy) {
 		this.setOwner(spawnedBy);
-		/*if(!worldObj.isRemote){
-			this.setName(names[worldObj.rand.nextInt(names.length)]);
-		}*/
 	}
 	
 	//==================================================================================================================
@@ -666,7 +626,7 @@ public class EntityClone extends EntityLiving implements RenderableManager{
 			return;
 		}
 		if(!this.canEntityBeSeen(attack)){
-			selectBestDamageItem();
+			selectBestDamageItem(false);
 			return;
 		}
 		//Squared
@@ -674,7 +634,7 @@ public class EntityClone extends EntityLiving implements RenderableManager{
 		
 		double distanceSquared = this.getDistanceSqToEntity(attack);
 		if(distanceSquared < attackDist){
-			selectBestDamageItem();
+			selectBestDamageItem(false);
 			this.clearItemInUse();
 //			if(distanceSquared < 12){
 				if((float)attack.hurtResistantTime <= (float)attack.maxHurtResistantTime / 2.0F && attackTimer == 0){
@@ -786,10 +746,10 @@ public class EntityClone extends EntityLiving implements RenderableManager{
 		}
 	}
 	
-	public void selectBestDamageItem(){
+	public void selectBestDamageItem(boolean searchWhole){
 		int index = -1;
 		float best = -1;
-		for(int a = 0; a < 9; a++){
+		for(int a = 0; a < (searchWhole?36:9); a++){
 			if(inventory.getStackInSlot(a) != null){
 				ItemStack stack = inventory.getStackInSlot(a);
 				float goodness = getWeaponGoodness(stack);
@@ -801,7 +761,18 @@ public class EntityClone extends EntityLiving implements RenderableManager{
 			}
 		}
 		if(index != -1){
-			inventory.currentItem = index;
+			if(index < 9)
+			{
+				inventory.currentItem = index;
+			}
+			else
+			{
+				inventory.currentItem = inventory.putStackOnHotbar(index);
+			}
+		}
+		else if(!searchWhole)
+		{
+			selectBestDamageItem(true);
 		}
 	}
 	
@@ -1023,7 +994,7 @@ public class EntityClone extends EntityLiving implements RenderableManager{
 				{
 					EntityPlayer player = ((EntityPlayer)damager);
 					
-					System.out.println("asdasd");
+//					System.out.println("asdasd");
 					
 					if(player.capabilities.isCreativeMode || (this.ownerName != null && this.ownerName.equals(player.getCommandSenderName())))
 					{
@@ -1221,31 +1192,17 @@ public class EntityClone extends EntityLiving implements RenderableManager{
     	for(int a = 0; a < itemList.size(); a++)
     	{
     		ItemSelectEntry entry = itemList.get(a);
-    		Item item = entry.theItem;
     		
-    		//If the relative hardness is 0, then it will never be broken.
-    		float hardness = block.getPlayerRelativeBlockHardness(this.getPlayerInterface(), this.worldObj, theCoords.posX, theCoords.posY, theCoords.posZ);
-    		
-    		if(hardness == 0)
+    		if(!this.canItemHarvestBlock(entry.stack, theCoords, block, meta))
     		{
     			itemList.remove(a);
     			a--;
     			continue;
     		}
     		
-    		int harvestLevel = block.getHarvestLevel(meta);
-    		String harvestTool = block.getHarvestTool(meta);
-    		
-    		if(harvestTool != null && entry.stack.getItem().getHarvestLevel(entry.stack, harvestTool) < harvestLevel)
+    		if(entry.theItem instanceof ItemTool)
     		{
-    			itemList.remove(a);
-    			a--;
-    			continue;
-    		}
-    		
-    		if(item instanceof ItemTool)
-    		{
-    			ItemTool tool = (ItemTool)item;
+    			ItemTool tool = (ItemTool)entry.theItem;
     			entry.priority = tool.func_150893_a(entry.stack, block);
     		}
     	}
@@ -1270,6 +1227,26 @@ public class EntityClone extends EntityLiving implements RenderableManager{
     	}
     	
     	return false;
+    }
+    
+    public boolean canItemHarvestBlock(ItemStack stack, ChunkCoordinates theCoords, Block block, int meta)
+    {
+    	//If the relative hardness is 0, then it will never be broken.
+		float hardness = block.getPlayerRelativeBlockHardness(this.getPlayerInterface(), this.worldObj, theCoords.posX, theCoords.posY, theCoords.posZ);
+		
+		if(hardness == 0)
+		{
+			return false;
+		}
+		
+		int harvestLevel = block.getHarvestLevel(meta);
+		String harvestTool = block.getHarvestTool(meta);
+		
+		if(harvestTool != null && stack.getItem().getHarvestLevel(stack, harvestTool) < harvestLevel)
+		{
+			return false;
+		}
+		return true;
     }
     
     public static class ItemSelectEntry<E extends Item> implements Comparable<ItemSelectEntry>{
@@ -1323,16 +1300,7 @@ public class EntityClone extends EntityLiving implements RenderableManager{
     	return list;
     }
     
-    private boolean isMaterial(Material[] materials, Material material){
-    	for(int a = 0; a < materials.length; a++)
-    	{
-    		if(material == materials[a])
-    		{
-    			return true;
-    		}
-    	}
-    	return false;
-    }
+    
     
     
 
@@ -1624,47 +1592,46 @@ public class EntityClone extends EntityLiving implements RenderableManager{
 	{
 		return ownerName != null && ownerName.length() > 0;
 	}
+	
 	public boolean canUseThisEntity(EntityPlayer player)
 	{
 		return canUseThisEntityUsername(player.getCommandSenderName()) || player.capabilities.isCreativeMode;
 	}
+	
 	public boolean canUseThisEntityUsername(String username)
 	{
 		return (!hasOwner()||!CloneCraft.INSTANCE.config.areOwnersEnabled()?true:(ownerName.equals(username)));
 	}
+	
 	public void setOwner(String ownerUsername)
 	{
 		ownerName = ownerUsername;
 	}
+	
 	public EntityPlayer getOwner()
 	{
 		if(hasOwner())
 		{
 			return getPlayerByName(ownerName);
-			/*Object player;
-			for(int a = 0; a < worldObj.playerEntities.size(); a++)
-			{
-				player = (EntityPlayer)worldObj.playerEntities.get(a);
-				if(player != null && player instanceof EntityPlayer && ((EntityPlayer)player).getCommandSenderName().equals(ownerName))
-				{
-					return (EntityPlayer)player;
-				}
-			}*/
 		}
+		
 		return null;
 	}
 	
 	public EntityPlayer getPlayerByName(String name)
 	{
 		Object player;
+		
 		for(int a = 0; a < worldObj.playerEntities.size(); a++)
 		{
 			player = (EntityPlayer)worldObj.playerEntities.get(a);
+			
 			if(player != null && player instanceof EntityPlayer && ((EntityPlayer)player).getCommandSenderName().equals(name))
 			{
 				return (EntityPlayer)player;
 			}
 		}
+		
 		return null;
 	}
 	
@@ -1675,19 +1642,24 @@ public class EntityClone extends EntityLiving implements RenderableManager{
 	//==================================================================================================================
 	//TODO Items & Experience
 	//==================================================================================================================
-	private void pickupNearbyItems() {
+	private void pickupNearbyItems()
+	{
 		if(!this.isEntityAlive() || !this.getOptions().pickUp.get())
 		{
 			return;
 		}
+		
 		List list = this.worldObj.getEntitiesWithinAABB(EntityItem.class, this.boundingBox.expand(1D, 1.5D, 1D));
 		EntityItem eItem;
+		
 		for(int a = 0; a < list.size(); a++)
 		{
 			eItem = (EntityItem)list.get(a);
+			
 			if(eItem.delayBeforeCanPickup == 0)
 			{
 				pickupItem(eItem.getEntityItem());
+				
 				if(eItem.getEntityItem().stackSize == 0)
 				{
 					worldObj.removeEntity(eItem);
@@ -1702,6 +1674,7 @@ public class EntityClone extends EntityLiving implements RenderableManager{
 			ItemArmor item = (ItemArmor)stack.getItem();
 			int armorSlot = 3-item.armorType;
 			ItemStack slotArmor = inventory.armorItemInSlot(armorSlot);
+			
 			if(slotArmor == null)
 			{
 				inventory.setArmour(armorSlot, stack.copy());
@@ -1719,6 +1692,7 @@ public class EntityClone extends EntityLiving implements RenderableManager{
 			}
 		}
 		int removed = inventory.tryFitInInventory(stack);
+		
 		if(removed > 0)
 		{
 			worldObj.playSoundAtEntity(this, "random.pop", 0.2F, ((this.rand.nextFloat() - this.rand.nextFloat()) * 0.7F + 1.0F) * 2.0F);
@@ -1728,7 +1702,6 @@ public class EntityClone extends EntityLiving implements RenderableManager{
 	public boolean isBetterArmorType(ItemStack stackBetterDur, ItemStack thanMe, ItemArmor isBetterThan, ItemArmor me){
 		if(getArmourDamageReduction(stackBetterDur, isBetterThan) <= getArmourDamageReduction(thanMe, me))
 		{
-//			System.out.println("Check2: " + (isBetterThan != me ) + ", (" + stackBetterDur.getItemDamage() + ", " + thanMe.getItemDamage() + ")");
 			if(isBetterThan != me || stackBetterDur.getItemDamage() >= thanMe.getItemDamage())
 			{
 				return false;
@@ -1821,8 +1794,8 @@ public class EntityClone extends EntityLiving implements RenderableManager{
 		return name;
 	}
 
-	public void setName(String uneditedName){
-//		System.out.println("Set name: " + uneditedName);
+	public void setName(String uneditedName)
+	{
 		if(uneditedName == null || uneditedName.length() == 0){
 			uneditedName = "Steve";
 		}
@@ -1855,21 +1828,26 @@ public class EntityClone extends EntityLiving implements RenderableManager{
 
 
 	@SideOnly(value = Side.CLIENT)
-	public void updateLocalSkin(String editedName){
+	public void updateLocalSkin(String editedName)
+	{
 		//Checks to make sure the local skin actually exists. If it doesn't it sets the currentResource to the default (steve) resource
 
 		currentResource = new ResourceLocation("textures/" + editedName);
 		SimpleTexture tex = new SimpleTexture(currentResource);
-		try{
+		
+		try
+		{
 			tex.loadTexture(Minecraft.getMinecraft().getResourceManager());
-		}catch(Exception e){
+		}
+		catch(Exception e)
+		{
 			currentResource = defaultResource;
 		}
 	}
 
 	@SideOnly(value = Side.CLIENT)
-	public void updateSkin(String username){
-		
+	public void updateSkin(String username)
+	{
 		ResourceLocation resource = new ResourceLocation("skins/" + username);
 		TextureManager texturemanager = Minecraft.getMinecraft().getTextureManager();
 		ITextureObject object = texturemanager.getTexture(resource);
@@ -1895,7 +1873,8 @@ public class EntityClone extends EntityLiving implements RenderableManager{
 	@SideOnly(value = Side.CLIENT)
 	public ResourceLocation getTexture()
 	{
-		if(currentResource != null){
+		if(currentResource != null)
+		{
 			return currentResource;
 		}
 		return defaultResource;
@@ -1908,14 +1887,14 @@ public class EntityClone extends EntityLiving implements RenderableManager{
 	
 	boolean isItemInUse = false;
 	
-	public void updateUsingItem(){
+	public void updateUsingItem()
+	{
 		if (this.itemInUse != null)
         {
             ItemStack itemstack = this.getHeldItem();
 
             if (itemstack == this.itemInUse)
             {
-//            	System.out.println("Update " + itemInUseCount);
                 if (itemInUseCount <= 0)
                 {
                     this.onItemUseFinish();
@@ -1923,6 +1902,7 @@ public class EntityClone extends EntityLiving implements RenderableManager{
                 else
                 {
                     itemInUse.getItem().onUsingTick(itemInUse, getPlayerInterface(), itemInUseCount);
+                    
                     if (this.itemInUseCount <= 25 && this.itemInUseCount % 4 == 0)
                     {
                         this.updateItemUse(itemstack, 5);
@@ -1940,7 +1920,8 @@ public class EntityClone extends EntityLiving implements RenderableManager{
             }
         }
 		
-		if(worldObj.isRemote){
+		if(worldObj.isRemote)
+		{
 			if (this.isEating() && this.inventory.mainInventory[this.inventory.currentItem] != this.getItemInUse())
 	        {
 	            ItemStack itemstack = this.inventory.mainInventory[this.inventory.currentItem];
@@ -1968,7 +1949,6 @@ public class EntityClone extends EntityLiving implements RenderableManager{
     @SideOnly(Side.CLIENT)
     public IIcon getItemIcon(ItemStack p_70620_1_, int p_70620_2_)
     {
-//    	System.out.println("Get");
         IIcon iicon = super.getItemIcon(p_70620_1_, p_70620_2_);
 
         if (p_70620_1_.getItem() == Items.fishing_rod && this.fishEntity != null)
@@ -2109,10 +2089,9 @@ public class EntityClone extends EntityLiving implements RenderableManager{
 
     }
     
-    
-
     @Override
-	protected boolean canDespawn() {
+	protected boolean canDespawn()
+    {
     	return false;
 	}
 
@@ -2136,9 +2115,12 @@ public class EntityClone extends EntityLiving implements RenderableManager{
                     this.inventory.mainInventory[this.inventory.currentItem] = null;
                 }
             }
-            if(!worldObj.isRemote && this.itemInUse.getItemUseAction() == EnumAction.bow){
+            
+            if(!worldObj.isRemote && this.itemInUse.getItemUseAction() == EnumAction.bow)
+            {
             	shootBow(this.itemInUse);
             }
+            
             this.clearItemInUse();
         }
     }
@@ -2147,7 +2129,8 @@ public class EntityClone extends EntityLiving implements RenderableManager{
     //TODO Experience
     //==================================================================================================================
     
-	public void transferXP(EntityPlayer player) {
+	public void transferXP(EntityPlayer player)
+	{
 		player.addExperience(experienceTotal);
 		experience = 0;
 		experienceLevel = 0;
@@ -2155,134 +2138,136 @@ public class EntityClone extends EntityLiving implements RenderableManager{
 	}
 	//Experience
 	
-		int xpCooldown = 0;
+	int xpCooldown = 0;
+	
+	public void updateExperience()
+	{
+		if(xpCooldown > 0){
+			xpCooldown--;
+		}
 		
-		public void updateExperience(){
-			if(xpCooldown > 0){
-				xpCooldown--;
-			}
-			List l = worldObj.getEntitiesWithinAABB(EntityXPOrb.class, boundingBox.expand(6, 2, 6));
-			for(int a = 0; a < l.size(); a++){
-				Object o = l.get(a);
-				if(o instanceof EntityXPOrb){
-					EntityXPOrb exp = (EntityXPOrb)o;
-					if(isEntityAlive() && xpCooldown < 1 && getDistanceSqToEntityIncEye(exp) < 1 && !worldObj.isRemote){
-						int value = exp.getXpValue();
-						xpCooldown = 2;
-						
-						playNextTing();
-						
+		List l = worldObj.getEntitiesWithinAABB(EntityXPOrb.class, boundingBox.expand(6, 2, 6));
+		for(int a = 0; a < l.size(); a++){
+			Object o = l.get(a);
+			if(o instanceof EntityXPOrb){
+				EntityXPOrb exp = (EntityXPOrb)o;
+				if(isEntityAlive() && xpCooldown < 1 && getDistanceSqToEntityIncEye(exp) < 1 && !worldObj.isRemote){
+					int value = exp.getXpValue();
+					xpCooldown = 2;
+					
+					playNextTing();
+					
 //						playSound("random.orb", 0.1F, 0.5F * ((rand.nextFloat() - rand.nextFloat()) * 0.7F + 1.8F));
-						addExperience(value);
-						exp.setDead();
-						worldObj.removeEntity(exp);
-					}else if(!dead){
-						double var3 = (posX - exp.posX) / 8;
-						double var5 = (posY + (double)getEyeHeight() - exp.posY) / 8;
-						double var7 = (posZ - exp.posZ) / 8;
-						double var9 = Math.sqrt(var3 * var3 + var5 * var5 + var7 * var7);
-						double var11 = 1.0D - var9;
-						if (var11 > 0.0D)
-						{
-							var11 *= var11;
-							exp.motionX += var3 / var9 * var11 * 0.1D;
-							exp.motionY += var5 / var9 * var11 * 0.1D;
-							exp.motionZ += var7 / var9 * var11 * 0.1D;
-						}
-						exp.moveEntity(exp.motionX, exp.motionY, exp.motionZ);
+					addExperience(value);
+					exp.setDead();
+					worldObj.removeEntity(exp);
+				}else if(!dead){
+					double var3 = (posX - exp.posX) / 8;
+					double var5 = (posY + (double)getEyeHeight() - exp.posY) / 8;
+					double var7 = (posZ - exp.posZ) / 8;
+					double var9 = Math.sqrt(var3 * var3 + var5 * var5 + var7 * var7);
+					double var11 = 1.0D - var9;
+					if (var11 > 0.0D)
+					{
+						var11 *= var11;
+						exp.motionX += var3 / var9 * var11 * 0.1D;
+						exp.motionY += var5 / var9 * var11 * 0.1D;
+						exp.motionZ += var7 / var9 * var11 * 0.1D;
 					}
+					exp.moveEntity(exp.motionX, exp.motionY, exp.motionZ);
 				}
 			}
 		}
-		public double getDistanceSqToEntityIncEye(Entity par1Entity)
+	}
+	
+	public double getDistanceSqToEntityIncEye(Entity par1Entity)
+	{
+		double d0 = this.posX - par1Entity.posX;
+		double d1 = (this.posY+getEyeHeight()) - par1Entity.posY;
+		double d2 = this.posZ - par1Entity.posZ;
+		return d0 * d0 + d1 * d1 + d2 * d2;
+	}
+
+	public void addExperience(int par1)
+	{
+		int j = Integer.MAX_VALUE - this.experienceTotal;
+
+		if (par1 > j)
 		{
-			double d0 = this.posX - par1Entity.posX;
-			double d1 = (this.posY+getEyeHeight()) - par1Entity.posY;
-			double d2 = this.posZ - par1Entity.posZ;
-			return d0 * d0 + d1 * d1 + d2 * d2;
-		}
-		/*	private void increaseLevel() {
-			++this.experienceLevel;
-		}*/
-		public void addExperience(int par1) {
-			int j = Integer.MAX_VALUE - this.experienceTotal;
-
-			if (par1 > j)
-			{
-				par1 = j;
-			}
-
-			this.experience += (float)par1 / (float)this.xpBarCap();
-
-			for (this.experienceTotal += par1; this.experience >= 1.0F; this.experience /= (float)this.xpBarCap())
-			{
-				this.experience = (this.experience - 1.0F) * (float)this.xpBarCap();
-				this.addExperienceLevel(1);
-			}
+			par1 = j;
 		}
 
-		public void addExperienceLevel(int par1)
+		this.experience += (float)par1 / (float)this.xpBarCap();
+
+		for (this.experienceTotal += par1; this.experience >= 1.0F; this.experience /= (float)this.xpBarCap())
 		{
-			this.experienceLevel += par1;
+			this.experience = (this.experience - 1.0F) * (float)this.xpBarCap();
+			this.addExperienceLevel(1);
+		}
+	}
 
-			if (this.experienceLevel < 0)
-			{
-				this.experienceLevel = 0;
-				this.experience = 0.0F;
-				this.experienceTotal = 0;
-			}
+	public void addExperienceLevel(int par1)
+	{
+		this.experienceLevel += par1;
 
-			if (par1 > 0 && this.experienceLevel % 5 == 0 /*&& (float)this.field_82249_h < (float)this.ticksExisted - 100.0F*/)
-			{
-				float f = this.experienceLevel > 30 ? 1.0F : (float)this.experienceLevel / 30.0F;
-				this.worldObj.playSoundAtEntity(this, "random.levelup", f * 0.75F, 1.0F);
-				//            this.field_82249_h = this.ticksExisted;
-			}
+		if (this.experienceLevel < 0)
+		{
+			this.experienceLevel = 0;
+			this.experience = 0.0F;
+			this.experienceTotal = 0;
 		}
 
-		public int xpBarCap() {
-			return this.experienceLevel >= 30 ? 62 + (this.experienceLevel - 30) * 7
-					: (this.experienceLevel >= 15 ? 17 + (this.experienceLevel - 15) * 3
-							: 17);
+		if (par1 > 0 && this.experienceLevel % 5 == 0 /*&& (float)this.field_82249_h < (float)this.ticksExisted - 100.0F*/)
+		{
+			float f = this.experienceLevel > 30 ? 1.0F : (float)this.experienceLevel / 30.0F;
+			this.worldObj.playSoundAtEntity(this, "random.levelup", f * 0.75F, 1.0F);
+			//            this.field_82249_h = this.ticksExisted;
 		}
-		
-		private void dropAllXP() {
-			if(experienceTotal > 0){
-				Random r = new Random();
-				int xp = experienceTotal;
-				if(xp > 85){
-					xp = 85;
-				}
-				if(xp < 4){
-					EntityXPOrb xpOrb = new EntityXPOrb(worldObj, posX, posY+.5, posZ, experienceTotal);
+	}
+
+	public int xpBarCap() {
+		return this.experienceLevel >= 30 ? 62 + (this.experienceLevel - 30) * 7
+				: (this.experienceLevel >= 15 ? 17 + (this.experienceLevel - 15) * 3
+						: 17);
+	}
+	
+	private void dropAllXP() {
+		if(experienceTotal > 0){
+			Random r = new Random();
+			int xp = experienceTotal;
+			if(xp > 85){
+				xp = 85;
+			}
+			if(xp < 4){
+				EntityXPOrb xpOrb = new EntityXPOrb(worldObj, posX, posY+.5, posZ, experienceTotal);
+				xpOrb.motionX = (r.nextFloat()*2-1)/5;
+				xpOrb.motionY = (r.nextFloat()*2-1)/5;
+				xpOrb.motionZ = (r.nextFloat()*2-1)/5;
+				xpOrb.moveEntity(xpOrb.motionX, xpOrb.motionY, xpOrb.motionZ);
+				worldObj.spawnEntityInWorld(xpOrb);
+			}else{
+				int[] split = splitXP(xp);
+				for(int a = 0; a < split.length; a++){
+					EntityXPOrb xpOrb = new EntityXPOrb(worldObj, posX, posY+.5, posZ, split[a]);
 					xpOrb.motionX = (r.nextFloat()*2-1)/5;
 					xpOrb.motionY = (r.nextFloat()*2-1)/5;
 					xpOrb.motionZ = (r.nextFloat()*2-1)/5;
 					xpOrb.moveEntity(xpOrb.motionX, xpOrb.motionY, xpOrb.motionZ);
 					worldObj.spawnEntityInWorld(xpOrb);
-				}else{
-					int[] split = splitXP(xp);
-					for(int a = 0; a < split.length; a++){
-						EntityXPOrb xpOrb = new EntityXPOrb(worldObj, posX, posY+.5, posZ, split[a]);
-						xpOrb.motionX = (r.nextFloat()*2-1)/5;
-						xpOrb.motionY = (r.nextFloat()*2-1)/5;
-						xpOrb.motionZ = (r.nextFloat()*2-1)/5;
-						xpOrb.moveEntity(xpOrb.motionX, xpOrb.motionY, xpOrb.motionZ);
-						worldObj.spawnEntityInWorld(xpOrb);
-					}
 				}
 			}
 		}
+	}
 
-		public int[] splitXP(int xp){
-			int[] ret = new int[4];
-			int size = xp/4;
-			for(int a = 0; a < ret.length; a++){
-				ret[a] = size;
-			}
-			ret[3] = xp-(size*4) + size;
-			return ret;
+	public int[] splitXP(int xp){
+		int[] ret = new int[4];
+		int size = xp/4;
+		for(int a = 0; a < ret.length; a++){
+			ret[a] = size;
 		}
+		ret[3] = xp-(size*4) + size;
+		return ret;
+	}
 	
 	//==================================================================================================================
     //TODO Death & Animation
@@ -2290,6 +2275,7 @@ public class EntityClone extends EntityLiving implements RenderableManager{
 	
 	public void commitSuicide() {
 		this.setHealth(0);
+		this.setDead();
 		this.playSound(this.getDeathSound(), this.getSoundVolume(), this.getSoundPitch());
 		this.onDeath(DamageSource.outOfWorld);
 	}
@@ -2400,16 +2386,11 @@ public class EntityClone extends EntityLiving implements RenderableManager{
 	
 	//==================================================================================================================
 	
-	
+	@SideOnly(value = Side.CLIENT)
 	@Override
 	public boolean canRenderContinue(Renderable r) {
-		return this.isEntityAlive();
+		return this.isEntityAlive() && this.worldObj == Minecraft.getMinecraft().theWorld;
 	}
-
-
-	
-	
-	
 	
 	public final static int ID_OPTIONS = 12;
 	
@@ -2427,9 +2408,12 @@ public class EntityClone extends EntityLiving implements RenderableManager{
 		}
 	}
 
-	public void say(String string, EntityPlayer... sender) {
+	public void say(String string, EntityPlayer... sender)
+	{
 		ChatComponentText chat = new ChatComponentText("<" + this.getName() + "> " + string);
-		if(sender != null){
+		
+		if(sender != null)
+		{
 			for(int a = 0; a < sender.length; a++)
 			{
 				sender[a].addChatComponentMessage(chat);
@@ -2475,7 +2459,7 @@ public class EntityClone extends EntityLiving implements RenderableManager{
 		return true;
 	}
 	
-	Material[] seeThruMaterials = new Material[]{
+	static Material[] seeThruMaterials = new Material[]{
 			Material.glass,
 			Material.ice,
 			Material.leaves,
@@ -2485,7 +2469,7 @@ public class EntityClone extends EntityLiving implements RenderableManager{
 			Material.web,
 	};
 	
-	public boolean isBlockSeeThru(Block block, ChunkCoordinates cc)
+	public static boolean isBlockSeeThru(Block block, ChunkCoordinates cc)
 	{
 		Material m = block.getMaterial();
 		
@@ -2494,8 +2478,19 @@ public class EntityClone extends EntityLiving implements RenderableManager{
 			return false;
 		}
 		
-		return this.isMaterial(seeThruMaterials, m);
+		return isMaterial(seeThruMaterials, m);
 	}
+	
+	public static boolean isMaterial(Material[] materials, Material material){
+    	for(int a = 0; a < materials.length; a++)
+    	{
+    		if(material == materials[a])
+    		{
+    			return true;
+    		}
+    	}
+    	return false;
+    }
 
 
 	

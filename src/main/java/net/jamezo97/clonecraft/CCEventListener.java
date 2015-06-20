@@ -15,6 +15,8 @@ import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.init.Blocks;
+import net.minecraft.server.MinecraftServer;
+import net.minecraft.server.integrated.IntegratedServer;
 import net.minecraft.util.AxisAlignedBB;
 import net.minecraft.util.ChunkCoordinates;
 import net.minecraft.util.MovingObjectPosition;
@@ -121,12 +123,24 @@ public class CCEventListener {
 		}
 	}
 	
+	public void onServerTick(TickEvent.ServerTickEvent event)
+	{
+		//If we're running a dedicated server, not an integrated one (where the client and server both share the same schematicList object)
+		if(!(MinecraftServer.getServer() instanceof IntegratedServer))
+		{
+			CloneCraft.INSTANCE.schematicList.onUpdate();
+		}
+		
+	}
+	
 	EntityPlayer shooting = null;
 	
 	@SideOnly(value = Side.CLIENT)
 	@SubscribeEvent
 	public void onClientTick(TickEvent.ClientTickEvent event){
 		CCPostRender.checkRenderables();
+		
+		CloneCraft.INSTANCE.schematicList.onUpdate();
 		
 		if(shooting != null){
 			EntityPlayer p = shooting;
@@ -506,6 +520,8 @@ public class CCEventListener {
         }
 		return null;
 	}
+	
+	
 	
 
 }

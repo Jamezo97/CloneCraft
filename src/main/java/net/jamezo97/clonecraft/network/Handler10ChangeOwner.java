@@ -27,7 +27,7 @@ public class Handler10ChangeOwner extends Handler{
 			player.addChatComponentMessage(new ChatComponentText("You shouldn't be able to do that...").setChatStyle(new ChatStyle().setColor(EnumChatFormatting.RED)));
 		}else{
 			clone.setOwner(player.getCommandSenderName());
-			player.addChatComponentMessage(new ChatComponentText("You now own this clone!").setChatStyle(new ChatStyle().setColor(EnumChatFormatting.GOLD)));
+			player.addChatComponentMessage(new ChatComponentText("You now own " + clone.getName()).setChatStyle(new ChatStyle().setColor(EnumChatFormatting.GOLD)));
 		}
 	}
 

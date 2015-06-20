@@ -23,8 +23,14 @@ public class ClientProxy extends CommonProxy{
 	public static KeyBinding kb_select;
 	
 	@Override
-	public void load(CloneCraft craft) {
-		super.load(craft);
+	public void init(CloneCraft craft) {
+		super.init(craft);
+		
+	}
+	
+	public void preInit(CloneCraft craft)
+	{
+		super.preInit(craft);
 		RenderingRegistry.registerEntityRenderingHandler(net.jamezo97.clonecraft.entity.EntitySpawnEgg.class, new RenderSpawnEgg());
 		
 		RenderingRegistry.registerEntityRenderingHandler(net.jamezo97.clonecraft.clone.EntityClone.class, new RenderClone());
@@ -32,12 +38,14 @@ public class ClientProxy extends CommonProxy{
 		RenderingRegistry.registerEntityRenderingHandler(net.minecraft.entity.EntityCustom.class, new RenderCustom());
 		
 		int nextRenderID = RenderingRegistry.getNextAvailableRenderId();
-//		CentrifugeRenderHandler rh;
+
+
 		RenderingRegistry.registerBlockHandler(rh = new CentrifugeRenderHandler(nextRenderID));
 		CloneCraft.INSTANCE.blockCentrifuge.setRenderID(nextRenderID);
 		TileEntityRendererDispatcher.instance.mapSpecialRenderers.put(TileEntityCentrifuge.class, rh);
 		
 		nextRenderID = RenderingRegistry.getNextAvailableRenderId();
+		
 		LifeInducerRenderHandler lh;
 		RenderingRegistry.registerBlockHandler(lh = new LifeInducerRenderHandler(nextRenderID));
 		CloneCraft.INSTANCE.blockLifeInducer.setRenderID(nextRenderID);
@@ -51,15 +59,6 @@ public class ClientProxy extends CommonProxy{
 	public void postInit(CloneCraft cloneCraft) {
 		super.postInit(cloneCraft);
 		Reflect.init(Side.CLIENT);
-		
-//		IntBuffer buf = BufferUtils.createIntBuffer(5);
-//		System.out.println(buf.capacity());
-		
-//		GuiScrollableBlocks.bc.getColourFor(BreakableBlocks.conjoin(1,0));
-		
-		
-		
-		
 	}
 	
 	

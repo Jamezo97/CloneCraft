@@ -131,7 +131,8 @@ public class CCPostRender {
 		ArrayList<RenderableManager> toRemove = new ArrayList<RenderableManager>();
 		for (Entry<RenderableManager, Renderable> entry : handlerToRender
 				.entrySet()) {
-			if (!entry.getKey().canRenderContinue(entry.getValue())) {
+			if (!entry.getKey().canRenderContinue(entry.getValue()))
+			{
 				toRemove.add(entry.getKey());
 			}
 		}

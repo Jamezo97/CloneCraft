@@ -1,10 +1,13 @@
 package net.jamezo97.clonecraft;
 
+import java.awt.Desktop;
+import java.io.File;
+import java.io.IOException;
+
 import net.jamezo97.clonecraft.block.BlockAntenna;
 import net.jamezo97.clonecraft.block.BlockCentrifuge;
 import net.jamezo97.clonecraft.block.BlockLifeInducer;
 import net.jamezo97.clonecraft.block.BlockSterilizer;
-import net.jamezo97.clonecraft.clone.BreakableBlocks;
 import net.jamezo97.clonecraft.item.ItemEmptyEgg;
 import net.jamezo97.clonecraft.item.ItemNeedle;
 import net.jamezo97.clonecraft.item.ItemSpawnEgg;
@@ -14,7 +17,8 @@ import net.jamezo97.clonecraft.recipe.RecipeClearDNAItem;
 import net.jamezo97.clonecraft.recipe.RecipeEmptyEggToSpawnEgg;
 import net.jamezo97.clonecraft.recipe.RecipeNeedleTestTubeRecipe;
 import net.jamezo97.clonecraft.recipe.RecipeTestTubeNeedle;
-import net.jamezo97.framebuffer.FrameBuffer;
+import net.jamezo97.clonecraft.schematic.Schematic;
+import net.jamezo97.clonecraft.schematic.SchematicList;
 import net.minecraft.block.Block;
 import net.minecraft.client.Minecraft;
 import net.minecraft.init.Blocks;
@@ -33,6 +37,23 @@ import cpw.mods.fml.common.registry.GameRegistry;
 @Mod(modid = CloneCraft.MODID, version = CloneCraft.VERSION, name = CloneCraft.NAME)
 public class CloneCraft {
 
+	/*
+	 * As chunks are generated, randomly create 'towns'.
+	 * While the player is near a town, make the clones do stuff, make it look like a town.
+	 * When player leaves vicinity, town stops.
+	 * When loaded again, determine how much time has passed, and change accordingly, adding new buildings
+	 * new clones, new roads, new mines
+	 * Start off with just one family inside a house
+	 * Add crops, more houses
+	 * Add farms, animal pens, church, mineshaft, town center, shops
+	 * As more families procreate, build more houses. Type of houses depend on biome
+	 * If you attack a town clone, other will come to the rescue
+	 * 
+	 * Eventually add sounds, make them talk?
+	 * 
+	 * */
+	
+	
 	final static String MODID = "clonecraft";
 	final static String VERSION = "3.0";
 	final static String NAME = "CloneCraft";
@@ -45,7 +66,8 @@ public class CloneCraft {
 	public static CloneCraftCreativeTab creativeTab;
 	
 	
-	public CloneCraft(){
+	public CloneCraft()
+	{
 		CloneCraft.INSTANCE = this;
 		creativeTab = new CloneCraftCreativeTab("clonecraft");
 		creativeTabAll = new CloneCraftCreativeTabAll("clonecraftAll");
@@ -64,13 +86,10 @@ public class CloneCraft {
 	
 	public CConfig config = null;
 	
-	@EventHandler
-	public void preInit(FMLPreInitializationEvent event)
+	public SchematicList schematicList = null;
+	
+	public void initItemsAndBlocks()
 	{
-		
-		
-		config = new CConfig(event.getSuggestedConfigurationFile());
-		
 		itemNeedle = (ItemNeedle) new ItemNeedle().setTextureName("clonecraft:needle");
 		GameRegistry.registerItem(itemNeedle, "needle");
 		
@@ -94,16 +113,44 @@ public class CloneCraft {
 		
 		blockAntenna = (BlockAntenna) new BlockAntenna().setBlockName("antenna").setStepSound(Block.soundTypeMetal).setHardness(3.5f).setCreativeTab(creativeTab);
 		GameRegistry.registerBlock(blockAntenna, "antenna");
+	}
+	
+	@EventHandler
+	public void preInit(FMLPreInitializationEvent event)
+	{
+		this.dataDirectory = new File(Minecraft.getMinecraft().mcDataDir, "CloneCraft");
 		
-		proxy.load(this);
+		if(!this.dataDirectory.exists())
+		{
+			this.dataDirectory.mkdirs();
+		}
+
 		
+		config = new CConfig(event.getSuggestedConfigurationFile());
 		
+		schematicList = new SchematicList(this);
+		
+		initItemsAndBlocks();
+		
+		proxy.preInit(this);
+	}
+	
+	File dataDirectory;
+	
+	public File getDataDir()
+	{
+		return dataDirectory;
 	}
 	
 	CCEventListener eventListener;
 	
 	@EventHandler
-	public void init(FMLInitializationEvent event){
+	public void init(FMLInitializationEvent event)
+	{
+		
+		
+		proxy.init(this);
+		
 		PacketHandler.initPackets();
 		
 		FMLCommonHandler.instance().bus().register(eventListener = new CCEventListener());
@@ -113,9 +160,9 @@ public class CloneCraft {
 	}
 	
 	@EventHandler
-	public void postInit(FMLPostInitializationEvent event){
+	public void postInit(FMLPostInitializationEvent event)
+	{
 		proxy.postInit(this);
-//		System.out.println(BreakableBlocks.conjoin(0, 1) + " ---------------------------------------------- BREAKBES");
 	}
 	
 	
