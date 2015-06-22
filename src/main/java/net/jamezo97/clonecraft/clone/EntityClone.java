@@ -468,7 +468,8 @@ public class EntityClone extends EntityLiving implements RenderableManager{
 		}
 	}
 	
-	public void setScale(float scale){
+	public void setScale(float scale)
+	{
 		if(scale > maxScale)
 		{
 			if(preciseScale > maxScale)
@@ -491,6 +492,7 @@ public class EntityClone extends EntityLiving implements RenderableManager{
 		if(lastMaxHealth != newMaxHealth)
 		{
 			this.getEntityAttribute(SharedMonsterAttributes.maxHealth).setBaseValue(newMaxHealth);
+			this.heal((float)(newMaxHealth-lastMaxHealth));
 		}
 		if(this.getHealth() > newMaxHealth)
 		{

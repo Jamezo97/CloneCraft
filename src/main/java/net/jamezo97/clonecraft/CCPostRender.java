@@ -35,6 +35,39 @@ public class CCPostRender {
 			entry.getValue().render(partial);
 			GL11.glPopMatrix();
 		}
+		//renderArrowPath(partial);
+	}
+
+	public static void checkRenderables() {
+		ArrayList<RenderableManager> toRemove = new ArrayList<RenderableManager>();
+		for (Entry<RenderableManager, Renderable> entry : handlerToRender
+				.entrySet()) {
+			if (!entry.getKey().canRenderContinue(entry.getValue()))
+			{
+				toRemove.add(entry.getKey());
+			}
+		}
+		for (int a = 0; a < toRemove.size(); a++) {
+			handlerToRender.remove(toRemove.get(a));
+		}
+	}
+
+	static HashMap<RenderableManager, Renderable> handlerToRender = new HashMap<RenderableManager, Renderable>();
+
+	public static void addRenderable(RenderableManager manager,
+			Renderable render) {
+		handlerToRender.put(manager, render);
+	}
+
+	public static void removeRenderable(RenderableManager manager,
+			Renderable render) {
+		if (handlerToRender.containsKey(manager)) {
+			handlerToRender.remove(manager);
+		}
+	}
+	
+	public void renderArrowPath(float partial)
+	{
 		if (Minecraft.getMinecraft().thePlayer != null) {
 			EntityPlayer p_77615_3_ = Minecraft.getMinecraft().thePlayer;
 //			System.out.println(p_77615_3_.rotationYaw);
@@ -124,34 +157,6 @@ public class CCPostRender {
 			}
 			GL11.glEnable(GL11.GL_LIGHTING);
 			GL11.glEnable(GL11.GL_TEXTURE_2D);
-		}
-	}
-
-	public static void checkRenderables() {
-		ArrayList<RenderableManager> toRemove = new ArrayList<RenderableManager>();
-		for (Entry<RenderableManager, Renderable> entry : handlerToRender
-				.entrySet()) {
-			if (!entry.getKey().canRenderContinue(entry.getValue()))
-			{
-				toRemove.add(entry.getKey());
-			}
-		}
-		for (int a = 0; a < toRemove.size(); a++) {
-			handlerToRender.remove(toRemove.get(a));
-		}
-	}
-
-	static HashMap<RenderableManager, Renderable> handlerToRender = new HashMap<RenderableManager, Renderable>();
-
-	public static void addRenderable(RenderableManager manager,
-			Renderable render) {
-		handlerToRender.put(manager, render);
-	}
-
-	public static void removeRenderable(RenderableManager manager,
-			Renderable render) {
-		if (handlerToRender.containsKey(manager)) {
-			handlerToRender.remove(manager);
 		}
 	}
 	
