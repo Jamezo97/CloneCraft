@@ -31,18 +31,18 @@ public class CommonProxy {
 	public void preInit(CloneCraft craft)
 	{
 		
-		EntityRegistry.registerModEntity(EntitySpawnEgg.class, "EntitySpawnEgg", 0, craft, 80, 10, true);
+		EntityRegistry.registerModEntity(EntitySpawnEgg.class, craft.config.ID_ENTITY_SPAWNEGG, 0, craft, 80, 10, true);
 		
-		EntityRegistry.registerModEntity(EntityClone.class, "EntityClone", 1, craft, 512, 2, true);
+		EntityRegistry.registerModEntity(EntityClone.class, craft.config.ID_ENTITY_CLONE, 1, craft, 512, 2, true);
 		
 		NetworkRegistry.INSTANCE.registerGuiHandler(craft, new GuiHandler());
 
 		
-		GameRegistry.registerTileEntity(TileEntitySterilizer.class, "Sterilizer");
+		GameRegistry.registerTileEntity(TileEntitySterilizer.class, craft.config.ID_STERILIZER);
 		
-		GameRegistry.registerTileEntity(TileEntityCentrifuge.class, "Centrifuge");
+		GameRegistry.registerTileEntity(TileEntityCentrifuge.class, craft.config.ID_CENTRIFUGE);
 		
-		GameRegistry.registerTileEntity(TileEntityLifeInducer.class, "LifeInducer");
+		GameRegistry.registerTileEntity(TileEntityLifeInducer.class, craft.config.ID_LIFEINDUCER);
 		
 	}
 	

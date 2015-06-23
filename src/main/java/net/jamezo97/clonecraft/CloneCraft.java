@@ -91,28 +91,28 @@ public class CloneCraft {
 	public void initItemsAndBlocks()
 	{
 		itemNeedle = (ItemNeedle) new ItemNeedle().setTextureName("clonecraft:needle");
-		GameRegistry.registerItem(itemNeedle, "needle");
+		GameRegistry.registerItem(itemNeedle, config.ID_NEEDLE);
 		
 		itemTestTube = (ItemTestTube) new ItemTestTube().setTextureName("clonecraft:testTube");
-		GameRegistry.registerItem(itemTestTube, "testTube");
+		GameRegistry.registerItem(itemTestTube, config.ID_TESTTUBE);
 		
 		itemEmptyEgg = (ItemEmptyEgg) new ItemEmptyEgg().setTextureName("clonecraft:spawnEggOut");
-		GameRegistry.registerItem(itemEmptyEgg, "emptyEgg");
+		GameRegistry.registerItem(itemEmptyEgg, config.ID_EMPTYEGG);
 		
 		itemSpawnEgg = (ItemSpawnEgg) new ItemSpawnEgg();
-		GameRegistry.registerItem(itemSpawnEgg, "spawnEgg");
+		GameRegistry.registerItem(itemSpawnEgg, config.ID_SPAWNEGG);
 		
 		blockSterilizer = (BlockSterilizer) new BlockSterilizer().setBlockName("sterilizer").setStepSound(Block.soundTypeMetal).setHardness(3.5f).setCreativeTab(creativeTab);
-		GameRegistry.registerBlock(blockSterilizer, "sterilizer");
+		GameRegistry.registerBlock(blockSterilizer, config.ID_STERILIZER);
 		
 		blockCentrifuge = (BlockCentrifuge) new BlockCentrifuge().setBlockName("centrifuge").setStepSound(Block.soundTypeMetal).setHardness(3.5f).setCreativeTab(creativeTab);
-		GameRegistry.registerBlock(blockCentrifuge, "centrifuge");
+		GameRegistry.registerBlock(blockCentrifuge, config.ID_CENTRIFUGE);
 		
 		blockLifeInducer = (BlockLifeInducer) new BlockLifeInducer().setBlockName("lifeInducer").setStepSound(Block.soundTypeMetal).setHardness(3.5f).setCreativeTab(creativeTab);
-		GameRegistry.registerBlock(blockLifeInducer, "lifeInducer");
+		GameRegistry.registerBlock(blockLifeInducer, config.ID_LIFEINDUCER);
 		
 		blockAntenna = (BlockAntenna) new BlockAntenna().setBlockName("antenna").setStepSound(Block.soundTypeMetal).setHardness(3.5f).setCreativeTab(creativeTab);
-		GameRegistry.registerBlock(blockAntenna, "antenna");
+		GameRegistry.registerBlock(blockAntenna, config.ID_ANTENNA);
 	}
 	
 	@EventHandler
