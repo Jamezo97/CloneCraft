@@ -18,26 +18,11 @@ public class Handler11SendSchematic extends Handler{
 	@Override
 	public void handle(Side side, EntityPlayer player)
 	{
-		this.schematicName = this.schematicName.replace("/", "_").replace("\\\\", "_");
+		String schematicName = this.schematicName.replace("/", "_").replace("\\\\", "_");
 		CloneCraft.INSTANCE.schematicList.receiveData(this, schematicName, (side==Side.SERVER?"SERVER":player.getCommandSenderName()));
 	}
 	
 	
-	
-	
-	public EntityPlayerMP sendTo = null;
-	
-	public void doSend()
-	{
-		if(sendTo == null)
-		{
-			this.sendToServer();
-		}
-		else
-		{
-			this.sendToPlayers(sendTo);
-		}
-	}
 	
 	
 	

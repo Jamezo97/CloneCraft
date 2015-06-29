@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 
 import net.jamezo97.clonecraft.CloneCraft;
+import net.jamezo97.clonecraft.network.Handler;
 import net.jamezo97.clonecraft.network.Handler11SendSchematic;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.server.MinecraftServer;
@@ -23,7 +24,8 @@ public class SchematicList {
 	
 	File baseFolder;
 	
-	public SchematicList(CloneCraft cloneCraft) {
+	public SchematicList(CloneCraft cloneCraft)
+	{
 		this.cloneCraft = cloneCraft;
 		this.baseFolder = new File(cloneCraft.getDataDir(), "Schematics");
 		if(!baseFolder.exists())
@@ -35,7 +37,7 @@ public class SchematicList {
 	
 	ArrayList<SchematicBuilder> builders = new ArrayList<SchematicBuilder>();
 	
-	ArrayList<Handler11SendSchematic> timedPackets = new ArrayList<Handler11SendSchematic>();
+	ArrayList<Handler> timedPackets = new ArrayList<Handler>();
 	
 	
 	long nextUpdate = System.currentTimeMillis()+10000;
@@ -81,8 +83,9 @@ public class SchematicList {
 	 * 
 	 * @param schem The schematic to send
 	 * @param sendTo Who to send it to. If null, then it is sent to the client.
+	 * @param The final Packet to send once the rest have been sent.
 	 */
-	public void sendSchematic(Schematic schem, EntityPlayerMP sendTo)
+	public void sendSchematic(Schematic schem, EntityPlayerMP sendTo, Handler handlerFinal)
 	{
 		int SEGMENTSIZE = 1024;
 		
@@ -94,9 +97,15 @@ public class SchematicList {
 			
 			timedPackets.add(handler = new Handler11SendSchematic(schem, a, length));
 			
-			handler.sendTo = sendTo;
+			handler.archiveRecipient(sendTo);
 			
-			a+= length;
+			a += length;
+			
+			if(a >= schem.blockIds.length)
+			{
+				//This is the last packet to be sent.
+				timedPackets.add(handlerFinal);
+			}
 		}
 	}
 
@@ -163,6 +172,8 @@ public class SchematicList {
 	public void reloadSchematics()
 	{
 		//First, remove all schematics that no longer exist on the HDD
+		
+		long l1 = System.currentTimeMillis();
 		
 		for(int a = 0; a < schematics.size(); a++)
 		{
@@ -245,18 +256,18 @@ public class SchematicList {
 		
 		//Now we have an array of schematic files, which are new. So let's load them!
 		
+		boolean loaded = false;
+		
 		for(int a = 0; a < schematicFiles.size(); a++)
 		{
+			loaded = true;
 			File theFile = schematicFiles.get(a);
 			
 			Schematic loadedSchem = Schematic.loadFrom(theFile);
 			
 			if(loadedSchem != null)
 			{
-				String localizedName = theFile.getAbsolutePath();
-				localizedName = localizedName.substring(this.baseFolder.getAbsolutePath().length()+1);//Remove the "C:\\Users/AppData.../CloneCraft/Schematics/" part
-				localizedName = localizedName.substring(0, localizedName.length()-10);//Remove the .schematic at the end
-				loadedSchem.name = localizedName;
+				loadedSchem.name = getSchematicNameFromFile(theFile);
 				
 				long modified = 0;
 				
@@ -266,7 +277,7 @@ public class SchematicList {
 				}
 				catch(Exception e)
 				{
-					System.err.println("Could not determine last modified date. Schematics may not update correctly due to your systems limitations");
+					System.err.println("Could not determine last modified date. Schematics may not update correctly due to your system's limitations");
 					e.printStackTrace();
 				}
 				
@@ -278,6 +289,35 @@ public class SchematicList {
 		}
 		
 		Collections.sort(schematics);
+		
+		long l2 = System.currentTimeMillis();
+		
+		if(loaded)
+		{
+			System.out.println("Loaded " + this.schematics.size() + " schematics in " + (l2-l1) + "ms");
+		}
+		
+	}
+	
+	public String getSchematicNameFromFile(File schematicFile)
+	{
+		String localizedName = schematicFile.getAbsolutePath();
+		localizedName = localizedName.substring(this.baseFolder.getAbsolutePath().length()+1);//Remove the "C:\\Users/AppData.../CloneCraft/Schematics/" part
+		localizedName = localizedName.substring(0, localizedName.length()-10);//Remove the .schematic at the end
+		return localizedName;
+	}
+
+	/**
+	 * Deletes any Buffers stored on the GPU which are no longer needed. However if the schematic is rendered again
+	 * the buffers will be reloaded.
+	 */
+	public void cleanSchematics()
+	{
+		for(int a = 0; a < this.schematics.size(); a++)
+		{
+			SchematicEntry schemEntry = this.schematics.get(a);
+			schemEntry.schem.cleanGPU();
+		}
 	}
 	
 	

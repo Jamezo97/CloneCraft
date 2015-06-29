@@ -70,8 +70,16 @@ clonecraft.coption.share=Share Items
 clonecraft.coption.desc.share=Clones on the same team with the same owner will share items with eachother.
 clonecraft.coption.command=Commandable
 clonecraft.coption.desc.command=Enables clones to be commanded via in game text. Just talk to them, but begin with a \ (backslash)
-key.selectClone=Select Clone
+
+key.ccSelectClone=Select Clone
 key.categories.clonecraft=Clone Craft
+key.ccForward=Schematic Forward
+key.ccBackward=Schematic Backward
+key.ccLeft=Schematic Left
+key.ccRight=Schematic Right
+key.ccUp=Schematic Up
+key.ccDown=Schematic Down
+
 
 
 

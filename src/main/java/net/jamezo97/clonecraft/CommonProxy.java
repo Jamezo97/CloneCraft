@@ -1,5 +1,6 @@
 package net.jamezo97.clonecraft;
 
+import java.io.File;
 import java.util.List;
 
 import net.jamezo97.clonecraft.clone.EntityClone;
@@ -15,6 +16,8 @@ import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLiving;
 import net.minecraft.entity.EnumCreatureType;
 import net.minecraft.item.ItemStack;
+import net.minecraft.server.MinecraftServer;
+import net.minecraft.server.MinecraftServerAccessor;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.world.World;
 import net.minecraft.world.biome.BiomeGenBase;
@@ -154,5 +157,10 @@ public class CommonProxy {
             spawns.add(new SpawnListEntry(entityClass, weightedProb, min, max));
         }
     }
+
+	public File getBaseFolder()
+	{
+		return MinecraftServerAccessor.getDataDirectory(MinecraftServer.getServer());
+	}
 	
 }

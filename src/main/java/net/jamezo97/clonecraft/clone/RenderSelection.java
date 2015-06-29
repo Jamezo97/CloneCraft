@@ -53,6 +53,12 @@ public class RenderSelection implements Renderable{
 
 
 	@Override
+	public void onRemoved() {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
 	public void render(float p) {
 		GL11.glDisable(GL11.GL_TEXTURE_2D);
 		
@@ -272,6 +278,12 @@ public class RenderSelection implements Renderable{
 	
 	public float getDone(){
 		return (float) (Math.sin(done*2*Math.PI)+1.0f) / 2.0f;
+	}
+
+	@Override
+	public void onTick() {
+		// TODO Auto-generated method stub
+		
 	}
 
 	

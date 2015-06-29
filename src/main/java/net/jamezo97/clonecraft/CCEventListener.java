@@ -97,13 +97,14 @@ public class CCEventListener {
 		GL11.glEnable(GL11.GL_TEXTURE_2D);
 	}
 	
+	
+	
 	@SideOnly(value = Side.CLIENT)
 	@SubscribeEvent
-	public void onKeyInput(InputEvent.KeyInputEvent event){
-//		System.out.println("Input");
+	public void onKeyInput(InputEvent.KeyInputEvent event)
+	{
 		if(ClientProxy.kb_select.isPressed())
 		{
-//			System.out.println("Pressed");
 			if(Minecraft.getMinecraft().thePlayer != null)
 			{
 				MovingObjectPosition mop = rayTraceWithEntities(100, Minecraft.getMinecraft().thePlayer, 1);//Minecraft.getMinecraft().objectMouseOver;//Minecraft.getMinecraft().thePlayer.rayTrace(100, 1);
@@ -111,16 +112,15 @@ public class CCEventListener {
 				{
 					selectedClone = (EntityClone)mop.entityHit;
 					countDown = System.currentTimeMillis() + countDownBegin;
-//					System.out.println("Hit clone");
 				}
 				else
 				{
-//					System.out.println("nope clone: " + mop.hitVec);
 					countDown = -1;
 					selectedClone = null;
 				}
 			}
 		}
+		
 	}
 	
 	public void onServerTick(TickEvent.ServerTickEvent event)
@@ -133,48 +133,247 @@ public class CCEventListener {
 		
 	}
 	
-	EntityPlayer shooting = null;
+	boolean leftPressed = false;
+	boolean rightPressed = false;
+	boolean upPressed = false;
+	boolean downPressed = false;
+	boolean forwardPressed = false;
+	boolean backwardPressed = false;
+	
+	public static int moveX = 0;
+	public static int moveY = 0;
+	public static int moveZ = 0;
+	
+	//Displacements
+	private static float disX = 0;
+	private static float disY = 0;
+	private static float disZ = 0;
+	
+	//Velocities
+	private static float velX = 0;
+	private static float velY = 0;
+	private static float velZ = 0;
 	
 	@SideOnly(value = Side.CLIENT)
 	@SubscribeEvent
-	public void onClientTick(TickEvent.ClientTickEvent event){
-		CCPostRender.checkRenderables();
+	public void onClientTick(TickEvent.ClientTickEvent event)
+	{
+		CCPostRender.removeExpiredRenderables();
 		
 		CloneCraft.INSTANCE.schematicList.onUpdate();
 		
-		if(shooting != null){
-			EntityPlayer p = shooting;
-			
-			
-			
-			Vector vecFrom = new Vector(p.posX, p.posY+ p.getEyeHeight(), p.posZ);
-			
-			for(int b = 1; b <= 1; b++)
+		if(Minecraft.getMinecraft().theWorld != null)
+		{
+			onClientWorldTick(null);
+		}
+		
+	}
+	
+	@SubscribeEvent
+	public void onWorldTick(TickEvent.WorldTickEvent event)
+	{
+		//onClientWorldTick(event);
+	}
+	
+	float[][] multipliers = new float[][]{
+			{-1, +1},
+			{-1, -1},
+			{+1, -1},
+			{+1, +1}
+	};
+	
+	//viewingQuadrant
+	int vq = 0;
+	
+	@SideOnly(value = Side.CLIENT)
+	public void onClientWorldTick(TickEvent.WorldTickEvent event)
+	{
+		CCPostRender.onTick();
+		
+		{
+			if(!leftPressed && !rightPressed && !upPressed && !downPressed && !forwardPressed && !backwardPressed
+					&& Minecraft.getMinecraft().thePlayer != null)
 			{
-				Vec3 look = p.getLook(1);
-				Vector vecTo = new Vector(look.xCoord, look.yCoord, look.zCoord);
-				vecTo = vecTo.multiply(5).add(vecFrom);
-//				long l1 = System.currentTimeMillis();
-				ChunkCoordinates[] ccs = RayTrace.rayTraceBlocks(vecFrom, vecTo, p.worldObj);
-//				long l2 = System.currentTimeMillis()-l1;
+				float rotate = (Minecraft.getMinecraft().thePlayer.rotationYawHead + 45) % 360.0f;
 				
+				if (rotate < 0) { rotate += 360; }
 				
-				World world = p.worldObj;
-				
-				for(int a = 0; a < ccs.length; a++)
-				{
-					ChunkCoordinates cc = ccs[a];
+				vq = (int)(rotate / 90);
+				/*0
+				   UP:	Z+
+				RIGHT: 	X-
+				1
+				   UP:	X-
+				RIGHT: 	Z-
+				2
+				   UP:	Z-
+				RIGHT: 	X+
+				3
+				   UP:	X+
+				RIGHT: 	Z+*/
 
-					world.setBlock(cc.posX, cc.posY, cc.posZ, Blocks.air);
-				}
+				
 			}
 			
-//			shooting = null;
+			moveX = (int)(Math.signum(disX) * Math.floor(Math.abs(disX)));
+			moveY = (int)(Math.signum(disY) * Math.floor(Math.abs(disY)));
+			moveZ = (int)(Math.signum(disZ) * Math.floor(Math.abs(disZ)));
 			
+			disX -= moveX;
+			disY -= moveY;
+			disZ -= moveZ;
+			
+			if(vq == 0 || vq == 2)
+			{
+				disX += velX;
+				disZ += velZ;
+			}
+			else
+			{
+				disX += velZ;
+				disZ += velX;
+			}
+			disY += velY;
+			
+			
+			
+			float increase = 0.02f;
+			
+			
+			
+			if(!leftPressed && !rightPressed && velX != 0)
+			{
+				velX = 0;
+			}
+			
+			if(!upPressed && !downPressed && velY != 0)
+			{
+				velY = 0;
+			}
+			
+			if(!forwardPressed && !backwardPressed && velZ != 0)
+			{
+				velZ = 0;
+			}
+			
+//			System.out.println(vq);
+			
+			checkMoveBindings();
+		}
+	}
+	
+	@SideOnly(value = Side.CLIENT)
+	public void checkMoveBindings()
+	{
+		
+		float increase = 0.01f;
+		
+		if(ClientProxy.moveLeft.getIsKeyPressed())
+		{
+			if(!leftPressed)
+			{
+				if(vq == 0 || vq == 2)
+				{
+					moveX -= multipliers[vq][0];
+				}
+				else
+				{
+					moveZ -= multipliers[vq][0];
+				}
+			}
+			velX -= increase * multipliers[vq][0];
+			leftPressed = true;
+		}
+		else
+		{
+			leftPressed = false;
+		}
+		
+		if(ClientProxy.moveRight.getIsKeyPressed())
+		{
+			if(!rightPressed)
+			{
+				if(vq == 0 || vq == 2)
+				{
+					moveX += multipliers[vq][0];
+				}
+				else
+				{
+					moveZ += multipliers[vq][0];
+				}
+			}
+			velX += increase * multipliers[vq][0];
+			rightPressed = true;
+		}
+		else
+		{
+			rightPressed = false;
+		}
+		
+		if(ClientProxy.moveUp.getIsKeyPressed())
+		{
+			if(!upPressed){moveY++;}
+			velY += increase;
+			upPressed = true;
+		}
+		else
+		{
+			upPressed = false;
+		}
+		
+		if(ClientProxy.moveDown.getIsKeyPressed())
+		{
+			if(!downPressed){moveY--;}
+			velY -= increase;
+			downPressed = true;
+		}
+		else
+		{
+			downPressed = false;
 		}
 		
 		
+		if(ClientProxy.moveForward.getIsKeyPressed())
+		{
+			if(!forwardPressed)
+			{
+				if(vq == 0 || vq == 2)
+				{
+					moveZ += multipliers[vq][1];
+				}
+				else
+				{
+					moveX += multipliers[vq][1];
+				}
+			}
+			velZ += increase * multipliers[vq][1];
+			forwardPressed = true;
+		}
+		else
+		{
+			forwardPressed = false;
+		}
 		
+		if(ClientProxy.moveBackward.getIsKeyPressed())
+		{
+			if(!backwardPressed)
+			{
+				if(vq == 0 || vq == 2)
+				{
+					moveZ -= multipliers[vq][1];
+				}
+				else
+				{
+					moveX -= multipliers[vq][1];
+				}
+			}
+			velZ -= increase * multipliers[vq][1];
+			backwardPressed = true;
+		}
+		else
+		{
+			backwardPressed = false;
+		}
 	}
 	
 	EntityClone selectedClone = null;
@@ -238,10 +437,6 @@ public class CCEventListener {
 				return;
 			}
 			
-			
-			
-			
-			
 			List clonesRaw = event.player.worldObj.getEntitiesWithinAABB(EntityClone.class, event.player.boundingBox.expand(64, 48, 64));
 			
 			if(clonesRaw.size() == 0)
@@ -300,7 +495,6 @@ public class CCEventListener {
 					}
 					else if(command.toLowerCase().contains(clone.getCommandSenderName().toLowerCase()))
 					{
-//						System.out.println("Contains");
 						cloneEntries.add(new CloneEntry(clone, (8192+(float)clone.getDistanceSqToEntity(event.player))));
 					}
 					else
@@ -310,14 +504,13 @@ public class CCEventListener {
 					}
 				}
 			}
-//			System.out.println(cloneEntries);
+
 			if(cloneEntries == null || cloneEntries.size() == 0)
 			{
 				event.setCanceled(true);
 				return;
 			}
 			
-//			Collections.sort(cloneEntries, CloneEntry.cloneEntryCompare);
 			if(selectEveryone)
 			{
 				float largest = 0f;
@@ -365,20 +558,6 @@ public class CCEventListener {
 					event.setCanceled(true);
 				}
 			}
-		}
-		else if(event.message.startsWith("shoot"))
-		{
-			EntityPlayer p = event.player;
-			
-			if(shooting == p)
-			{
-				shooting = null;
-			}
-			else
-			{
-				shooting = p;
-			}
-			
 		}
 	}
 	

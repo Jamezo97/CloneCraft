@@ -6,13 +6,12 @@ import java.util.ArrayList;
 import net.jamezo97.clonecraft.network.Handler9UpdateBreakBlocks;
 import net.minecraft.block.Block;
 import net.minecraft.creativetab.CreativeTabs;
-import net.minecraft.entity.EntityList;
-import net.minecraft.entity.monster.IMob;
-import net.minecraft.entity.passive.IAnimals;
 import net.minecraft.init.Blocks;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
+import cpw.mods.fml.relauncher.Side;
+import cpw.mods.fml.relauncher.SideOnly;
 
 public class BreakableBlocks {
 	
@@ -233,33 +232,33 @@ public class BreakableBlocks {
 	
 	public static long[] validBlocksArray;
 	
-//	private static ArrayList<Class> invalids = new ArrayList<Class>();
-	
-	static{
-		
-//		invalids.add(EntityMob.class);
-//		invalids.add(EntityLiving.class);
-		
-		load();
-		validBlocksArray = toPrimitiveLong(validBlocks);
-	}
-	
-	private static void load(){
+	@SideOnly(value = Side.CLIENT)
+	public static void loadBlocksClient()
+	{
 		ArrayList loadInto = new ArrayList();
-//		ArrayList<Long> mainData = new ArrayList<Long>();
-		for(Object o : Block.blockRegistry){
-			if(o instanceof Block){
+		
+		for(Object o : Block.blockRegistry)
+		{
+			if(o instanceof Block)
+			{
 				loadInto.clear();
 				Block block = (Block)o;
 				Item blockItem = Item.getItemFromBlock(block);
-				if(blockItem != null && block.getCreativeTabToDisplayOn() != null){
+				
+				if(blockItem != null && block.getCreativeTabToDisplayOn() != null)
+				{
 					blockItem.getSubItems(blockItem, CreativeTabs.tabAllSearch, loadInto);
 					ItemStack stack;
-					for(int a = 0; a < loadInto.size(); a++){
-						if(loadInto.get(a) instanceof ItemStack){
-							stack  = (ItemStack)loadInto.get(a);
+					
+					for(int a = 0; a < loadInto.size(); a++)
+					{
+						if(loadInto.get(a) instanceof ItemStack)
+						{
+							stack = (ItemStack) loadInto.get(a);
 							long data = conjoin(Block.getIdFromBlock(block), stack.getItemDamage());
-							if(!validBlocks.contains(data)){
+							
+							if(!validBlocks.contains(data))
+							{
 								validBlocks.add(data);
 							}
 						}
@@ -267,6 +266,8 @@ public class BreakableBlocks {
 				}
 			}
 		}
+		
+		validBlocksArray = toPrimitiveLong(validBlocks);
 	}
 	
 	public static boolean isValidBlock(long blockData){

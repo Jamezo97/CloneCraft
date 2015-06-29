@@ -84,30 +84,12 @@ public class EntityAIFollowCloneOwner extends EntityAIBase
                             clone.setLocationAndAngles((double)((float)(var1 + var4) + 0.5F), (double)var3, (double)((float)(var2 + var5) + 0.5F), clone.rotationYaw, clone.rotationPitch);
                             clone.getNavigator().clearPathEntity();
                             followingCount = 0;
-                            return true;
+                            //Stop executing, the clone must be close enough now.
+                            return false;
                         }
                     }
                 }
 			}
-/*			else if(followingPlayer && distance < 4)
-			{
-				//If the clone is standing too close to the player, make the clone move out of the way and stop following
-				double x = owner.posX + rand.nextInt(4)-2;
-				double y = owner.posY;
-				double z = owner.posZ + rand.nextInt(4)-2;
-				
-				int blockX = 
-				
-				while(y > 1 && clone.worldObj.doesBlockHaveSolidTopSurface(clone.worldObj, var1 + var4, var3 - 1, var2 + var5))
-				
-					
-				if(y < 1)
-				{
-					PathEntity path = clone.moveTo(x, owner.posY, z);
-					followingPlayer = false;
-				}
-				
-			}*/
 			else if(distance > 49 && followingCount++ >= 10/* || (followingPlayer && (lastSetPath != clone.getNavigator().getPath() || followingCount % 10 == 0))*/)
 			{		
 				long l1 = System.currentTimeMillis();
@@ -138,7 +120,6 @@ public class EntityAIFollowCloneOwner extends EntityAIBase
 				
 				if(y >= 1)
 				{
-					System.out.println(y);
 					lastSetPath = clone.moveTo(x, y, z);
 					followingCount = 0;
 					followingPlayer = true;
@@ -152,17 +133,13 @@ public class EntityAIFollowCloneOwner extends EntityAIBase
 				
 				l2 -= l1;
 				//timer += l2;
-				
-				
 			}
-			
+			return clone.getOptions().follow.get() && clone.getOwner() != null && !clone.getOptions().guard.get() && distance > 16;
 		}
 		else
 		{
 			return false;
 		}
-//		runningTick++;
-		return clone.getOptions().follow.get() && clone.getOwner() != null && !clone.getOptions().guard.get();
 	}
 
 

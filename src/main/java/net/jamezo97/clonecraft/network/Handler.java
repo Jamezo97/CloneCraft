@@ -14,7 +14,7 @@ import cpw.mods.fml.relauncher.Side;
 
 public abstract class Handler{
 	
-	
+	private static Object NULL = new Object();
 	
 	public abstract void handle(Side side, EntityPlayer player);
 
@@ -106,6 +106,42 @@ public abstract class Handler{
 		}
 	}
 	
+	long timeToSendAt = 0;
+	
+	public void setSendTime(long toSend)
+	{
+		timeToSendAt = toSend;
+	}
+	
+	public long getSendTime()
+	{
+		return timeToSendAt;
+	}
+	
+	private Object sendTo = NULL;
+	
+	/**
+	 * Store the recipient of the packet, so it may be sent to them at a later point in time.
+	 * @param endTarget The player to send it to(Server -> Client)<br>Or null to send to the server (Client -> Server)
+	 */
+	public void archiveRecipient(EntityPlayerMP endTarget)
+	{
+		sendTo = endTarget;
+	}
+	
+	public void doSend()
+	{
+		if(sendTo == null)
+		{
+			this.sendToServer();
+		}
+		else if(sendTo instanceof EntityPlayerMP)
+		{
+			this.sendToPlayer(sendTo);
+		}
+	}
+	
+	
 	public HandlerPacket getPacket(){
 		return new HandlerPacket(this);
 	}
@@ -130,6 +166,7 @@ public abstract class Handler{
 		registerHandler(9, Handler9UpdateBreakBlocks.class);
 		registerHandler(10, Handler10ChangeOwner.class);
 		registerHandler(11, Handler11SendSchematic.class);
+		registerHandler(12, Handler12BuildSchematic.class);
 		
 		
 	}

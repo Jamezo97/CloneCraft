@@ -169,7 +169,7 @@ public abstract class GuiScrollable extends Gui{
 	
 	public void updateMouse(int mX, int mY){
 		int dWheel;
-		if((dWheel = Mouse.getDWheel()) != 0){
+		if(isMouseOver(mX, mY) && (dWheel = Mouse.getDWheel()) != 0){
 			dWheel *= dWheel * (dWheel<0?1:-1);
 			this.scrolled += ((float)dWheel) / ((float)totalHeight)/1000.0f;
 			

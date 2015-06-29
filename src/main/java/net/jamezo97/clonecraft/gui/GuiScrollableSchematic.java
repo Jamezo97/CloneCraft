@@ -18,11 +18,13 @@ public class GuiScrollableSchematic extends GuiScrollable{
 		this.gui = gui;
 	}
 
-	int selected = -1;
+//	int selected = -1;
 	
 	@Override
 	public boolean isEntrySelected(int entryIndex) {
-		return selected == entryIndex;
+		SchematicEntry schem = CloneCraft.INSTANCE.schematicList.getSchematics().get(entryIndex);
+		return gui.clone.getBuildAI().getSchematic() == schem.schem;
+//		return selected == entryIndex;
 	}
 
 	@Override
@@ -35,38 +37,52 @@ public class GuiScrollableSchematic extends GuiScrollable{
 		return entryHeight;
 	}
 
+	public void setSelected(int i) {
+		SchematicEntry schem = CloneCraft.INSTANCE.schematicList.getSchematics().get(i);
+		gui.clone.getBuildAI().setSchematic(schem.schem);
+//		System.out.println(gui.clone.getBuildAI().getSchematic());
+//		this.selected = i;
+	}
+	
 	@Override
 	public void entryClicked(int entryIndex)
 	{
-		if(selected == entryIndex)
+		if(isEntrySelected(entryIndex))
 		{
-			selected = -1;
+			gui.clone.getBuildAI().setSchematic(null);
 		}
 		else
 		{
-			selected = entryIndex;
+			if(gui.clone.getBuildAI().getSchematic() == null)
+			{
+				gui.clone.getBuildAI().posX = (int)Math.floor(this.gui.clone.posX);
+				gui.clone.getBuildAI().posY = (int)Math.floor(this.gui.clone.posY);
+				gui.clone.getBuildAI().posZ = (int)Math.floor(this.gui.clone.posZ);
+			}
+			setSelected(entryIndex);
 		}
 	}
 	
-	public int getSelectedIndex()
+	/*public int getSelectedIndex()
 	{
 		return selected;
-	}
+	}*/
 	
 	public Schematic getSelectedSchematic()
 	{
-		if(selected != -1)
+		return gui.clone.getBuildAI().getSchematic();
+		/*if(selected != -1)
 		{
 			return CloneCraft.INSTANCE.schematicList.getSchematics().get(selected).schem;
 		}
-		return null;
+		return null;*/
 	}
 
 	@Override
 	public void renderEntry(int entryIndex, int width, int height)
 	{
 		SchematicEntry schem = CloneCraft.INSTANCE.schematicList.getSchematics().get(entryIndex);
-		if(selected == entryIndex)
+		if(isEntrySelected(entryIndex))
 		{
 			this.drawRect(0, 0, width, height, 0xffffffff);
 			this.drawRect(2, 2, width-2, height-2, 0xff1177aa);
@@ -80,46 +96,63 @@ public class GuiScrollableSchematic extends GuiScrollable{
 		this.drawString(Minecraft.getMinecraft().fontRenderer, "Width (X): " + schem.schem.xSize, 3, 20, 0xffffffff);
 		this.drawString(Minecraft.getMinecraft().fontRenderer, "Height(Y): " + schem.schem.ySize, 3, 30, 0xffffffff);
 		this.drawString(Minecraft.getMinecraft().fontRenderer, "Length(Z): " + schem.schem.zSize, 3, 40, 0xffffffff);
-		if(gui.displayMode == 2 || (gui.displayMode == 1 && entryIndex == selected))
+		if(gui.displayMode == 2/* || (gui.displayMode == 1 && entryIndex == selected)*/)
 		{
-			renderCenteredSchematicAt(schem.schem, width-75, 5, 80-10, entryHeight-10, gui.xRotate, gui.yRotate, 180);
+			renderCenteredSchematicAt(schem.schem, width-75, 5, 80-10, entryHeight-10, gui.xRotate, gui.yRotate, 180, 1);
 		}
 		
 	}
 	
-	public static void renderCenteredSchematicAt(Schematic schem, float x, float y, float maxWidth, float maxHeight, float rotateX, float rotateY, float rotateZ)
+	public static void renderCenteredSchematicAt(Schematic schem, float x, float y, float maxWidth, float maxHeight, float rotateX, float rotateY, float rotateZ, float scaleFactor)
 	{
-		schem.storeOnGPU = false;
+//		schem.storeOnGPU(false);
 		
 		//Calculate scaling
 		float scale = 1.0f;
 		
+		float dx = schem.xSize/2.0f;
+		float dy = schem.ySize/2.0f;
+		float dz = schem.zSize/2.0f;
+		
+		float maxRadi = (float)Math.sqrt(dx*dx + dy*dy + dz*dz);
+		
+		float minDimension = Math.min(maxWidth, maxHeight);
+		
+		scale = minDimension / (maxRadi*2);
+		
+		
+		/*
 		float schemWidth = Math.max(schem.xSize, schem.zSize);
 		float schemHeight = schem.ySize;
 		
-		scale = Math.min(maxWidth/schemWidth, maxHeight/schemHeight);
+//		float maxRadius = Math.sqrt()
 		
-		int theWidth = (int)(scale * schemWidth);
-		int theHeight = (int)(scale * schemHeight);
+		scale = Math.min(maxWidth/schemWidth, maxHeight/schemHeight);*/
+		
+		scale *= scaleFactor;
 		
 		GL11.glPushMatrix();
 		
-		GL11.glTranslatef(x + (maxWidth-theWidth)/2, y + (maxHeight-theHeight)/2, 0);
-
-		GL11.glScalef(scale, scale, scale);
+		/*GL11.glTranslatef(x, y, 0);
+		GL11.glTranslatef(maxWidth/2.0f, maxHeight/2.0f, 0);
+		GL11.glTranslatef(0, 0, 500);*/
 		
-		GL11.glTranslatef(schem.xSize/2, schem.ySize/2, schem.zSize/2);
+		GL11.glTranslatef(x + maxWidth/2.0f, y + maxHeight/2.0f, maxRadi*scale);
+		
+		GL11.glScalef(scale, scale, scale);
 		
 		GL11.glRotatef(rotateZ, 0.0f, 0.0f, 1.0f);
 		GL11.glRotatef(rotateY, 0.0f, 1.0f, 0.0f);
 		GL11.glRotatef(rotateX, 1.0f, 0.0f, 0.0f);
 		
-		GL11.glTranslatef(-schem.xSize/2, -schem.ySize/2, -schem.zSize/2);
+		GL11.glTranslatef(-schem.xSize/2.0f, -schem.ySize/2.0f, -schem.zSize/2.0f);
 		
 		schem.render();
 		
 		GL11.glPopMatrix();
 	}
+
+
 	
 	
 

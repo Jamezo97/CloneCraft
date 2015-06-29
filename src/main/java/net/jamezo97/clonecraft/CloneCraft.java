@@ -1,8 +1,6 @@
 package net.jamezo97.clonecraft;
 
-import java.awt.Desktop;
 import java.io.File;
-import java.io.IOException;
 
 import net.jamezo97.clonecraft.block.BlockAntenna;
 import net.jamezo97.clonecraft.block.BlockCentrifuge;
@@ -17,14 +15,17 @@ import net.jamezo97.clonecraft.recipe.RecipeClearDNAItem;
 import net.jamezo97.clonecraft.recipe.RecipeEmptyEggToSpawnEgg;
 import net.jamezo97.clonecraft.recipe.RecipeNeedleTestTubeRecipe;
 import net.jamezo97.clonecraft.recipe.RecipeTestTubeNeedle;
-import net.jamezo97.clonecraft.schematic.Schematic;
 import net.jamezo97.clonecraft.schematic.SchematicList;
 import net.minecraft.block.Block;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.settings.KeyBinding;
 import net.minecraft.init.Blocks;
 import net.minecraft.init.Items;
 import net.minecraft.item.ItemStack;
 import net.minecraftforge.common.MinecraftForge;
+
+import org.lwjgl.input.Keyboard;
+
 import cpw.mods.fml.common.FMLCommonHandler;
 import cpw.mods.fml.common.Mod;
 import cpw.mods.fml.common.Mod.EventHandler;
@@ -50,6 +51,13 @@ public class CloneCraft {
 	 * If you attack a town clone, other will come to the rescue
 	 * 
 	 * Eventually add sounds, make them talk?
+	 * 
+	 * 
+	 * 
+	 * 
+	 * Extend Wander ability. If multiple tries to wander somewhere fail, check if stuck. 
+	 * If stuck, and the 'Mine' and 'Pickup items' options are turned on, teleport out of the hole. Or maybe dig the surrounding blocks
+	 * to escape, if they are stone.
 	 * 
 	 * */
 	
@@ -88,6 +96,8 @@ public class CloneCraft {
 	
 	public SchematicList schematicList = null;
 	
+	
+	
 	public void initItemsAndBlocks()
 	{
 		itemNeedle = (ItemNeedle) new ItemNeedle().setTextureName("clonecraft:needle");
@@ -118,19 +128,19 @@ public class CloneCraft {
 	@EventHandler
 	public void preInit(FMLPreInitializationEvent event)
 	{
-		this.dataDirectory = new File(Minecraft.getMinecraft().mcDataDir, "CloneCraft");
+		this.dataDirectory = new File(proxy.getBaseFolder(), "CloneCraft");
 		
 		if(!this.dataDirectory.exists())
 		{
 			this.dataDirectory.mkdirs();
 		}
 
-		
 		config = new CConfig(event.getSuggestedConfigurationFile());
 		
 		schematicList = new SchematicList(this);
 		
 		initItemsAndBlocks();
+		
 		
 		proxy.preInit(this);
 	}
@@ -226,6 +236,8 @@ public class CloneCraft {
 //		GameRegistry.addRecipe(new RecipeMutateSerum());
 //		GameRegistry.addRecipe(new RecipeAddGeneToSerum());
 	}
+	
+	
 
 	public static boolean isGuiOpen() {
 		return Minecraft.getMinecraft().currentScreen != null && Minecraft.getMinecraft().currentScreen instanceof net.minecraft.client.gui.GuiIngameMenu;

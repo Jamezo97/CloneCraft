@@ -9,6 +9,12 @@ import org.lwjgl.opengl.GL11;
 public class RenderOverlay implements Renderable{
 
 	
+	@Override
+	public void onRemoved() {
+		// TODO Auto-generated method stub
+		
+	}
+
 	RenderManager renderManager;
 	
 	double posX = Double.MAX_VALUE;
@@ -178,6 +184,12 @@ public class RenderOverlay implements Renderable{
 		
 		
 		rotate = rotationYaw;
+		
+	}
+
+	@Override
+	public void onTick() {
+		// TODO Auto-generated method stub
 		
 	}
 	

@@ -210,8 +210,8 @@ public class GuiTransferPlayerItems extends GuiContainer{
 	private void drawHealth() {
 		this.mc.getTextureManager().bindTexture(icons);
 		GL11.glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
-		int x = 5;
-		int y = height - 204;
+		int x = 10;
+		int y = 10;
 		double outOfHealth = ((double)clone.getMaxHealth())/2.0d;
 		while(outOfHealth > 0){
 			this.drawTexturedModalRect(x, y, 16, 0, 9, 9);
@@ -220,7 +220,7 @@ public class GuiTransferPlayerItems extends GuiContainer{
 		}
 		double health = ((double)clone.getHealth())/2.0d;
 
-		x = 5;
+		x = 10;
 		while(health > 0){
 			if(health > .5){
 				this.drawTexturedModalRect(x, y, 52, 0, 9, 9);
@@ -257,17 +257,19 @@ public class GuiTransferPlayerItems extends GuiContainer{
 	private void drawFood() {
 
 		this.mc.getTextureManager().bindTexture(icons);
-		int x = 5;
-		int y = (height-20)-200;
+		int x = 10;
+		int y = 25;
 		int across = 10;
 		int down = 1;
 		this.drawRect(x-1, y-1, x+(across*9)+1, y+(down*9)+1, 0x50dddddd);
 		double d = clone.foodStats.getFoodLevel();
 		int add = 0;
+		
 		if (clone.isPotionActive(Potion.hunger))
 		{
 			add = 36;
 		}
+		
 		double d1 = (d==0?0:d/2d);
 		for(int a = 0; a < across; a++){
 			for(int b = 0; b < down; b++){

@@ -1,6 +1,5 @@
 package net.jamezo97.clonecraft.clone;
 
-import java.io.File;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
@@ -9,10 +8,12 @@ import java.util.Map.Entry;
 import java.util.Random;
 import java.util.Set;
 
+import net.jamezo97.clonecraft.CCPostRender;
 import net.jamezo97.clonecraft.CloneCraft;
 import net.jamezo97.clonecraft.GuiHandler;
 import net.jamezo97.clonecraft.Reflect;
 import net.jamezo97.clonecraft.clone.ai.EntityAIAttackEnemies;
+import net.jamezo97.clonecraft.clone.ai.EntityAIBuild;
 import net.jamezo97.clonecraft.clone.ai.EntityAICloneLookIdle;
 import net.jamezo97.clonecraft.clone.ai.EntityAICloneWalkToItems;
 import net.jamezo97.clonecraft.clone.ai.EntityAICloneWander;
@@ -31,10 +32,8 @@ import net.jamezo97.clonecraft.command.Interpretter;
 import net.jamezo97.clonecraft.command.task.CommandTask;
 import net.jamezo97.clonecraft.entity.EntityExplodeCollapseFX;
 import net.jamezo97.clonecraft.musics.MusicBase;
-import net.jamezo97.clonecraft.network.Handler11SendSchematic;
 import net.jamezo97.clonecraft.render.Renderable;
 import net.jamezo97.clonecraft.render.RenderableManager;
-import net.jamezo97.clonecraft.schematic.Schematic;
 import net.jamezo97.util.SimpleList;
 import net.minecraft.block.Block;
 import net.minecraft.block.material.Material;
@@ -155,8 +154,20 @@ public class EntityClone extends EntityLiving implements RenderableManager{
 			
 			this.setName(options.female.get()?NameRegistry.getGirlName():NameRegistry.getBoyName());
 		}
+		else
+		{
+			initCustomRender();
+		}
 		
 		
+	}
+	
+	CloneExtraRender extraRender = null;
+	
+	@SideOnly(value = Side.CLIENT)
+	public void initCustomRender()
+	{
+		CCPostRender.addRenderable(this, extraRender = new CloneExtraRender(this));
 	}
 	
 	public Interpretter getInterpretter(){
@@ -174,6 +185,8 @@ public class EntityClone extends EntityLiving implements RenderableManager{
 	
 	EntityAICommand aiCommand;
 	
+	EntityAIBuild aiBuild;
+	
 	public void initAI(){
 		
 		this.tasks.addTask(0, new EntityAISwimming(this));
@@ -183,8 +196,9 @@ public class EntityClone extends EntityLiving implements RenderableManager{
 		this.tasks.addTask(3, aiCommand = new EntityAICommand(this));
 		
 		this.tasks.addTask(4, aiBreakBlocks = new EntityAIMine(this));
-		this.tasks.addTask(5, new EntityAICloneWalkToItems(this));
-		this.tasks.addTask(6, new EntityAIReturnGuard(this));
+		this.tasks.addTask(5, aiBuild = new EntityAIBuild(this));
+		this.tasks.addTask(6, new EntityAICloneWalkToItems(this));
+		this.tasks.addTask(7, new EntityAIReturnGuard(this));
 		
 		this.tasks.addTask(18, aiShareItems = new EntityAIShare(this));
 		this.tasks.addTask(19, new EntityAICloneLookIdle(this));
@@ -204,6 +218,11 @@ public class EntityClone extends EntityLiving implements RenderableManager{
 	
 	public EntityAICommand getCommandAI(){
 		return aiCommand;
+	}
+	
+	public EntityAIBuild getBuildAI()
+	{
+		return aiBuild;
 	}
 	
 	
@@ -1513,6 +1532,8 @@ public class EntityClone extends EntityLiving implements RenderableManager{
 			nbt.setTag("CommAITask", nbtBase);
 		}
 		
+		nbt.setTag("aiBuild", aiBuild.saveState(new NBTTagCompound()));
+		
 		this.foodStats.writeNBT(nbt);
 		this.options.writeNBT(nbt);
 	}
@@ -1566,11 +1587,9 @@ public class EntityClone extends EntityLiving implements RenderableManager{
 					}
 				}
 			}
-		
-			
-			
-			
 		}
+		
+		this.aiBuild.loadState(nbt.getCompoundTag("aiBuild"));
 		
 		
 		this.foodStats.readNBT(nbt);
@@ -2391,11 +2410,18 @@ public class EntityClone extends EntityLiving implements RenderableManager{
 	@SideOnly(value = Side.CLIENT)
 	@Override
 	public boolean canRenderContinue(Renderable r) {
+//		System.out.println(this.isEntityAlive() && this.worldObj == Minecraft.getMinecraft().theWorld);
 		return this.isEntityAlive() && this.worldObj == Minecraft.getMinecraft().theWorld;
 	}
 	
 	public final static int ID_OPTIONS = 12;
 	
+	@Override
+	public void onRemoved() {
+		// TODO Auto-generated method stub
+		
+	}
+
 	public void say(String string, int radius)
 	{
 		ChatComponentText chat = new ChatComponentText("<" + this.getName() + "> " + string);
@@ -2431,8 +2457,9 @@ public class EntityClone extends EntityLiving implements RenderableManager{
 		
 	}
 
-	public boolean canSeeBlock(ChunkCoordinates cc, Block break_block) {
-		Vector from = Vector.fromVec3(this.getPosition(1)).add(new Vector(0, this.getEyeHeight(),0));
+	public boolean canSeeBlock(ChunkCoordinates cc, Block break_block)
+	{
+		Vector from = Vector.fromVec3(Vec3.createVectorHelper(this.posX, this.posY, this.posZ)).add(new Vector(0, this.getEyeHeight(),0));
 		Vector to = new Vector(cc.posX+0.5, cc.posY+0.5, cc.posZ+0.5);
 		
 		ChunkCoordinates[] collisions = RayTrace.rayTraceBlocks(from, to, worldObj);
@@ -2460,6 +2487,8 @@ public class EntityClone extends EntityLiving implements RenderableManager{
 		}
 		return true;
 	}
+	
+
 	
 	static Material[] seeThruMaterials = new Material[]{
 			Material.glass,

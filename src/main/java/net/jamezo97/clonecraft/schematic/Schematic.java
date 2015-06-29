@@ -11,6 +11,7 @@ import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
 import java.nio.ShortBuffer;
 import java.util.ArrayList;
+import java.util.Arrays;
 
 import net.minecraft.block.Block;
 import net.minecraft.client.Minecraft;
@@ -38,15 +39,29 @@ public class Schematic {
 	
 	private int layerSize;
 	
-	public int[] blockIds;
-	public int[] blockMetas;
+	public short[] blockIds;
+	public short[] blockMetas;
+	
+	
+	boolean isHashDirty = true;
+	long lastHash;
+	
+	public long myHashCode()
+	{
+		if(isHashDirty)
+		{
+			lastHash = (((long)Arrays.hashCode(blockIds)) << 32) | ((long)Arrays.hashCode(blockMetas));
+			isHashDirty = false;
+		}
+		return lastHash;
+	}
 	
 	public Schematic(String name, int xSize, int ySize, int zSize)
 	{
-		this(name, xSize, ySize, zSize, new int[xSize*ySize*zSize], new int[xSize*ySize*zSize]);
+		this(name, xSize, ySize, zSize, new short[xSize*ySize*zSize], new short[xSize*ySize*zSize]);
 	}
 	
-	public Schematic(String name, int xSize, int ySize, int zSize, int[] blockIds, int[] blockMetas)
+	public Schematic(String name, int xSize, int ySize, int zSize, short[] blockIds, short[] blockMetas)
 	{
 		this.name = name;
 		
@@ -64,14 +79,14 @@ public class Schematic {
 			this.xSize = 0;
 			this.ySize = 0;
 			this.zSize = 0;
-			this.blockIds = new int[0];
-			this.blockMetas = new int[0];
+			this.blockIds = new short[0];
+			this.blockMetas = new short[0];
 		}
 		
 		this.layerSize = this.xSize * this.zSize;
 	}
 	
-	public void build(int startX, int startY, int startZ, World world)
+	public void buildInstantly(int startX, int startY, int startZ, World world)
 	{
 		int maxX = startX + xSize;
 		int maxY = startY + ySize;
@@ -147,17 +162,16 @@ public class Schematic {
 			
 			if(Blocks_byte.length == Data_byte.length && Blocks_byte.length == Width*Height*Length)
 			{
-				int[] Blocks = new int[Blocks_byte.length];
-				int[] Data = new int[Data_byte.length];
+				short[] Blocks = new short[Blocks_byte.length];
+				short[] Data = new short[Data_byte.length];
 				
 				for(int a = 0; a < Blocks.length; a++)
 				{
-					Blocks[a] = Blocks_byte[a] & 0xFF;
-					Data[a] = Data_byte[a] & 0xFF;
+					Blocks[a] = (short)(Blocks_byte[a] & 0xFF);
+					Data[a] = (short)(Data_byte[a] & 0xFF);
 				}
 				
 				return new Schematic("Schematic_" + Width + "_" + Height + "_" + Length, Width, Height, Length, Blocks, Data);
-				
 			}
 		}
 		return null;
@@ -276,7 +290,7 @@ public class Schematic {
 
 	@Override
 	public String toString() {
-		return name + ": {Width(X): " + xSize + ", Height(Y): " + ySize + ", Length(Z): " + zSize + "}";
+		return name + ": {Width(X): " + xSize + ", Height(Y): " + ySize + ", Length(Z): " + zSize + ", hash: " + myHashCode() + "}";
 	}
 	
 	public void delete()
@@ -284,10 +298,10 @@ public class Schematic {
 		this.xSize = 0;
 		this.ySize = 0;
 		this.zSize = 0;
-		this.blockIds = new int[0];
-		this.blockMetas = new int[0];
+		this.blockIds = new short[0];
+		this.blockMetas = new short[0];
 		this.layerSize = 0;
-		this.destroyRenderBuffers();
+		this.cleanGPU();
 	}
 	
 	
@@ -301,7 +315,21 @@ public class Schematic {
 	
 	int vertexCount = -1;
 	
-	public boolean storeOnGPU = true;
+	private boolean storeOnGPU = true;
+	
+	/**
+	 * If we were originally storing the buffer on the GPU, and now we don't want to. Remove it from the buffer.
+	 * <br>It will be added back later if this state is toggled back to true. 
+	 * @see Schematic#ensureRenderBuffer()
+	*/
+	public void storeOnGPU(boolean state)
+	{
+		if(state == false && storeOnGPU)
+		{
+			cleanGPU();
+		}
+		storeOnGPU = state;
+	}
 	
 	int bufferHandler = -1;
 	
@@ -313,6 +341,8 @@ public class Schematic {
 		if(vertexCount == -1)
 		{
 			int index = 0;
+			
+			//Let's hijack the Tessellator class and get it to do the rendering for us
 																			//Texture, Brightness, Normals, Colour
 			Tessellator.instance.setVertexState(new TesselatorVertexState(new int[0], 0, 0, true, true, true, true));
 			
@@ -337,6 +367,7 @@ public class Schematic {
 				}
 			}
 			
+			//Well that was easy.
 			
 			TesselatorVertexState state = Tessellator.instance.getVertexState(0.0f, 0.0f, 0.0f);
 			Tessellator.instance.setVertexState(new TesselatorVertexState(new int[0], 0, 0, true, false, false, false));
@@ -351,33 +382,32 @@ public class Schematic {
 			intBuffer = byteBuffer.asIntBuffer();
 			intBuffer.put(rawBuffer, 0, state.getVertexCount()*8);
 			
-			if(storeOnGPU)
-			{
-				bufferHandler = GL15.glGenBuffers();
-				
-				GL15.glBindBuffer(GL15.GL_ARRAY_BUFFER, bufferHandler);
-				GL15.glBufferData(GL15.GL_ARRAY_BUFFER, byteBuffer, GL15.GL_STATIC_DRAW);
-				
-				GL15.glBindBuffer(GL15.GL_ARRAY_BUFFER, 0);
-			}
-			else
-			{
-				floatBuffer = byteBuffer.asFloatBuffer();
-				shortBuffer = byteBuffer.asShortBuffer();
-			}
+			floatBuffer = byteBuffer.asFloatBuffer();
+			shortBuffer = byteBuffer.asShortBuffer();
+		}
+		
+		if(storeOnGPU && bufferHandler == -1)
+		{
+			bufferHandler = GL15.glGenBuffers();
+			
+			GL15.glBindBuffer(GL15.GL_ARRAY_BUFFER, bufferHandler);
+			GL15.glBufferData(GL15.GL_ARRAY_BUFFER, byteBuffer, GL15.GL_STATIC_DRAW);
+			
+			GL15.glBindBuffer(GL15.GL_ARRAY_BUFFER, 0);
 		}
 		
 		return true;
 	}
 	
-	public void destroyRenderBuffers()
+
+	public void cleanGPU()
 	{
 		if(bufferHandler != -1)
 		{
+			System.out.println("Cleaned");
 			GL15.glDeleteBuffers(bufferHandler);
 			bufferHandler = -1;
 		}
-		
 	}
 	
 	public void render()
@@ -392,6 +422,7 @@ public class Schematic {
 			
 			if(storeOnGPU)
 			{
+//				System.out.println();
 				GL15.glBindBuffer(GL15.GL_ARRAY_BUFFER, bufferHandler);
 				
 				GL11.glTexCoordPointer(2, GL11.GL_FLOAT, 32, /*3*4=*/12L);
@@ -458,6 +489,7 @@ public class Schematic {
 			GL11.glTranslatef(-0.01f, -0.01f, -0.01f);
 		}
 	}
+
 	
 	
 	

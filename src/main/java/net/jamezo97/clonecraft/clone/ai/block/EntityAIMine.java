@@ -26,7 +26,7 @@ public class EntityAIMine extends EntityAIBase{
 	
 	EntityClone clone = null;
 	
-	Minecraft mc = Minecraft.getMinecraft();
+//	Minecraft mc = Minecraft.getMinecraft();
 	
 	public EntityAIMine(EntityClone clone) {
 		this.clone = clone;
@@ -115,9 +115,7 @@ public class EntityAIMine extends EntityAIBase{
 
 	@Override
 	public void resetTask() {
-		breakCoord = null;
-		breakBlock = null;
-		breakItem = null;
+		stopBreakingBlock();
 		lastTickTime = -1;
 	}
 

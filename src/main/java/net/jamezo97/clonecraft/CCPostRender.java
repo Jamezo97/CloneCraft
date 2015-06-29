@@ -5,6 +5,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map.Entry;
 
+import net.jamezo97.clonecraft.clone.RenderEntry;
 import net.jamezo97.clonecraft.entity.EntityArrowCC;
 import net.jamezo97.clonecraft.render.Renderable;
 import net.jamezo97.clonecraft.render.RenderableManager;
@@ -28,42 +29,54 @@ import org.lwjgl.opengl.GL11;
 
 public class CCPostRender {
 
-	public static void postRender(float partial) {
-		for (Entry<RenderableManager, Renderable> entry : handlerToRender
-				.entrySet()) {
+	public static void postRender(float partial)
+	{
+		for(int a = 0; a < renderers.size(); a++)
+		{
 			GL11.glPushMatrix();
-			entry.getValue().render(partial);
+			renderers.get(a).renderer.render(partial);
 			GL11.glPopMatrix();
 		}
-		//renderArrowPath(partial);
+	}
+	
+	public static void onTick()
+	{
+		removeExpiredRenderables();
+		
+		for(int a = 0; a < renderers.size(); a++)
+		{
+			renderers.get(a).renderer.onTick();
+		}
 	}
 
-	public static void checkRenderables() {
-		ArrayList<RenderableManager> toRemove = new ArrayList<RenderableManager>();
-		for (Entry<RenderableManager, Renderable> entry : handlerToRender
-				.entrySet()) {
-			if (!entry.getKey().canRenderContinue(entry.getValue()))
+	public static void removeExpiredRenderables() 
+	{
+		for(int a = 0; a < renderers.size(); a++)
+		{
+			if (!renderers.get(a).manager.canRenderContinue(renderers.get(a).renderer))
 			{
-				toRemove.add(entry.getKey());
+				renderers.remove(a--).onRemoved();
 			}
 		}
-		for (int a = 0; a < toRemove.size(); a++) {
-			handlerToRender.remove(toRemove.get(a));
-		}
 	}
 
-	static HashMap<RenderableManager, Renderable> handlerToRender = new HashMap<RenderableManager, Renderable>();
+	static ArrayList<RenderEntry> renderers = new ArrayList<RenderEntry>();
 
-	public static void addRenderable(RenderableManager manager,
-			Renderable render) {
-		handlerToRender.put(manager, render);
+	public static void addRenderable(RenderableManager manager, Renderable render)
+	{
+		renderers.add(new RenderEntry(manager, render));
 	}
 
-	public static void removeRenderable(RenderableManager manager,
-			Renderable render) {
-		if (handlerToRender.containsKey(manager)) {
-			handlerToRender.remove(manager);
+	public static boolean removeRenderable(RenderableManager manager) {
+		for(int a = 0; a < renderers.size(); a++)
+		{
+			if(renderers.get(a).manager == manager)
+			{
+				renderers.remove(a);
+				return true;
+			}
 		}
+		return false;
 	}
 	
 	public void renderArrowPath(float partial)
