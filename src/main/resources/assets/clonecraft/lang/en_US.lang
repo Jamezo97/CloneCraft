@@ -26,10 +26,10 @@ tile.centrifuge.name=Centrifuge
 tile.antenna.name=Antenna
 tile.lifeInducer.name=Life Inducer
 
+entity.clonecraft.ccEntityClone.name=Human
 
-
-
-
+item.ccGrowBall.name=Grow Ball
+item.ccGrowBall.info=That looks gross
 
 
 
@@ -95,7 +95,9 @@ clonecraft.cteam.Purple=Purple
 clonecraft.cteam.Pink=Pink
 clonecraft.cteam.Good=Good
 clonecraft.cteam.Evil=Evil
+clonecraft.cteam.Rampant=Rampant
 
 clonecraft.cteam.info.colour=The @team team will attack all other teams, except the 'Good' team.
 clonecraft.cteam.info.good=The Good team will only attack the 'Evil' team
-clonecraft.cteam.info.evil=The Evil team will attack EVERYTHING. Including you.. So, be careful ;)
+clonecraft.cteam.info.evil=The Evil team will attack all other teams, including you.. So, be careful ;)
+clonecraft.cteam.info.rampant=The Rampant team will attack everything. Every Clone, every entity, every player.

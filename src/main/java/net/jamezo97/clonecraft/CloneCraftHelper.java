@@ -16,45 +16,66 @@ public class CloneCraftHelper {
 	
 	
 	//ItemStack stack, contains remaining items. (stackSize == 0  if no items remaining, i.e. all was placed in inventory)
-	public static void addToInventory(IInventory inven, int aBegin, int aEnd, ItemStack stack){
-		System.out.println("ADD TO INVEN");
+	public static void addToInventory(IInventory inven, int aBegin, int aEnd, ItemStack stack)
+	{
 		ItemStack slot = null;
 		int emptyIndex = -1;
 		int jic = 40;
-		while(stack.stackSize > 0 && jic-- > 0){
+		
+		while(stack.stackSize > 0 && jic-- > 0)
+		{
 			slot = null;
 			emptyIndex = -1;
-			for(int a = aBegin; a < aEnd; a++){
+			
+			for(int a = aBegin; a < aEnd; a++)
+			{
 				slot = inven.getStackInSlot(a);
-				if(slot != null){
-					System.out.println(slot.getItem());
-				}else{
-					System.out.println("null");
-				}
-				if(emptyIndex == -1 && slot == null){
+				
+				if(emptyIndex == -1 && slot == null)
+				{
 					emptyIndex = a;
 				}
-		        if (slot != null && slot.getItem() == stack.getItem() && slot.isStackable() && slot.stackSize < slot.getMaxStackSize() && slot.stackSize < inven.getInventoryStackLimit() && (!slot.getHasSubtypes() || slot.getItemDamage() == stack.getItemDamage()) && ItemStack.areItemStackTagsEqual(slot, stack)){
+				
+		        if (slot != null && slot.getItem() == stack.getItem() && 
+		        		slot.isStackable() && slot.stackSize < slot.getMaxStackSize() && 
+		        		slot.stackSize < inven.getInventoryStackLimit() && 
+		        		(!slot.getHasSubtypes() || slot.getItemDamage() == stack.getItemDamage()) && 
+		        		ItemStack.areItemStackTagsEqual(slot, stack))
+		        {
 		        	break;
 		        }
-		        if(a+1 == aEnd){
+		        
+		        if(a+1 == aEnd)
+		        {
 		        	slot = null;
 		        }
 			}
 			
-			if(slot == null){
-				if(emptyIndex == -1){
+			if(slot == null)
+			{
+				if(emptyIndex == -1)
+				{
 					break;
-				}else{
-					inven.setInventorySlotContents(emptyIndex, stack);
 				}
-			}else if(slot != null){
+				else
+				{
+					inven.setInventorySlotContents(emptyIndex, stack.copy());
+					stack.stackSize = 0;
+				}
+			}
+			else if(slot != null)
+			{
 				int toRemove = slot.getMaxStackSize() - slot.stackSize;
-				if(toRemove > inven.getInventoryStackLimit()-slot.stackSize){
+				
+				if(toRemove > inven.getInventoryStackLimit()-slot.stackSize)
+				{
 					toRemove = inven.getInventoryStackLimit()-slot.stackSize;
-				}else if(toRemove > stack.stackSize){
+				}
+				else if(toRemove > stack.stackSize)
+				{
 					toRemove = stack.stackSize;
 				}
+				
 				stack.stackSize -= toRemove;
 				slot.stackSize += toRemove;
 			}
@@ -63,11 +84,14 @@ public class CloneCraftHelper {
 		
 	}
 
-	public static void dropAtEntity(EntityLivingBase entity, ItemStack stack) {
+	public static void dropAtEntity(EntityLivingBase entity, ItemStack stack) 
+	{
 		EntityItem item = new EntityItem(entity.worldObj);
+		
 		item.delayBeforeCanPickup = 20;
 		item.setEntityItemStack(stack);
 		item.setPosition(entity.posX, entity.posY + entity.getEyeHeight()==0?entity.height/2:entity.getEyeHeight(), entity.posZ);
+		
 		Random rand = new Random();
 		
 		item.addVelocity(rand.nextFloat()*0.3f, rand.nextFloat()*0.2f, rand.nextFloat()*0.3f);
@@ -75,7 +99,8 @@ public class CloneCraftHelper {
 		entity.worldObj.spawnEntityInWorld(item);
 	}
 	
-	public static char getClosestColourChar(int colour){
+	public static char getClosestColourChar(int colour)
+	{
 		int[] colours = new int[]{0x0000aa, 0x00aa00, 0x00aaaa, 0xaa0000, 0xaa00aa, 0xffaa00, 0x2a2a2a, 0x555555, 0x5555ff, 0x55ff55, 0x55ffff, 0xff5555, 0xff55ff, 0xffff55, 0xffffff};
 		char[] colourCodes = "123456789abcdef".toCharArray();
 		int r1 = (colour >> 16) & 0xff;
@@ -84,7 +109,9 @@ public class CloneCraftHelper {
 
 		int closestIndex = -1;
 		int diff = -1;
-		for(int a = 0; a < colours.length; a++){
+		
+		for(int a = 0; a < colours.length; a++)
+		{
 			int r2 = (colours[a] >> 16) & 0xff;
 			int g2 = (colours[a] >> 8) & 0xff;
 			int b2 = colours[a] & 0xff;
@@ -99,18 +126,27 @@ public class CloneCraftHelper {
 				closestIndex = a;
 			}
 		}
-		if(closestIndex > -1){
+		
+		if(closestIndex > -1)
+		{
 			return colourCodes[closestIndex];
 		}
+		
 		return ' ';
 	}
 	
-	public static boolean isInvalid(Map<Class, String> classToString, Class entityClass){
+	public static boolean isInvalid(Map<Class, String> classToString, Class entityClass)
+	{
 		String name = classToString.get(entityClass);
-		if(name != null){
+		
+		if(name != null)
+		{
 			String[] names = new String[]{"Mob", "Monster"};
-			for(int a = 0; a < names.length; a++){
-				if(names[a].equals(name)){
+			
+			for(int a = 0; a < names.length; a++)
+			{
+				if(names[a].equals(name))
+				{
 					return true;
 				}
 			}
@@ -118,12 +154,18 @@ public class CloneCraftHelper {
 		return false;
 	}
 
-	public static boolean isValid(Map<Class, String> classToString, Class entityClass) {
+	public static boolean isValid(Map<Class, String> classToString, Class entityClass) 
+	{
 		String name = classToString.get(entityClass);
-		if(name != null){
+		
+		if(name != null)
+		{
 			String[] names = new String[]{"EnderCrystal", "PrimedTnt"};
-			for(int a = 0; a < names.length; a++){
-				if(names[a].equals(name)){
+			
+			for(int a = 0; a < names.length; a++)
+			{
+				if(names[a].equals(name))
+				{
 					return true;
 				}
 			}
@@ -133,16 +175,24 @@ public class CloneCraftHelper {
 	
 	static HashMap<String, Integer> nameToId = new HashMap<String, Integer>();
 	
-	public static int getEntityIdFromString(String s){
-		if(nameToId.containsKey(s)){
+	public static int getEntityIdFromString(String s)
+	{
+		if(nameToId.containsKey(s))
+		{
 			return nameToId.get(s);
 		}
 		Class c = (Class)EntityList.stringToClassMapping.get(s);
-		if(c != null){
+		
+		if(c != null)
+		{
 			Iterator<Entry<Integer, Class>> it = EntityList.IDtoClassMapping.entrySet().iterator();
-			for(;it.hasNext();){
+			
+			for(;it.hasNext();)
+			{
 				Entry<Integer, Class> next = it.next();
-				if(next.getValue() == c){
+				
+				if(next.getValue() == c)
+				{
 					nameToId.put(s, next.getKey());
 					return next.getKey();
 				}
@@ -152,15 +202,18 @@ public class CloneCraftHelper {
 		return -1;
 	}
 
-	public static float remainder(float divideMe, float byMe){
+	public static float remainder(float divideMe, float byMe)
+	{
 		return (float) (divideMe - (Math.floor(divideMe/byMe)*byMe));
 	}
 	
-	public static int remainder(int divideMe, int byMe){
+	public static int remainder(int divideMe, int byMe)
+	{
 		return (int) (divideMe - (Math.floor(divideMe/byMe)*byMe));
 	}
 
-	public static double interpolate(double prev, double now, float partial) {
+	public static double interpolate(double prev, double now, float partial) 
+	{
 		return prev + partial*(now-prev);
 	}
 	

@@ -50,7 +50,7 @@ public class CloneOptions {
 		addOption(fight = new CloneOption(0, "fight", true, this));
 		addOption(sprint = new CloneOption(1, "sprint", false, this));
 		addOption(follow = new CloneOption(2, "follow", false, this));
-		addOption(pickUp = new CloneOption(3, "pickup", false, this));
+		addOption(pickUp = new CloneOption(3, "pickup", true, this));
 		addOption(walkToItems = new CloneOption(4, "walkToItems", false, this));
 		addOption(retaliate = new CloneOption(5, "retaliate", true, this));
 		addOption(guard = new CloneOption(6, "guard", false, this));

@@ -66,6 +66,9 @@ public class EntityAIFollowCloneOwner extends EntityAIBase
 		{
 			double distance = clone.getDistanceSqToEntity(owner);
 
+//			System.out.println("Look");
+			
+			this.clone.getLookHelper().setLookPositionWithEntity(owner, 16.0f, clone.getVerticalFaceSpeed());
 			
 			//30 blocks (30*30 = 900)
 			if(distance > 900)

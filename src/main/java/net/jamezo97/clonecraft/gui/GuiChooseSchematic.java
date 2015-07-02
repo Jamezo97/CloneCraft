@@ -72,14 +72,14 @@ public class GuiChooseSchematic extends GuiScreen{
 				
 				GL11.glTranslatef(0, 0, 100);
 				
-				GL11.glDisable(GL11.GL_CULL_FACE);
+//				GL11.glDisable(GL11.GL_CULL_FACE);
 
 				
 				this.schematicList.renderCenteredSchematicAt(schem, previewXPos+transX, previewYPos+transY, 
-						previewXPos2 - previewXPos, previewYPos2 - previewYPos, rotateX, rotateY, 180, scale);
+						previewXPos2 - previewXPos, previewYPos2 - previewYPos, rotateX, rotateY, 0, scale);
 				
 				
-				GL11.glEnable(GL11.GL_CULL_FACE);
+//				GL11.glEnable(GL11.GL_CULL_FACE);
 				
 				GL11.glTranslatef(0, 0, -100);
 			}
@@ -136,7 +136,7 @@ public class GuiChooseSchematic extends GuiScreen{
 			float rX = dMX / 1.0f;
 			float rY = dMY / 1.0f;
 			
-			this.rotateY += rX;
+			this.rotateY -= rX;
 			this.rotateX = (float)Math.sin(rotateY / 148 * Math.PI) * 12f;
 		}
 		else if(lastButton == 0)

@@ -173,6 +173,24 @@ public class Schematic {
 				
 				return new Schematic("Schematic_" + Width + "_" + Height + "_" + Length, Width, Height, Length, Blocks, Data);
 			}
+			else
+			{
+				int[] BlocksData = nbt.getIntArray("BlocksData");
+				
+				if(BlocksData.length == Width*Length*Height)
+				{
+					short[] Blocks = new short[BlocksData.length];
+					short[] Data = new short[BlocksData.length];
+				
+					for(int a = 0; a < BlocksData.length; a++)
+					{
+						Blocks[a] = (short) (BlocksData[a] >>    16);
+						Data[a] =   (short) (BlocksData[a] & 0xFFFF);
+					}
+					
+					return new Schematic("Schematic_" + Width + "_" + Height + "_" + Length, Width, Height, Length, Blocks, Data);
+				}
+			}
 		}
 		return null;
 	}
@@ -219,23 +237,39 @@ public class Schematic {
 		return null;
 	}
 	
-	public NBTTagCompound saveTo(NBTTagCompound nbt)
+	public NBTTagCompound saveTo(NBTTagCompound nbt, boolean saveShorts)
 	{
 		nbt.setShort("Width", (short)this.xSize);
 		nbt.setShort("Height", (short)this.ySize);
 		nbt.setShort("Length", (short)this.zSize);
 		
-		byte[] Block_byte = new byte[this.blockIds.length];
-		byte[] Data_byte = new byte[this.blockMetas.length];
-		
-		for(int a = 0; a < this.blockIds.length; a++)
+		if(saveShorts)
 		{
-			Block_byte[a] = (byte)this.blockIds[a];
-			Data_byte[a] = (byte)this.blockMetas[a];
+			int[] BlocksData = new int[this.blockIds.length];
+			
+			for(int a = 0; a < this.blockIds.length; a++)
+			{
+				BlocksData[a] = (((int)this.blockIds[a]) << 16) | ((int)this.blockMetas[a]);
+			}
+			
+			nbt.setIntArray("BlocksData", BlocksData);
+		}
+		else
+		{
+			byte[] Block_byte = new byte[this.blockIds.length];
+			byte[] Data_byte = new byte[this.blockMetas.length];
+			
+			for(int a = 0; a < this.blockIds.length; a++)
+			{
+				Block_byte[a] = (byte)this.blockIds[a];
+				Data_byte[a] = (byte)this.blockMetas[a];
+			}
+			
+			nbt.setByteArray("Blocks", Block_byte);
+			nbt.setByteArray("Data", Data_byte);
 		}
 		
-		nbt.setByteArray("Blocks", Block_byte);
-		nbt.setByteArray("Data", Data_byte);
+		
 		
 		NBTTagList emptyList = new NBTTagList();
 		
@@ -245,14 +279,14 @@ public class Schematic {
 		return nbt;
 	}
 	
-	public void saveTo(OutputStream out) throws IOException
+	public void saveTo(OutputStream out, boolean saveShorts) throws IOException
 	{
-		NBTTagCompound nbt = this.saveTo(new NBTTagCompound());
+		NBTTagCompound nbt = this.saveTo(new NBTTagCompound(), saveShorts);
 		
 		CompressedStreamTools.writeCompressed(nbt, out);
 	}
 	
-	public boolean saveTo(File file)
+	public boolean saveTo(File file, boolean saveShorts)
 	{
 		OutputStream output = null;
 		
@@ -260,7 +294,7 @@ public class Schematic {
 		{
 			output = new FileOutputStream(file);
 			
-			this.saveTo(output);
+			this.saveTo(output, saveShorts);
 			
 			return true;
 		}

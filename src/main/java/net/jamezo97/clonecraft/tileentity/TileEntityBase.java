@@ -14,7 +14,8 @@ public abstract class TileEntityBase extends TileEntity implements IInventory{
 	
 	ItemStack[] items;
 	
-	public TileEntityBase(int size){
+	public TileEntityBase(int size)
+	{
 		items = new ItemStack[size];
 		
 	}

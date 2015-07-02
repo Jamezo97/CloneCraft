@@ -79,5 +79,52 @@
 		[
 		 	"elec/ChargeExplode3.1s"
 		]
+	},
+	"man.idle":
+	{
+		"category": "player",
+		"sounds":
+		[
+		 	"grunt/grunt1",
+		 	"grunt/grunt2",
+		 	"grunt/grunt3",
+		 	"grunt/grunt4",
+		 	"grunt/grunt5",
+		 	"grunt/grunt6"
+		]
+	},
+	"woman.idle":
+	{
+		"category": "player",
+		"sounds":
+		[
+		 	"sigh/sigh1",
+		 	"sigh/sigh2",
+		 	"sigh/sigh3"
+		]
+	},
+	"needle.inject":
+	{
+		"category": "player",
+		"sounds":
+		[
+		 	"needle/inject/needle1",
+		 	"needle/inject/needle2",
+		 	"needle/inject/needle3",
+		 	"needle/inject/needle4",
+		 	"needle/inject/needle5"
+		]
+	},
+	"needle.extract":
+	{
+		"category": "player",
+		"sounds":
+		[
+		 	"needle/extract/needle1",
+		 	"needle/extract/needle2",
+		 	"needle/extract/needle3",
+		 	"needle/extract/needle4",
+		 	"needle/extract/needle5"
+		]
 	}
 }

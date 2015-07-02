@@ -45,44 +45,73 @@ public class GuiTransferPlayerItems extends GuiContainer{
 
 
 	@Override
-	protected void actionPerformed(GuiButton gb) {
-		if(gb.id==0){
+	protected void actionPerformed(GuiButton gb) 
+	{
+		if(gb.id==0)
+		{
 			new Handler5TransferXP(clone).sendToServer();
-		}else if(gb.id == 1){
+		}
+		else if(gb.id == 1)
+		{
 			mc.displayGuiScreen(new GuiCloneOptions(clone, this));
-		}else if(gb.id == 2){
+		}
+		else if(gb.id == 2)
+		{
 			mc.displayGuiScreen(new GuiCloneTeams(clone, this));
-		}else if(gb.id == 3){
-			buildUp += .19f;
-			if(buildUp >= 1.0f){
+		}
+		else if(gb.id == 3)
+		{
+			buildUp += .34f;
+			
+			if(buildUp >= 1.0f)
+			{
 				new Handler6KillClone(clone).sendToServer();
 				mc.displayGuiScreen(null);
-			}else{
+			}
+			else
+			{
 				coloured.red = 1.0f;
 				coloured.green = 1.0f-buildUp;
 				coloured.blue = 1.0f-buildUp;
 			}
 		}
-		else if(gb.id == 4){
+		else if(gb.id == 4)
+		{
 			mc.displayGuiScreen(new GuiChooseAttackEntities(clone, this));
-		}else if(gb.id == 5){
+		}
+		else if(gb.id == 5)
+		{
 			mc.displayGuiScreen(new GuiChooseBlocksToBreak(clone, this));
-		}else if(gb.id == 6){
+		}
+		else if(gb.id == 6)
+		{
 			mc.displayGuiScreen(new GuiChooseSchematic(clone, this));
-		}else if(gb.id == 7){
+		}
+		else if(gb.id == 7)
+		{
 			new Handler10ChangeOwner(clone.getEntityId()).sendToServer();
-		}else if(gb.id == 8){
-			if(copyAmount != null){
-				try{
+		}
+		else if(gb.id == 8)
+		{
+			if(copyAmount != null)
+			{
+				try
+				{
 					int amount = Integer.parseInt(copyAmount.getText());
-					if(amount > 50){
+					
+					if(amount > 50)
+					{
 						amount = 50;
 					}
-					if(amount > 0){
+					
+					if(amount > 0)
+					{
 						Handler7CloneClones handler = new Handler7CloneClones(clone, amount);
 						handler.sendToServer();
 					}
-				}catch(Exception e){
+				}
+				catch(Exception e)
+				{
 					mc.thePlayer.addChatMessage(new ChatComponentText("Could not parse text to number: " + copyAmount.getText()).setChatStyle(new ChatStyle().setColor(EnumChatFormatting.RED)));
 				}	
 			}
@@ -132,14 +161,39 @@ public class GuiTransferPlayerItems extends GuiContainer{
 		if(copyAmount != null){
 			copyAmount.drawTextBox();
 		}
-		
 	}
+	
+	
+	
 
 	ResourceLocation backgroundImageResource = new ResourceLocation("clonecraft:textures/gui/transferplayeritems.png");
 
-	protected void drawGuiContainerForegroundLayer()
+	protected void drawGuiContainerForegroundLayer(int i, int j)
 	{
-		mc.fontRenderer.drawString("Tranfer Items", ((xSize/2)-(mc.fontRenderer.getStringWidth("Tranfer Items")/2)), -8, 0xc0c0c0);
+		this.drawString(mc.fontRenderer, "Tranfer Items", ((xSize/2)-(mc.fontRenderer.getStringWidth("Tranfer Items")/2)), -8, 0xc0c0c0);
+		
+		if(this.clone.getShrinkCooldown() > 0)
+		{
+			int seconds = this.clone.getShrinkCooldown() / 20;
+			int minutes = seconds / 60;
+			seconds -= minutes * 60;
+			int hours = minutes / 60;
+			minutes -= hours * 60;
+			String time = "";
+			if(hours > 0)
+			{
+				time += hours + "h ";
+			}
+			if(hours > 0 || minutes > 0)
+			{
+				time += minutes + "m ";
+			}
+			time += seconds + "s";
+			
+			this.drawString(mc.fontRenderer, "Shrink Cooldown: " + time, -this.guiLeft+5, -guiTop + height - 15, 0xffffffff);
+		}
+		
+		
 	}
 
 	protected void drawGuiContainerBackgroundLayer(float f, int i, int j)
@@ -182,50 +236,74 @@ public class GuiTransferPlayerItems extends GuiContainer{
 
 
 	@Override
-	protected void keyTyped(char par1, int par2) {
-		if(copyAmount != null){
+	protected void keyTyped(char par1, int par2)
+	{
+		if(copyAmount != null)
+		{
 			copyAmount.textboxKeyTyped(par1, par2);
 		}
+		
 		super.keyTyped(par1, par2);
 	}
 
 	long ticksOpen = 0;
 
 	@Override
-	public void updateScreen() {
-		if(copyAmount != null){
+	public void updateScreen()
+	{
+		if(copyAmount != null)
+		{
 			copyAmount.updateCursorCounter();
 		}
+		
 		super.updateScreen();
 	}
 
 
 
 	@Override
-	public void onGuiClosed() {
+	public void onGuiClosed() 
+	{
 		super.onGuiClosed();
 		Keyboard.enableRepeatEvents(false);
 	}
 
-	private void drawHealth() {
+	private void drawHealth() 
+	{
 		this.mc.getTextureManager().bindTexture(icons);
 		GL11.glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
 		int x = 10;
 		int y = 10;
+		
+		double health = ((double)clone.getHealth())/2.0d;
 		double outOfHealth = ((double)clone.getMaxHealth())/2.0d;
-		while(outOfHealth > 0){
+		
+		if(outOfHealth > 10)
+		{
+			double scale = 10.0 / outOfHealth;
+			health = scale * health;
+			outOfHealth = 10;
+		}
+		
+		while(outOfHealth > 0)
+		{
 			this.drawTexturedModalRect(x, y, 16, 0, 9, 9);
 			outOfHealth = outOfHealth - 1;
 			x = x + 9;
 		}
-		double health = ((double)clone.getHealth())/2.0d;
+		
+		
 
 		x = 10;
-		while(health > 0){
-			if(health > .5){
+		while(health > 0)
+		{
+			if(health > .5)
+			{
 				this.drawTexturedModalRect(x, y, 52, 0, 9, 9);
 				health = health - 1;
-			}else{
+			}
+			else
+			{
 				this.drawTexturedModalRect(x, y, 61, 0, 9, 9);
 				health = health - .5;
 			}

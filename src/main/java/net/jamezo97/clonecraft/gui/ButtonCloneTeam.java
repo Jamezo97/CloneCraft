@@ -87,7 +87,7 @@ public class ButtonCloneTeam extends GuiColourButton{
 	public boolean mousePressed(Minecraft par1Minecraft, int par2, int par3) {
 		boolean pressed = super.mousePressed(par1Minecraft, par2, par3);
 		if(pressed){
-			clone.team = this.team;
+			clone.setCTeam(this.team);
 			clone.getWatcher().sendValueToServer(Syncer.ID_TEAM);
 		}
 		return pressed;

@@ -19,20 +19,20 @@ public class SyncTeam extends Sync{
 	PlayerTeam last = null;
 	
 	public boolean checkNeedsUpdating(EntityClone clone){
-		return (last != clone.team) || isDirty;
+		return (last != clone.getCTeam()) || isDirty;
 	}
 	
 	public void updateValues(EntityClone clone){
-		last = clone.team;
+		last = clone.getCTeam();
 	}
 	
 	
 	public void write(DataOutputStream out, EntityClone clone)throws IOException{
-		out.writeInt(clone.team.teamID);
+		out.writeInt(clone.getCTeam().teamID);
 	}
 
 	public void read(DataInputStream in, EntityClone clone)throws IOException{
-		last = clone.team = PlayerTeam.getByID(in.readInt());
+		last = clone.setCTeam(PlayerTeam.getByID(in.readInt()));
 	}
 
 	@Override

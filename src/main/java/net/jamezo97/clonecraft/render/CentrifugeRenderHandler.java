@@ -44,6 +44,9 @@ public class CentrifugeRenderHandler extends TileEntitySpecialRenderer implement
 //		}else{
 //			was = false;
 //		}
+		
+		i &= 3;
+		
 		Minecraft mc = Minecraft.getMinecraft();
 		mc.renderEngine.bindTexture(tex);
         GL11.glPushMatrix();

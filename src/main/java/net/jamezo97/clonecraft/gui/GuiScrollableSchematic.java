@@ -141,6 +141,8 @@ public class GuiScrollableSchematic extends GuiScrollable{
 		
 		GL11.glScalef(scale, scale, scale);
 		
+		GL11.glScalef(1, -1, 1);
+		
 		GL11.glRotatef(rotateZ, 0.0f, 0.0f, 1.0f);
 		GL11.glRotatef(rotateY, 0.0f, 1.0f, 0.0f);
 		GL11.glRotatef(rotateX, 1.0f, 0.0f, 0.0f);

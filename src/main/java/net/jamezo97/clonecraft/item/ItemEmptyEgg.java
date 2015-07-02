@@ -21,14 +21,16 @@ public class ItemEmptyEgg extends Item{
 	
 	
 	@Override
-	public String getItemStackDisplayName(ItemStack par1ItemStack) {
+	public String getItemStackDisplayName(ItemStack par1ItemStack)
+	{
 		return StatCollector.translateToLocal("cc.item.emptyegg.name");
 	}
 
 
 
 	@Override
-	public void registerIcons(IIconRegister ir) {
+	public void registerIcons(IIconRegister ir)
+	{
 		super.registerIcons(ir);
 		inside = ir.registerIcon("CloneCraft:spawnEggIn");
 		((ItemSpawnEgg)CloneCraft.INSTANCE.itemSpawnEgg).setIcons(itemIcon, inside);
@@ -36,18 +38,22 @@ public class ItemEmptyEgg extends Item{
 	
 	
 	@Override
-	public int getColorFromItemStack(ItemStack par1ItemStack, int par2) {
+	public int getColorFromItemStack(ItemStack par1ItemStack, int par2)
+	{
 		return 0xffdfce9b;
 	}
 
 	@Override
-	public boolean requiresMultipleRenderPasses() {
+	public boolean requiresMultipleRenderPasses()
+	{
 		return true;
 	}
 
 	@Override
-	public IIcon getIcon(ItemStack stack, int pass) {
-		if(pass == 1){
+	public IIcon getIcon(ItemStack stack, int pass)
+	{
+		if(pass == 1)
+		{
 			return inside;
 		}
 		return itemIcon;

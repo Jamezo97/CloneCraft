@@ -14,18 +14,17 @@ import net.jamezo97.clonecraft.network.PacketHandler;
 import net.jamezo97.clonecraft.recipe.RecipeClearDNAItem;
 import net.jamezo97.clonecraft.recipe.RecipeEmptyEggToSpawnEgg;
 import net.jamezo97.clonecraft.recipe.RecipeNeedleTestTubeRecipe;
+import net.jamezo97.clonecraft.recipe.RecipeStemCells;
 import net.jamezo97.clonecraft.recipe.RecipeTestTubeNeedle;
 import net.jamezo97.clonecraft.schematic.SchematicList;
 import net.minecraft.block.Block;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.settings.KeyBinding;
 import net.minecraft.init.Blocks;
 import net.minecraft.init.Items;
+import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraftforge.common.MinecraftForge;
-
-import org.lwjgl.input.Keyboard;
-
+import net.minecraftforge.oredict.RecipeSorter;
 import cpw.mods.fml.common.FMLCommonHandler;
 import cpw.mods.fml.common.Mod;
 import cpw.mods.fml.common.Mod.EventHandler;
@@ -87,6 +86,8 @@ public class CloneCraft {
 	public ItemEmptyEgg itemEmptyEgg;
 	public ItemSpawnEgg itemSpawnEgg;
 	
+	public Item itemGrowBall;
+	
 	public BlockSterilizer blockSterilizer;
 	public BlockCentrifuge blockCentrifuge;
 	public BlockLifeInducer blockLifeInducer;
@@ -100,17 +101,24 @@ public class CloneCraft {
 	
 	public void initItemsAndBlocks()
 	{
-		itemNeedle = (ItemNeedle) new ItemNeedle().setTextureName("clonecraft:needle");
+		itemNeedle = (ItemNeedle) new ItemNeedle().setTextureName("clonecraft:needle").setUnlocalizedName("ccNeedle");
 		GameRegistry.registerItem(itemNeedle, config.ID_NEEDLE);
 		
-		itemTestTube = (ItemTestTube) new ItemTestTube().setTextureName("clonecraft:testTube");
+		itemTestTube = (ItemTestTube) new ItemTestTube().setTextureName("clonecraft:testTube").setUnlocalizedName("ccTestTube");
 		GameRegistry.registerItem(itemTestTube, config.ID_TESTTUBE);
 		
-		itemEmptyEgg = (ItemEmptyEgg) new ItemEmptyEgg().setTextureName("clonecraft:spawnEggOut");
+		itemEmptyEgg = (ItemEmptyEgg) new ItemEmptyEgg().setTextureName("clonecraft:spawnEggOut").setUnlocalizedName("ccEmptyEgg");
 		GameRegistry.registerItem(itemEmptyEgg, config.ID_EMPTYEGG);
 		
-		itemSpawnEgg = (ItemSpawnEgg) new ItemSpawnEgg();
+		itemSpawnEgg = (ItemSpawnEgg) new ItemSpawnEgg().setUnlocalizedName("ccSpawnEgg");
 		GameRegistry.registerItem(itemSpawnEgg, config.ID_SPAWNEGG);
+		
+		itemGrowBall = new Item().setTextureName("clonecraft:growBall").setUnlocalizedName("ccGrowBall");
+		itemGrowBall.setCreativeTab(CloneCraft.creativeTab);
+		
+		GameRegistry.registerItem(itemGrowBall, config.ID_GROWBALL);
+		
+		
 		
 		blockSterilizer = (BlockSterilizer) new BlockSterilizer().setBlockName("sterilizer").setStepSound(Block.soundTypeMetal).setHardness(3.5f).setCreativeTab(creativeTab);
 		GameRegistry.registerBlock(blockSterilizer, config.ID_STERILIZER);
@@ -173,6 +181,7 @@ public class CloneCraft {
 	public void postInit(FMLPostInitializationEvent event)
 	{
 		proxy.postInit(this);
+		CCEntityList.initEntities();
 	}
 	
 	
@@ -200,6 +209,11 @@ public class CloneCraft {
 		});
 		GameRegistry.addShapedRecipe(new ItemStack(blockAntenna, 9), new Object[]{
 			"XYX", "XYX", "XYX", Character.valueOf('X'), Items.iron_ingot, Character.valueOf('Y'), Items.gold_ingot
+		});
+		
+		GameRegistry.addShapelessRecipe(new ItemStack(this.itemGrowBall), new Object[]{
+			//Melon, BoneMeal, Brown Mushroom, Charcoal, Jungle Leaves
+			Items.melon, new ItemStack(Items.dye, 1, 15), Blocks.brown_mushroom, new ItemStack(Items.coal, 1, 1), new ItemStack(Blocks.leaves, 1, 3)
 		});
 		//Ink, Slime, furnace, diamond, iron, gold
 //		GameRegistry.addRecipe(new ItemStack(dnaSequencer), new Object[]{
@@ -231,6 +245,13 @@ public class CloneCraft {
 		GameRegistry.addRecipe(new RecipeTestTubeNeedle());
 		GameRegistry.addRecipe(new RecipeClearDNAItem());
 		GameRegistry.addRecipe(new RecipeEmptyEggToSpawnEgg());
+		GameRegistry.addRecipe(new RecipeStemCells());
+
+		RecipeSorter.register("clonecraft:needleToTube", RecipeNeedleTestTubeRecipe.class, RecipeSorter.Category.SHAPELESS, "after:minecraft:shaped");
+		RecipeSorter.register("clonecraft:TubeToDna", RecipeTestTubeNeedle.class, RecipeSorter.Category.SHAPELESS, "after:minecraft:shaped");
+		RecipeSorter.register("clonecraft:clearData", RecipeClearDNAItem.class, RecipeSorter.Category.SHAPELESS, "after:minecraft:shaped");
+		RecipeSorter.register("clonecraft:emptyEgg", RecipeEmptyEggToSpawnEgg.class, RecipeSorter.Category.SHAPELESS, "after:minecraft:shaped");
+		RecipeSorter.register("clonecraft:stemCell", RecipeStemCells.class, RecipeSorter.Category.SHAPELESS, "after:minecraft:shaped");
 //		GameRegistry.addRecipe(new RecipeAddGenes());
 //		GameRegistry.addRecipe(new RecipeGeneDNA());
 //		GameRegistry.addRecipe(new RecipeMutateSerum());

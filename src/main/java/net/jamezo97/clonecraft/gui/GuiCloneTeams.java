@@ -110,7 +110,7 @@ public class GuiCloneTeams extends GuiScreen {
 		for(int a = 0; a < buttonList.size(); a++){
 			if(buttonList.get(a) instanceof ButtonCloneTeam){
 				ButtonCloneTeam button = ((ButtonCloneTeam)buttonList.get(a));
-				if(clone.team == button.team){
+				if(clone.getCTeam() == button.team){
 					button.setSelected(true);
 					selectedColour = button.team.teamColour & 0x00ffffff | 0x22000000;
 				}else{

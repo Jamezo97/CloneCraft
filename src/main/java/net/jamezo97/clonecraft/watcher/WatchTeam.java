@@ -17,7 +17,7 @@ public class WatchTeam extends Watchable{
 
 	@Override
 	public void write(ByteBuf buf, EntityClone clone) {
-		buf.writeByte(clone.team.teamID);
+		buf.writeByte(clone.getCTeam().teamID);
 	}
 
 	@Override
@@ -29,12 +29,12 @@ public class WatchTeam extends Watchable{
 
 	@Override
 	public Object get(EntityClone clone, int index) {
-		return clone.team.teamID;
+		return clone.getCTeam().teamID;
 	}
 
 	@Override
 	public void handle(Object[] data, EntityClone clone) {
-		clone.team = (PlayerTeam)data[0];
+		clone.setCTeam((PlayerTeam)data[0]);
 	}
 
 }

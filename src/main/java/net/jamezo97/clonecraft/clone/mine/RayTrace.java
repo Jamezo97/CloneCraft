@@ -2,6 +2,7 @@ package net.jamezo97.clonecraft.clone.mine;
 
 import java.util.ArrayList;
 
+import net.jamezo97.physics.Vector;
 import net.minecraft.block.Block;
 import net.minecraft.entity.Entity;
 import net.minecraft.util.AxisAlignedBB;

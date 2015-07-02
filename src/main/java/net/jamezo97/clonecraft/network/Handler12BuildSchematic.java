@@ -56,7 +56,6 @@ public class Handler12BuildSchematic extends Handler{
 	@Override
 	public void handle(Side side, EntityPlayer player) 
 	{
-		
 		if(syncStage == 0 && side == Side.SERVER)
 		{
 			//Check if the schematic exists.
@@ -67,35 +66,7 @@ public class Handler12BuildSchematic extends Handler{
 			if(entry != null)
 			{
 				//Start Building
-				
-				EntityClone clone = this.getUsableClone(player, cloneEntityID);
-				
-				player.addChatMessage(
-						new ChatComponentText("Schematic already exists on server. Yay!")
-						.setChatStyle(new ChatStyle().setColor(EnumChatFormatting.GREEN)));
-				
-				if(clone != null)
-				{
-					clone.getBuildAI().posX = posX;
-					clone.getBuildAI().posY = posY;
-					clone.getBuildAI().posZ = posZ;
-					
-					clone.getBuildAI().setSchematic(entry.schem);
-					
-					player.addChatMessage(
-							new ChatComponentText("Start Building!")
-							.setChatStyle(new ChatStyle().setColor(EnumChatFormatting.GOLD)));
-					
-					entry.schem.buildInstantly(posX, posY, posZ, clone.worldObj);
-				}
-				else
-				{
-					player.addChatMessage(
-							new ChatComponentText("Building Failed. Clone does not exist!")
-							.setChatStyle(new ChatStyle().setColor(EnumChatFormatting.RED)));
-				}
-				
-				
+				build(player, entry);
 			}
 			else
 			{
@@ -126,56 +97,54 @@ public class Handler12BuildSchematic extends Handler{
 						.setChatStyle(new ChatStyle().setColor(EnumChatFormatting.RED)));
 			}
 		}
-		else if(syncStage == 2 && side == Side.SERVER)
+	}
+	
+	public void build(EntityPlayer player, SchematicEntry entry)
+	{
+		if(entry == null)
 		{
-			//Schematic file should exist. Try to build it now.
-			SchematicEntry entry = getSchematic();
+			entry = getSchematic();
+		}
+		
+		if(entry != null)
+		{
+			//Start Building
+			player.addChatMessage(
+					new ChatComponentText("Start Building!")
+					.setChatStyle(new ChatStyle().setColor(EnumChatFormatting.GOLD)));
 			
-			//The Schematic Exists!
+			EntityClone clone = this.getUsableClone(player, cloneEntityID);
 			
-			if(entry != null)
+			if(clone != null)
 			{
-				//Start Building
-				player.addChatMessage(
-						new ChatComponentText("Start Building!")
-						.setChatStyle(new ChatStyle().setColor(EnumChatFormatting.GOLD)));
-				
-				EntityClone clone = this.getUsableClone(player, cloneEntityID);
-				
 				clone.getBuildAI().posX = posX;
 				clone.getBuildAI().posY = posY;
 				clone.getBuildAI().posZ = posZ;
 				
 				clone.getBuildAI().setSchematic(entry.schem);
+
+				clone.getBuildAI().setBuilding(true);
 				
-				entry.schem.buildInstantly(posX, posY, posZ, clone.worldObj);
+//				entry.schem.buildInstantly(posX, posY, posZ, clone.worldObj);
 			}
 			else
 			{
-				//Schematic does not exist. Request it from the client.
 				player.addChatMessage(
-						new ChatComponentText("Schematic failed to send. Building failed. Aborting.")
+						new ChatComponentText("Clone doesn't exist, or you can't use it. Hacker!?")
 						.setChatStyle(new ChatStyle().setColor(EnumChatFormatting.RED)));
 			}
+		}
+		else
+		{
+			player.addChatMessage(
+					new ChatComponentText("Schematic failed to send. Building failed. Aborting.")
+					.setChatStyle(new ChatStyle().setColor(EnumChatFormatting.RED)));
 		}
 	}
 	
 	public SchematicEntry getSchematic()
 	{
-		ArrayList<SchematicEntry> schems = CloneCraft.INSTANCE.schematicList.getSchematics();
-		
-		for(int a = 0; a < schems.size(); a++)
-		{
-			Schematic schem = schems.get(a).schem;
-			
-			//It's the same schematic!
-			if(schem.xSize == xSize && schem.ySize == ySize && schem.zSize == zSize && schem.myHashCode() == schematicHash)
-			{
-				return schems.get(a);
-			}
-		}
-		
-		return null;
+		return CloneCraft.INSTANCE.schematicList.getSchematic(schematicHash, xSize, ySize, zSize);
 	}
 
 	@Override
@@ -229,6 +198,9 @@ public class Handler12BuildSchematic extends Handler{
 		buf.writeInt(posY);
 		buf.writeInt(posZ);
 	}
+
+
+
 
 	
 	

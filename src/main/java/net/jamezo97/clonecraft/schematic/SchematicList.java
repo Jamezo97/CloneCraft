@@ -7,9 +7,14 @@ import java.util.Collections;
 import net.jamezo97.clonecraft.CloneCraft;
 import net.jamezo97.clonecraft.network.Handler;
 import net.jamezo97.clonecraft.network.Handler11SendSchematic;
+import net.jamezo97.clonecraft.network.Handler12BuildSchematic;
+import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.integrated.IntegratedServer;
+import net.minecraft.util.ChatComponentText;
+import net.minecraft.util.ChatStyle;
+import net.minecraft.util.EnumChatFormatting;
 
 /**
  * Helps bridge the gap between server and client. Can be used to send/receive schematic files
@@ -57,8 +62,15 @@ public class SchematicList {
 		{
 			if(builders.get(a).shouldDiscard())
 			{
-				builders.remove(a);
+				SchematicBuilder builder = builders.remove(a);
 				a--;
+				
+				if(builder.sender != null)
+				{
+					builder.sender.addChatMessage(
+							new ChatComponentText("Full Schematic File was not received. Aborting build.")
+							.setChatStyle(new ChatStyle().setColor(EnumChatFormatting.RED)));
+				}
 			}
 		}
 		
@@ -67,7 +79,7 @@ public class SchematicList {
 			reloadSchematics();
 			nextUpdate = System.currentTimeMillis() + 10000;
 		}
-		
+		/*
 		//We're connected to ourselves, so the schematic folder will contains the same files, no need for synchronization
 		if(MinecraftServer.getServer() instanceof IntegratedServer)
 		{
@@ -76,7 +88,7 @@ public class SchematicList {
 		else
 		{
 			
-		}
+		}*/
 	}
 	
 	/**
@@ -85,9 +97,18 @@ public class SchematicList {
 	 * @param sendTo Who to send it to. If null, then it is sent to the client.
 	 * @param The final Packet to send once the rest have been sent.
 	 */
-	public void sendSchematic(Schematic schem, EntityPlayerMP sendTo, Handler handlerFinal)
+	public void sendSchematic(Schematic schem, EntityPlayerMP sendTo, Handler12BuildSchematic build)
 	{
-		int SEGMENTSIZE = 1024;
+		
+		//32Kilobytes Max
+		//Say 30 Kilobytes. Two arrays of shorts. Makes 4 Bytes per block.
+		//30 / 4 = 7.5K. So max of ~ 7500
+		
+		int SEGMENTSIZE = 7000;
+		
+		int segmentTotal = schem.blockIds.length / SEGMENTSIZE + 1;
+		
+		int segment = 0;
 		
 		for(int a = 0; a < schem.blockIds.length;)
 		{
@@ -95,21 +116,20 @@ public class SchematicList {
 			
 			Handler11SendSchematic handler;
 			
-			timedPackets.add(handler = new Handler11SendSchematic(schem, a, length));
+			timedPackets.add(handler = new Handler11SendSchematic(schem, a, length, ++segment, segmentTotal));
 			
 			handler.archiveRecipient(sendTo);
 			
-			a += length;
-			
-			if(a >= schem.blockIds.length)
+			if(a == 0)
 			{
-				//This is the last packet to be sent.
-				timedPackets.add(handlerFinal);
+				handler.loadInitialData(build);
 			}
+			
+			a += length;
 		}
 	}
 
-	public void receiveData(Handler11SendSchematic handler, String name, String sender)
+	public void receiveData(Handler11SendSchematic handler, String name, EntityPlayer sender)
 	{
 		SchematicBuilder builder = null;
 		
@@ -136,12 +156,14 @@ public class SchematicList {
 			Schematic schem = builder.schematic;
 			
 			schematicReceived(schem, builder.sender);
+			
+			builder.schematicFinalized();
 		}
 	}
 	
-	public void schematicReceived(Schematic schem, String sender)
+	public void schematicReceived(Schematic schem, EntityPlayer sender)
 	{
-		File saveTo = new File(baseFolder, sender + "/" + schem.name + ".schematic");
+		File saveTo = new File(baseFolder, sender.getCommandSenderName() + "/" + schem.name + ".schematic");
 		
 		if(!saveTo.getParentFile().exists())
 		{
@@ -157,7 +179,7 @@ public class SchematicList {
 			saveTo = new File(CloneCraft.INSTANCE.getDataDir(), "Schematics/" + sender + "/" + schem.name + "_" + (newCount++) + ".schematic");
 		}*/
 		
-		schem.saveTo(saveTo);
+		schem.saveTo(saveTo, false);
 		
 		reloadSchematics();
 	}
@@ -306,6 +328,22 @@ public class SchematicList {
 		localizedName = localizedName.substring(0, localizedName.length()-10);//Remove the .schematic at the end
 		return localizedName;
 	}
+	
+	public SchematicEntry getSchematic(long schematicHash, int xSize, int ySize, int zSize) {
+		
+		for(int a = 0; a < schematics.size(); a++)
+		{
+			Schematic schem = schematics.get(a).schem;
+			
+			//It's the same schematic!
+			if(schem.xSize == xSize && schem.ySize == ySize && schem.zSize == zSize && schem.myHashCode() == schematicHash)
+			{
+				return schematics.get(a);
+			}
+		}
+		
+		return null;
+	}
 
 	/**
 	 * Deletes any Buffers stored on the GPU which are no longer needed. However if the schematic is rendered again
@@ -319,6 +357,8 @@ public class SchematicList {
 			schemEntry.schem.cleanGPU();
 		}
 	}
+
+	
 	
 	
 

@@ -4,7 +4,7 @@ import net.minecraft.util.StatCollector;
 
 public enum PlayerTeam {
 	Red(0, 0xff0000), Orange(1, 0xff8000), Yellow(2, 0xffff00), Green(3, 0x00ff00), Blue(4, 0x0000ff), LightBlue(5, 0x0080ff),
-	Purple(6, 0xc800ff), Pink(7, 0xffaaff), Good(8, 0xffffff), Evil(9, 0x555555);
+	Purple(6, 0xc800ff), Pink(7, 0xffaaff), Good(8, 0xffffff), Evil(9, 0x555555), Rampant(10, 0x442222);
 	
 	//Evil attacks everything inc. player
 	
@@ -49,7 +49,13 @@ public enum PlayerTeam {
 		teamColour = colour;
 	}
 	
-	public boolean doesAttackTeam(PlayerTeam other){
+	public boolean doesAttackTeam(PlayerTeam other)
+	{
+		//Rampant attacks EVERYTHING.
+		if((this == Rampant || other == Rampant))
+		{
+			return true;
+		}
 		if(this != other && (this == Evil || other == Evil)){
 			return true;
 		}
@@ -64,13 +70,23 @@ public enum PlayerTeam {
 		return StatCollector.translateToLocal(getUnloc());
 	}
 
-	public String getInfo() {
-		if(this != Good && this != Evil){
+	public String getInfo()
+	{
+		if(this != Good && this != Evil && this != Rampant)
+		{
 			return StatCollector.translateToLocal("clonecraft.cteam.info.colour").replace("@team", this.getNameLoc());
-		}else if(this == Good){
+		}
+		else if(this == Good)
+		{
 			return StatCollector.translateToLocal("clonecraft.cteam.info.good");
-		}else/*(this == Evil)*/{
+		}
+		else if(this == Evil)
+		{
 			return StatCollector.translateToLocal("clonecraft.cteam.info.evil");
+		}
+		else
+		{
+			return StatCollector.translateToLocal("clonecraft.cteam.info.rampant");
 		}
 		
 	}

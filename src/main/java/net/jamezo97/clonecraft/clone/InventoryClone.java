@@ -685,13 +685,36 @@ public class InventoryClone extends InventoryPlayer{//implements IInventory{
 		return false;
 	}
 	
+	/**
+	 * Gets the slot index for the specified item
+	 * @param milkBucket
+	 * @return
+	 */
+	public int getSlotForItem(Item item)
+	{
+		for(int a = 0; a < mainInventory.length; a++)
+		{
+			if(mainInventory[a] != null && mainInventory[a].getItem() == item)
+			{
+				return a;
+			}
+		}
+		return -1;
+	}
+	
+	/*public int getSlotForItemStack(ItemStack stack)
+	{
+		
+	}*/
+	
 	
 	/**
 	 * Checks if the given ItemStack can be found, or made from the current inventory contents (and made as in, stack similar items together)
 	 * @param stack The stack to check if available.
 	 * @return true if the ItemStack could be made from the current inventory (i.e. 6 Bread. 3 in slot 6, 1 in slot 2, and 2 in slot 19. 6 Bread is available.
 	 */
-	public boolean isStackAvailable(ItemStack stack){
+	public boolean isStackAvailable(ItemStack stack)
+	{
 		if(stack == null)
 		{
 			return false;
@@ -707,6 +730,7 @@ public class InventoryClone extends InventoryPlayer{//implements IInventory{
 						&& ItemStack.areItemStackTagsEqual(copy,  mainInventory[a]))
 				{
 					copy.stackSize -= mainInventory[a].stackSize;
+					
 					if(copy.stackSize <= 0)
 					{
 						return true;
@@ -718,7 +742,8 @@ public class InventoryClone extends InventoryPlayer{//implements IInventory{
 		return copy.stackSize <= 0;
 	}
 	
-	public int getFitCount(ItemStack stack){
+	public int getFitCount(ItemStack stack)
+	{
 		if(stack == null)
 		{
 			return -1;
@@ -737,14 +762,17 @@ public class InventoryClone extends InventoryPlayer{//implements IInventory{
 				{
 					int maxAdd = (mainInventory[a].getMaxStackSize()-mainInventory[a].stackSize);
 					
-					if(maxAdd > copy.stackSize){
+					if(maxAdd > copy.stackSize)
+					{
 						maxAdd = copy.stackSize;
 					}
 					
 					copy.stackSize -= maxAdd;
 					fitCount += maxAdd;
 				}
-			}else{
+			}
+			else
+			{
 				emptyCount+=this.getInventoryStackLimit();
 			}
 		}
@@ -752,20 +780,27 @@ public class InventoryClone extends InventoryPlayer{//implements IInventory{
 		return fitCount+emptyCount;
 	}
 	
-	public boolean hasEmptySlot(){
-		for(int a = 0; a < mainInventory.length; a++){
-			if(mainInventory[a] == null){
+	public boolean hasEmptySlot()
+	{
+		for(int a = 0; a < mainInventory.length; a++)
+		{
+			if(mainInventory[a] == null)
+			{
 				return true;
 			}
 		}
 		return false;
 	}
 	
-	public int getTypeCount(TypeCheck type){
+	public int getTypeCount(TypeCheck type)
+	{
 		int count = 0;
-		for(int a = 0; a < mainInventory.length; a++){
-			if(mainInventory[a] != null){
-				if(type.isType(mainInventory[a])){
+		for(int a = 0; a < mainInventory.length; a++)
+		{
+			if(mainInventory[a] != null)
+			{
+				if(type.isType(mainInventory[a]))
+				{
 					count += mainInventory[a].stackSize;
 				}
 			}
@@ -851,6 +886,8 @@ public class InventoryClone extends InventoryPlayer{//implements IInventory{
 		new TypeCheckItem(Items.diamond_shovel),
 		new TypeCheckItem(Items.diamond_sword)
 	};
+
+	
 
 	
 }

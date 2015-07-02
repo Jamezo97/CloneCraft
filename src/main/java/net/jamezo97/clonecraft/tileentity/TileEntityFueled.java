@@ -178,10 +178,10 @@ public abstract class TileEntityFueled extends TileEntityBase{
     public boolean receiveClientEvent(int key, int value){
     	if(key == 1){
     		this.cookTime = value;
-    		System.out.println("Set cookTime: " + value);
+//    		System.out.println("Set cookTime: " + value);
     	}else if(key == 2){
     		this.burnTimeLeft = value;
-    		System.out.println("Set burnTimeLeft: " + value);
+//    		System.out.println("Set burnTimeLeft: " + value);
     	}else{
     		return super.receiveClientEvent(key, value);
     	}

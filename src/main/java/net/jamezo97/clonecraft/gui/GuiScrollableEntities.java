@@ -2,6 +2,7 @@ package net.jamezo97.clonecraft.gui;
 
 import java.util.ArrayList;
 
+import net.jamezo97.clonecraft.CCEntityList;
 import net.jamezo97.clonecraft.EntityColourHandler;
 import net.jamezo97.clonecraft.clone.AttackableEntities;
 import net.jamezo97.clonecraft.clone.EntityClone;
@@ -28,26 +29,32 @@ public class GuiScrollableEntities extends GuiScrollable{
 	
 	EntityClone clone;
 	
-	public GuiScrollableEntities(int xPosition, int yPosition, int width, int height, EntityClone clone) {
+	public GuiScrollableEntities(int xPosition, int yPosition, int width, int height, EntityClone clone)
+	{
 		super(xPosition, yPosition, width, height);
 		this.attackables = clone.getOptions().attackables;
 		this.clone = clone;
 		
 		
-		for(int a = 0; a < AttackableEntities.validEntitiesArray.length; a++){
+		for(int a = 0; a < AttackableEntities.validEntitiesArray.length; a++)
+		{
 			int id = AttackableEntities.validEntitiesArray[a];
 			allViewable.add(new AttackEntry(id));
 		}
 		updateViewable(null);
 	}
 	
-	public void updateViewable(String searchCrit){
+	public void updateViewable(String searchCrit)
+	{
 		searchCrit = searchCrit==null?null:searchCrit.toLowerCase();
 		AttackEntry entry;
 		viewable.clear();
-		for(int a = 0; a < allViewable.size(); a++){
+		
+		for(int a = 0; a < allViewable.size(); a++)
+		{
 			entry = allViewable.get(a);
-			if(searchCrit == null || searchCrit.length() == 0 || entry.getTransName().toLowerCase().contains(searchCrit)){
+			if(searchCrit == null || searchCrit.length() == 0 || entry.getTransName().toLowerCase().contains(searchCrit))
+			{
 				viewable.add(entry);
 			}
 		}
@@ -159,30 +166,41 @@ public class GuiScrollableEntities extends GuiScrollable{
     }
 	
 	
-	public class AttackEntry{
+	public class AttackEntry
+	{
 		
 		int entityId;
 		String name;
 		EntityLivingBase entity;
 		
-		public AttackEntry(int entityId){
+		public AttackEntry(int entityId)
+		{
 			this.entityId = entityId;
+			
 			Object temp = EntityList.classToStringMapping.get(EntityList.IDtoClassMapping.get(entityId));
-			if(temp != null && temp instanceof String){
+			
+			if(temp != null && temp instanceof String)
+			{
 				this.name = (String)temp;
-			}else{
+			}
+			else
+			{
 				this.name = "Unknown!";
 			}
 		}
 		
-		public String getTransName(){
+		public String getTransName()
+		{
 			return StatCollector.translateToLocal("entity." + name + ".name");
 		}
 		
 		int colour = -1;
-		public int getBgColour(){
-			if(colour == -1){
-				colour = EntityColourHandler.getPrimaryColourForEntityId(entityId);
+		
+		public int getBgColour()
+		{
+			if(colour == -1)
+			{
+				colour = EntityColourHandler.getPrimaryColourForEntityId(CCEntityList.mcToMyId(entityId));
 				int red = (colour >> 16) & 0xff;
 				int green = (colour >> 8) & 0xff;
 				int blue = (colour) & 0xff;
@@ -194,26 +212,34 @@ public class GuiScrollableEntities extends GuiScrollable{
 				if(blue>220){blue=220;}
 				colour = (red << 16) | (green << 8) | blue;
 			}
+			
 			return colour;
 		}
 		
 		boolean created = false;
 		
-		public EntityLivingBase getEntity(World world){
-			if(entity != null){
+		public EntityLivingBase getEntity(World world)
+		{
+			if(entity != null)
+			{
 				return entity;
-			}else if(created) {
+			}
+			else if(created)
+			{
 				return null;
 			}
 			created = true;
 
 			Entity e = EntityList.createEntityByID(entityId, world);
 
-			if(e != null){
-				if(e instanceof EntityLivingBase){
+			if(e != null)
+			{
+				if(e instanceof EntityLivingBase)
+				{
 					return (entity = ((EntityLivingBase)e));
 				}
 			}
+			
 			return null;
 		}
 		

@@ -7,9 +7,9 @@ import java.util.List;
 
 import net.jamezo97.clonecraft.clone.EntityClone;
 import net.jamezo97.clonecraft.clone.mine.RayTrace;
-import net.jamezo97.clonecraft.clone.mine.Vector;
 import net.jamezo97.clonecraft.command.word.WordSet;
 import net.jamezo97.clonecraft.recipe.CloneCraftCraftingHandler;
+import net.jamezo97.physics.Vector;
 import net.minecraft.client.Minecraft;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLivingBase;

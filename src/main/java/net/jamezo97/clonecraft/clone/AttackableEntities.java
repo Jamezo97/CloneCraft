@@ -25,46 +25,57 @@ public class AttackableEntities {
 	
 	ArrayList<Integer> selectedEntities = new ArrayList<Integer>();
 	
-	public AttackableEntities(CloneOptions options){
+	public AttackableEntities(CloneOptions options)
+	{
 		this.options = options;
 		this.clone = options.clone;
 	}
 	
-	public boolean isDirty(){
+	public boolean isDirty()
+	{
 		return isDirty;
 	}
 	
-	public AttackableEntities setDirty(boolean dirty){
+	public AttackableEntities setDirty(boolean dirty)
+	{
 		this.isDirty = dirty;
 		return this;
 	}
 	
 	
-	public NBTTagCompound save(NBTTagCompound nbt){
+	public NBTTagCompound save(NBTTagCompound nbt)
+	{
 		int[] data = toPrimitive(this.selectedEntities);
 		nbt.setIntArray("AttEnt", data);
 		return nbt;
 	}
 	
-	public NBTTagCompound load(NBTTagCompound nbt){
+	public NBTTagCompound load(NBTTagCompound nbt)
+	{
 		int[] data = nbt.getIntArray("AttEnt");
 		addPrimitive(this.selectedEntities, data);
 		setDirty(false);
 		return nbt;
 	}
 	
-	public void toggleEntity(int entityId){
+	public void toggleEntity(int entityId)
+	{
 		set(entityId, !canAttack(entityId));
 	}
 	
-	public int set(int entityId, boolean selected){
-		if(!selected && selectedEntities.contains(entityId)){
+	public int set(int entityId, boolean selected)
+	{
+		if(!selected && selectedEntities.contains(entityId))
+		{
 			selectedEntities.remove((Object)entityId);
 			setDirty(true);
 			return -1;
 		}
+		
 		if(!isValidEntity(entityId)){return 0;}
-		if(selected && !selectedEntities.contains(entityId)){
+		
+		if(selected && !selectedEntities.contains(entityId))
+		{
 			selectedEntities.add(entityId);
 			setDirty(true);
 			return 1;
@@ -72,20 +83,27 @@ public class AttackableEntities {
 		return 0;
 	}
 	
-	public boolean canAttack(int id){
+	public boolean canAttack(int id)
+	{
 		return selectedEntities.contains(id);
 	}
 	
 
-	public void tick(EntityClone clone) {
-		if(clone.worldObj.isRemote){
-			if(isDirty()){
+	public void tick(EntityClone clone)
+	{
+		if(clone.worldObj.isRemote)
+		{
+			if(isDirty())
+			{
 				this.setDirty(false);
 				Handler8UpdateAttackEntities handler = new Handler8UpdateAttackEntities(clone.getEntityId(), this.toPrimitive(selectedEntities));
 				handler.sendToServer();
 			}
-		}else{
-			if(isDirty()){
+		}
+		else
+		{
+			if(isDirty())
+			{
 				this.setDirty(false);
 				Handler8UpdateAttackEntities handler = new Handler8UpdateAttackEntities(clone.getEntityId(), this.toPrimitive(selectedEntities));
 				handler.sendToOwnersWatching(clone);
@@ -94,46 +112,61 @@ public class AttackableEntities {
 		
 	}
 	
-	public void clear() {
+	public void clear()
+	{
 		this.selectedEntities.clear();
 		setDirty(true);
 	}
 	
 	
-	public void importInt(int[] data) {
+	public void importInt(int[] data)
+	{
 		int prev = this.selectedEntities.size();
 		addPrimitive(this.selectedEntities, data);
-		if(this.selectedEntities.size() != prev){
+		
+		if(this.selectedEntities.size() != prev)
+		{
 			this.setDirty(true);
 		}
 	}
 	
-	public int[] exportInt(){
+	public int[] exportInt()
+	{
 		return this.toPrimitive(selectedEntities);
 	}
 
-	public ArrayList<Integer> getArray() {
+	public ArrayList<Integer> getArray()
+	{
 		return selectedEntities;
 	}
 	
-	public void selectAll() {
+	public void selectAll()
+	{
 		this.clear();
 		this.addPrimitive(selectedEntities, validEntitiesArray);
 	}
 	
-	public void selectMobs() {
-		for(int a = 0; a < validEntitiesArray.length; a++){
+	public void selectMobs()
+	{
+		for(int a = 0; a < validEntitiesArray.length; a++)
+		{
 			Class c = EntityList.getClassFromID(validEntitiesArray[a]);
-			if(c != null && (IMob.class.isAssignableFrom(c))){
+			
+			if(c != null && (IMob.class.isAssignableFrom(c)))
+			{
 				this.set(validEntitiesArray[a], true);
 			}
 		}
 	}
 	
-	public void selectAnimals() {
-		for(int a = 0; a < validEntitiesArray.length; a++){
+	public void selectAnimals()
+	{
+		for(int a = 0; a < validEntitiesArray.length; a++)
+		{
 			Class c = EntityList.getClassFromID(validEntitiesArray[a]);
-			if(c != null && (IAnimals.class.isAssignableFrom(c)) && (!IMob.class.isAssignableFrom(c))){
+			
+			if(c != null && (IAnimals.class.isAssignableFrom(c)) && (!IMob.class.isAssignableFrom(c)))
+			{
 				this.set(validEntitiesArray[a], true);
 			}
 		}
@@ -162,6 +195,9 @@ public class AttackableEntities {
 	
 	private static ArrayList<Integer> validEntities = new ArrayList<Integer>();
 	
+	/**
+	 * Array of MC entity Ids
+	 */
 	public static int[] validEntitiesArray;
 	
 	private static ArrayList<Class> invalids = new ArrayList<Class>();
@@ -202,6 +238,10 @@ public class AttackableEntities {
 		for(int a = 0; a < data.length; a++){
 			list.add(data[a]);
 		}
+	}
+
+	public boolean isAttackable(EntityLivingBase entity) {
+		return validEntities.contains(EntityList.getEntityID(entity));
 	}
 
 

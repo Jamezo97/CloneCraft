@@ -13,26 +13,32 @@ public class SyncScale extends Sync{
 	}
 	
 	float lastScale = 0.5f;
+
+	double lastAim = 0.5f;
 	
 	@Override
 	public boolean checkNeedsUpdating(EntityClone clone) {
-		return clone.getScale() != lastScale;
+		return Math.abs(clone.getScale() - lastScale) > 0.003 || Math.abs(clone.getAimScale() - lastAim) > 0.003;
 	}
 
 	@Override
 	public void updateValues(EntityClone clone) {
 		lastScale = clone.getScale();
+		lastAim = clone.getAimScale();
 	}
 
 	@Override
 	public void write(DataOutputStream out, EntityClone clone)
 			throws IOException {
+//		System.out.println("Write");
 		out.writeFloat(clone.getScale());
+		out.writeFloat((float)clone.getAimScale());
 	}
 
 	@Override
 	public void read(DataInputStream in, EntityClone clone) throws IOException {
 		clone.setScale(in.readFloat());
+		clone.setAimScale(in.readFloat());
 	}
 
 	

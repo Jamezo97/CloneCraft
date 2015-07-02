@@ -1,5 +1,6 @@
 package net.jamezo97.clonecraft.item;
 
+import net.jamezo97.clonecraft.CCEntityList;
 import net.jamezo97.clonecraft.EntityColourHandler;
 import net.jamezo97.clonecraft.clone.EntityClone;
 import net.jamezo97.clonecraft.entity.EntitySpawnEgg;
@@ -20,12 +21,16 @@ public class ItemData {
 	
 	int id = -1;
 	
-	public ItemData(NBTTagCompound nbt){
-		if(nbt != null){
-			if(nbt.hasKey("itemData.dirty")){
+	public ItemData(NBTTagCompound nbt)
+	{
+		if(nbt != null)
+		{
+			if(nbt.hasKey("itemData.dirty"))
+			{
 				this.isDirty = nbt.getBoolean("itemData.dirty");
 			}
-			if(nbt.hasKey("itemData.id")){
+			if(nbt.hasKey("itemData.id"))
+			{
 				this.id = nbt.getInteger("itemData.id");
 			}
 			
@@ -36,62 +41,77 @@ public class ItemData {
 		
 	}
 	
-	public ItemData(ItemStack stack){
+	public ItemData(ItemStack stack)
+	{
 		this(stack.getTagCompound());
 	}
 	
-	public ItemStack save(ItemStack stack){
-		if(stack.getTagCompound() == null){
+	public ItemStack save(ItemStack stack)
+	{
+		if(stack.getTagCompound() == null)
+		{
 			stack.setTagCompound(save());
-		}else{
+		}
+		else
+		{
 			save(stack.getTagCompound());
 		}
 		
 		return stack;
 	}
 	
-	public NBTTagCompound save(){
+	public NBTTagCompound save()
+	{
 		NBTTagCompound nbt = new NBTTagCompound();
 		save(nbt);
 		return nbt;
 	}
 	
-	public NBTTagCompound save(NBTTagCompound nbt){
+	public NBTTagCompound save(NBTTagCompound nbt)
+	{
 		nbt.setBoolean("itemData.dirty", isDirty);
 		nbt.setInteger("itemData.id", id);
 		return nbt;
 	}
 	
-	public boolean isDirty(){
+	public boolean isDirty()
+	{
 		return isDirty;
 	}
 	
-	public int getId(){
+	public int getId()
+	{
 		return id;
 	}
 	
 	
-	public ItemData clean(){
+	public ItemData clean()
+	{
 		isDirty = false;
 		return this;
 	}
 	
-	public ItemData empty(){
+	public ItemData empty()
+	{
 		id = -1;
 		return this;
 	}
 	
-	public ItemData fill(Entity e){
-		if(e instanceof EntityPlayer){
-			this.id = 0;
+	public ItemData fill(Entity e)
+	{
+		if(e instanceof EntityPlayer)
+		{
+			this.id = CCEntityList.classToId.get(EntityClone.class);
 			this.isDirty = true;
 			return this;
 		}
-		return fill(EntityList.getEntityID(e));
+		return fill(CCEntityList.getEntityID(e));
 	}
 	
-	public ItemData fill(int entityId){
-		if(entityId == 0 || EntityList.IDtoClassMapping.containsKey(entityId)){
+	public ItemData fill(int entityId)
+	{
+		if(CCEntityList.idToClass.containsKey(entityId))
+		{
 			this.id = entityId;
 			this.isDirty = true;
 		}
@@ -99,32 +119,45 @@ public class ItemData {
 		return this;
 	}
 	
-	public static int getColour(int entityId) {
-    	EntityEggInfo info = (EntityEggInfo)EntityList.entityEggs.get(entityId);
-    	if(info != null){
-    		return info.primaryColor;
-    	}else if(entityId == 0){
+	/*public static int getColour(int entityId) 
+	{
+    	int[] colours = CCEntityList.idToColour.get(entityId);
+    	
+    	if(colours != null)
+    	{
+    		return colours[0];
+    	}
+    	else if(entityId == 0)
+    	{
     		//Human
     		return 0xffd72a2a;
-    	}else if(entityId == -1){
+    	}
+    	else if(entityId == -1)
+    	{
     		//Unknown, broken probs
     		return 0xff000000;
-    	}else{
+    	}
+    	else
+    	{
     		//Yep, broken. Make it fluro pink yo
     		return 0xffff00ff;
     	}
 	}
 
-	public int getColour() {
+	public int getColour()
+	{
     	return getColour(this.id);
-	}
+	}*/
 	
-	public boolean isFull(){
+	public boolean isFull()
+	{
 		return id != -1;
 	}
 	
-	public Entity spawn(MovingObjectPosition mop, EntitySpawnEgg egg) {
-		if(isFull()){
+	public Entity spawn(MovingObjectPosition mop, EntitySpawnEgg egg)
+	{
+		if(isFull())
+		{
 			double x = mop.hitVec.xCoord, y = mop.hitVec.yCoord, z = mop.hitVec.zCoord;
 			if(mop.entityHit != null){
 				//				x += .01f;
@@ -145,74 +178,105 @@ public class ItemData {
 		return null;
 	}
 	
-	public Entity spawnEntity(double posX, double posY, double posZ, World world){
+	public Entity spawnEntity(double posX, double posY, double posZ, World world)
+	{
 		Entity toSpawn = null;
-		try{
-			if(id == 0){
+		try
+		{
+/*			if(id == 0)
+			{
 				toSpawn = new EntityClone(world);
-			}else{
-				toSpawn = EntityList.createEntityByID(id, world);
+			}
+			else*/
+			{
+				toSpawn = CCEntityList.createEntityByID(id, world);
 			}
 			
-		}catch(Exception e){
+		}
+		catch(Exception e)
+		{
 			e.printStackTrace();
 		}
-		if(toSpawn != null){
+		
+		if(toSpawn != null)
+		{
 			toSpawn.setPosition(posX, posY, posZ);
 
-			if(toSpawn instanceof EntityLiving){
+			if(toSpawn instanceof EntityLiving)
+			{
 				((EntityLiving)toSpawn).onSpawnWithEgg(null);
 			}
-			
 			
 			world.spawnEntityInWorld(toSpawn);
 			
 			return toSpawn;
-			
-
-			
 		}
 		return toSpawn;
 	}
 
-	public String getCurrentEntityNameTrans(){
-		if(id == 0){
+	public String getCurrentEntityNameTrans()
+	{
+		if(id == 0)
+		{
 			return StatCollector.translateToLocal("cc.human");
-		}else{
-			String name = EntityList.getStringFromID(id);
-			if(name != null){
+		}
+		else
+		{
+			String name = CCEntityList.idToString.get(id);
+			
+			if(name != null)
+			{
 				return StatCollector.translateToLocal("entity." + name + ".name");
-			}else{
+			}
+			else
+			{
 				return null;
 			}
 		}
 	}
 
-	public int getColour(ItemStack par1ItemStack) {
-		if(par1ItemStack.getItemDamage() == 0){
+	/*public int getColour(ItemStack par1ItemStack) 
+	{
+		if(par1ItemStack.getItemDamage() == 0)
+		{
 			return 0xffffffff;
 		}
 		return getColour();
-	}
+	}*/
 
-	public int getPrimaryColour() {
-		if(id == 0){
+	public int getPrimaryColour()
+	{
+		if(id == 0)
+		{
 			return 0xffd72a2a;
-		}else{
+		}
+		else
+		{
 			return EntityColourHandler.getPrimaryColourForEntityId(id);
 		}
 	}
 	
-	public int getSecondaryColour() {
-		if(id == 0){
+	public int getSecondaryColour()
+	{
+		if(id == 0)
+		{
 			return 0xfff74a4a;
-		}else{
+		}
+		else
+		{
 			return EntityColourHandler.getSecondaryColourForEntityId(id);
 		}
 	}
 
-	public void fillWith(ItemData nData) {
+	public void fillWith(ItemData nData)
+	{
 		this.fill(nData.id);
+	}
+
+	public ItemData setDirty()
+	{
+		this.isDirty = true;
+		return this;
 	}
 	
 

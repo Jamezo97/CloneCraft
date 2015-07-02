@@ -149,23 +149,34 @@ public class BlockAntenna extends Block {
 			int y, int z, EntityPlayer p_149727_5_,
 			int p_149727_6_, float p_149727_7_, float p_149727_8_,
 			float p_149727_9_) {
-
-		chargeAntenna(x, y, z, world);
+		if(p_149727_5_.capabilities.isCreativeMode)
+		{
+			chargeAntenna(x, y, z, world);
+		}
+		
 		return true;//super.onBlockActivated(world, x, y, z, p_149727_5_, p_149727_6_, p_149727_7_, p_149727_8_, p_149727_9_);
 	}
 
 
-	public void chargeAntenna(int x, int y, int z, World world){
-		world.setBlock(x, y, z, this, 1, 2);
-		world.scheduleBlockUpdate(x, y, z, this, tickRate(world));
-		new Handler3LifeInducerUpdates(x, y, z, 0, 0).sendToAllNear(x, y, z, 16, world.provider.dimensionId);
+	public void chargeAntenna(int x, int y, int z, World world)
+	{
+		if(!world.isRemote)
+		{
+			world.setBlock(x, y, z, this, 1, 2);
+			world.scheduleBlockUpdate(x, y, z, this, tickRate(world));
+			new Handler3LifeInducerUpdates(x, y, z, 0, 0).sendToAllNear(x, y, z, 16, world.provider.dimensionId);
+		}
 	}
 
 	public void chargeLifeMachine(int x, int y, int z, World world, TileEntityLifeInducer te){
-		if(te != null){
-			te.charge();
+		if(!world.isRemote)
+		{
+			if(te != null){
+				te.charge();
+			}
+			new Handler3LifeInducerUpdates(x, y, z, 1, 0).sendToAllNear(x, y, z, 16, world.provider.dimensionId);
 		}
-		new Handler3LifeInducerUpdates(x, y, z, 1, 0).sendToAllNear(x, y, z, 16, world.provider.dimensionId);
+		
 	}
 
 	@Override
@@ -182,7 +193,8 @@ public class BlockAntenna extends Block {
 
     public void onEntityCollidedWithBlock(World par1World, int x, int y, int z, Entity e){
     	int meta = par1World.getBlockMetadata(x, y, z);
-    	if(meta == 1){
+    	if(meta == 1)
+    	{
     		e.attackEntityFrom(DamageSource.generic, 4.0f);
     		double xMid = x+.5;
     		double zMid = z+.5;

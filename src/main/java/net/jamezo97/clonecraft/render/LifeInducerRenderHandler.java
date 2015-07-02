@@ -28,12 +28,17 @@ public class LifeInducerRenderHandler extends TileEntitySpecialRenderer implemen
 	
 	public void renderLifeInducer(TileEntityLifeInducer te, double x, double y, double z, float partial){
 		
-		if(Minecraft.getMinecraft().isGamePaused()){
-			if(was == false){
+		if(Minecraft.getMinecraft().isGamePaused())
+		{
+			if(was == false)
+			{
 				model = new ModelLifeInducer();
 			}
+			
 			was = true;
-		}else{
+		}
+		else
+		{
 			was = false;
 		}
 		
@@ -44,33 +49,13 @@ public class LifeInducerRenderHandler extends TileEntitySpecialRenderer implemen
         GL11.glColor4f(1.0F, 1.0F, 1.0F, 1.0F);
         GL11.glTranslatef((float)x, (float)y + 1.0F, (float)z + 1.0F);
         GL11.glScalef(1.0F, -1.0F, -1.0F);
-//        GL11.glTranslatef(0.5f, 0.5f, 0.5f);
-////        GL11.glRotatef(t1, 0, 1, 0);
-//        GL11.glTranslatef(-0.5f, -0.5f, -0.5f);
-        
-//        if(was){
-//        	t1++;
-//        	if(t1 > 600){
-//        		t1 = 0;
-////        		was = false;
-//        	}
-//        }else{
-//        	t1--;
-//        	if(t1 <= 0){
-//        		was = true;
-//        	}
-//        }
-        
-//        float rad = (float)(t1 / 600f * 20f);
-//        
-//        float scale = (float)(Math.sin(rad*1.8223)*(rad/12)+(rad/10))+1;
-//        
-//        GL11.glTranslatef(0.5f, 1, 0.5f);
-//        GL11.glScalef(scale, scale, scale);
-//        GL11.glTranslatef(-0.5f, -1, -0.5f);
-        if(te != null){
-        	model.collector.rotateAngleY=model.armOut.rotateAngleY=model.armDown.rotateAngleY = (float) (((te.lastSpin + (te.spin-te.lastSpin)*partial) / 20.0f)*2*Math.PI);
-        }else{
+
+        if(te != null)
+        {
+        	model.collector.rotateAngleY=model.armOut.rotateAngleY=model.armDown.rotateAngleY = (float) (((te.lastSpin + (te.spin-te.lastSpin)*partial) * (te.power/500f))*2*Math.PI);
+        }
+        else
+        {
         	model.collector.rotateAngleY=model.armOut.rotateAngleY=model.armDown.rotateAngleY = 0;
         }
         model.collector.rotateAngleY = 0;

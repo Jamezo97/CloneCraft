@@ -208,6 +208,7 @@ public class Syncer {
 		syncs.add(new SyncEffects(ID_POTS));
 		syncs.add(new SyncScale(ID_SCAL));
 		syncs.add(new SyncItemOffer(ID_OFFR));
+		syncs.add(new SyncShrinkCooldown(ID_SHRINKCOOL));
 	}
 	public static final int ID_TEAM = 	0;
 	public static final int ID_EXPE = 	1;
@@ -220,6 +221,7 @@ public class Syncer {
 	public static final int ID_POTS = 	8;
 	public static final int ID_SCAL = 	9;
 	public static final int ID_OFFR = 	10;
+	public static final int ID_SHRINKCOOL =	11;
 
 
 	public void sendValueToServer(int idName) {

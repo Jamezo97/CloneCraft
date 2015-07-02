@@ -58,6 +58,10 @@ public class RecipeTestTubeNeedle implements IRecipe, IOnCrafted{
 					}
 					tube = s;
 				}
+				else
+				{
+					return false;
+				}
 			}
 		}
 		return needle != null && tube != null && !(new ItemData(needle).isDirty());
@@ -81,6 +85,10 @@ public class RecipeTestTubeNeedle implements IRecipe, IOnCrafted{
 						return null;
 					}
 					tube = s;
+				}
+				else
+				{
+					return null;
 				}
 			}
 		}

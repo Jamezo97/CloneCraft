@@ -62,6 +62,11 @@ public class FakePlayer extends EntityPlayer{
 
 
 	@Override
+	public boolean isEntityAlive() {
+		return clone.isEntityAlive();
+	}
+
+	@Override
 	public void addChatMessage(IChatComponent c) {
 		System.out.println("Send message to Clone '" + clone.getCommandSenderName() + "': " + c.getFormattedText());
 	}
