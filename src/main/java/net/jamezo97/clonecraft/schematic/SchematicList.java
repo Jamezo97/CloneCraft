@@ -77,18 +77,8 @@ public class SchematicList {
 		if(nextUpdate < System.currentTimeMillis())
 		{
 			reloadSchematics();
-			nextUpdate = System.currentTimeMillis() + 10000;
+			//nextUpdate is updated in the reloadSchematics method
 		}
-		/*
-		//We're connected to ourselves, so the schematic folder will contains the same files, no need for synchronization
-		if(MinecraftServer.getServer() instanceof IntegratedServer)
-		{
-			
-		}
-		else
-		{
-			
-		}*/
 	}
 	
 	/**
@@ -194,6 +184,8 @@ public class SchematicList {
 	public void reloadSchematics()
 	{
 		//First, remove all schematics that no longer exist on the HDD
+
+		nextUpdate = System.currentTimeMillis() + 30000;
 		
 		long l1 = System.currentTimeMillis();
 		
@@ -201,6 +193,7 @@ public class SchematicList {
 		{
 			if(!schematics.get(a).fileLoc.exists())
 			{
+				System.out.println("Deleted Schematic: " + schematics.get(a).schem.name);
 				schematics.remove(a--).schem.delete();
 			}
 		}
@@ -241,7 +234,7 @@ public class SchematicList {
 				if(schematics.get(a).fileLoc.equals(schematicFiles.get(b)))
 				{
 					//Remove the file, as we won't be using it later on because we handle it here.
-					File schemFile = schematicFiles.remove(b--);
+					File schemFile = schematicFiles.get(b);
 					
 					//Just in case if the server limits access to these files.
 					try
@@ -253,15 +246,22 @@ public class SchematicList {
 						//If the file has changed.
 						if(newDate > oldDate)
 						{
+							System.out.println("Updated Schematic: " + schematics.get(a).schem.name);
 							//Reload the schematic file.
 							Schematic schem = Schematic.loadFrom(schematicFiles.get(b));
 							
 							if(schem != null)
 							{
 								schematics.get(a).lastModified = newDate;
+								schematics.get(a).schem.delete();
 								schematics.get(a).schem = schem;
+								System.out.println("Updated " + schem);
 							}
-							
+							else
+							{
+								System.out.println("New schematic file could not load. Deleting schematic from list.");
+								schematics.remove(a--).schem.delete();
+							}
 						}
 					}
 					catch(Exception e)
@@ -270,7 +270,7 @@ public class SchematicList {
 						System.err.println("Schematic files won't refresh properly :(");
 						e.printStackTrace();
 					}
-					
+					schematicFiles.remove(b--);
 					continue;
 				}
 			}

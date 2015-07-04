@@ -65,6 +65,8 @@ public class EntityAIBuild extends EntityAIBase{
 	@Override
 	public void updateTask()
 	{
+//		System.out.println("Build");
+		
 		for(int a = 0; a < 60; a++)
 		{
 			if(index < schem.blockIds.length)

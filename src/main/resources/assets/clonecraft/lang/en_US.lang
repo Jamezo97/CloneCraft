@@ -31,7 +31,7 @@ entity.clonecraft.ccEntityClone.name=Human
 item.ccGrowBall.name=Grow Ball
 item.ccGrowBall.info=That looks gross
 
-
+item.ccWoodStaff.name=Schematic Selector
 
 
 
@@ -79,6 +79,7 @@ key.ccLeft=Schematic Left
 key.ccRight=Schematic Right
 key.ccUp=Schematic Up
 key.ccDown=Schematic Down
+key.ccModify=Modify Action
 
 
 

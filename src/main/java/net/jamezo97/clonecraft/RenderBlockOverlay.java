@@ -9,7 +9,7 @@ public class RenderBlockOverlay extends RenderOverlay{
 	int red, green, blue, alpha;
 	
 	public RenderBlockOverlay(int x, int y, int z, int colour) {
-		super(colour);
+		super(new Colour(colour));
 		setBounds(x, y, z, x+1, y+1, z+1);
 	}
 	

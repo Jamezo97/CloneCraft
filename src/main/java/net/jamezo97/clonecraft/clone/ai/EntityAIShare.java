@@ -34,12 +34,16 @@ public class EntityAIShare extends EntityAIBase{
 		
 		Collections.sort(list, new Comparator<EntityClone>(){
 			@Override
-			public int compare(EntityClone o1, EntityClone o2) {
+			public int compare(EntityClone o1, EntityClone o2)
+			{
 				double d1 = o1.getDistanceSqToEntity(clone);
 				double d2 = o2.getDistanceSqToEntity(clone);
-				if(d1 > d2){
+				if(d1 > d2)
+				{
 					return 1;
-				}else if(d1 < d2){
+				}
+				else if(d1 < d2)
+				{
 					return -1;
 				}
 				return 0;

@@ -121,14 +121,14 @@ public class ModelBipedCustom extends ModelBiped{
 				}
 				
 				//Helps see the spring physics behind it all.
-				if(CloneCraft.INSTANCE.config.DEBUG_ENABLED)
+/*				if(CloneCraft.INSTANCE.config.DEBUG_ENABLED)
 				{
 					float scale = (float)Math.max(0f, 1-clone.getScale());
 					
 					this.modelBreastLeft.offsetZ =  -0.09f + scale * (0.3f);
 					this.modelBreastRight.offsetZ = -0.09f + scale * (0.3f);
 				}
-				else
+				else*/
 				{
 					float scale = (float)Math.max(0f, 1-clone.getScale());
 					
@@ -164,6 +164,15 @@ public class ModelBipedCustom extends ModelBiped{
 		
 		this.modelBreastLeft.rotateAngleY += this.bipedBody.rotateAngleY;
 		this.modelBreastRight.rotateAngleY += this.bipedBody.rotateAngleY;
+		
+		this.modelBreastLeft.rotateAngleX += this.bipedBody.rotateAngleX;
+		this.modelBreastRight.rotateAngleX += this.bipedBody.rotateAngleX;
+		
+		if(this.isSneak)
+		{
+			this.modelBreastRight.offsetZ = 0.06f;
+			this.modelBreastLeft.offsetZ = 0.06f;
+		}
 		
 	}
 	

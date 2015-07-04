@@ -7,7 +7,7 @@ public class RenderEntityOverlay extends RenderOverlay{
 	Entity e;
 	
 	public RenderEntityOverlay(Entity e, int colour) {
-		super(colour);
+		super(new Colour(colour));
 		this.e = e;
 		
 		this.setBounds(e.boundingBox.minX-e.posX, e.boundingBox.minY-e.posY, e.boundingBox.minZ-e.posZ,

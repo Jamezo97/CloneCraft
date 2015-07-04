@@ -706,13 +706,14 @@ public class RenderClone extends RendererLivingEntity {
      * Allows the render to do any OpenGL state modifications necessary before the model is rendered. Args:
      * entityLiving, partialTickTime
      */
-    protected void preRenderCallback(EntityClone p_77041_1_, float p_77041_2_)
+    protected void preRenderCallback(EntityClone clone, float p_77041_2_)
     {
     	
 //    	System.out.println(p_77041_2_);
     	
-        float f1 = 0.9375F * p_77041_1_.getInterpolatedScale(p_77041_2_);
-        GL11.glScalef(f1, f1, f1);
+        float f1 = 0.9375F * clone.getInterpolatedScale(p_77041_2_);
+        float f2 = f1 * (clone.getOptions().female.get()?0.98f:1.0f);
+        GL11.glScalef(f2, f1, f2);
     }
 
     protected void func_96449_a(EntityClone p_96449_1_, double p_96449_2_, double p_96449_4_, double p_96449_6_, String p_96449_8_, float p_96449_9_, double p_96449_10_)

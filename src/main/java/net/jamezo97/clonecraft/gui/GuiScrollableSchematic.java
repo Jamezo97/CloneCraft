@@ -1,13 +1,15 @@
 package net.jamezo97.clonecraft.gui;
 
+import java.util.ArrayList;
+
 import net.jamezo97.clonecraft.CloneCraft;
 import net.jamezo97.clonecraft.schematic.Schematic;
 import net.jamezo97.clonecraft.schematic.SchematicEntry;
 import net.minecraft.client.Minecraft;
 
-import org.lwjgl.opengl.GL11;
-
 public class GuiScrollableSchematic extends GuiScrollable{
+	
+	ArrayList<SchematicEntry> visibleList = new ArrayList<SchematicEntry>();
 
 	GuiChooseSchematic gui;
 	
@@ -16,20 +18,44 @@ public class GuiScrollableSchematic extends GuiScrollable{
 	public GuiScrollableSchematic(GuiChooseSchematic gui, int xPosition, int yPosition, int width, int height) {
 		super(xPosition, yPosition, width, height);
 		this.gui = gui;
+		setSearchString(null);
 	}
-
-//	int selected = -1;
+	
+	public void setSearchString(String string)
+	{
+		visibleList.clear();
+		
+		if(string == null || string.isEmpty())
+		{
+			this.visibleList = (ArrayList<SchematicEntry>)CloneCraft.INSTANCE.schematicList.getSchematics().clone();
+			return;
+		}
+		
+		string = string.toLowerCase();
+		
+		ArrayList<SchematicEntry> schems = CloneCraft.INSTANCE.schematicList.getSchematics();
+		
+		for(int a = 0; a < schems.size(); a++)
+		{
+			if(schems.get(a).schem.name.toLowerCase().contains(string))
+			{
+				visibleList.add(schems.get(a));
+			}
+		}
+		
+	}
 	
 	@Override
-	public boolean isEntrySelected(int entryIndex) {
-		SchematicEntry schem = CloneCraft.INSTANCE.schematicList.getSchematics().get(entryIndex);
+	public boolean isEntrySelected(int entryIndex)
+	{
+		SchematicEntry schem = visibleList.get(entryIndex);
 		return gui.clone.getBuildAI().getSchematic() == schem.schem;
-//		return selected == entryIndex;
 	}
 
 	@Override
-	public int getEntryCount() {
-		return CloneCraft.INSTANCE.schematicList.getSchematics().size();
+	public int getEntryCount()
+	{
+		return visibleList.size();
 	}
 
 	@Override
@@ -37,11 +63,10 @@ public class GuiScrollableSchematic extends GuiScrollable{
 		return entryHeight;
 	}
 
-	public void setSelected(int i) {
-		SchematicEntry schem = CloneCraft.INSTANCE.schematicList.getSchematics().get(i);
+	public void setSelected(int i)
+	{
+		SchematicEntry schem = visibleList.get(i);
 		gui.clone.getBuildAI().setSchematic(schem.schem);
-//		System.out.println(gui.clone.getBuildAI().getSchematic());
-//		this.selected = i;
 	}
 	
 	@Override
@@ -63,25 +88,16 @@ public class GuiScrollableSchematic extends GuiScrollable{
 		}
 	}
 	
-	/*public int getSelectedIndex()
-	{
-		return selected;
-	}*/
 	
 	public Schematic getSelectedSchematic()
 	{
 		return gui.clone.getBuildAI().getSchematic();
-		/*if(selected != -1)
-		{
-			return CloneCraft.INSTANCE.schematicList.getSchematics().get(selected).schem;
-		}
-		return null;*/
 	}
 
 	@Override
 	public void renderEntry(int entryIndex, int width, int height)
 	{
-		SchematicEntry schem = CloneCraft.INSTANCE.schematicList.getSchematics().get(entryIndex);
+		SchematicEntry schem = visibleList.get(entryIndex);
 		if(isEntrySelected(entryIndex))
 		{
 			this.drawRect(0, 0, width, height, 0xffffffff);
@@ -98,61 +114,12 @@ public class GuiScrollableSchematic extends GuiScrollable{
 		this.drawString(Minecraft.getMinecraft().fontRenderer, "Length(Z): " + schem.schem.zSize, 3, 40, 0xffffffff);
 		if(gui.displayMode == 2/* || (gui.displayMode == 1 && entryIndex == selected)*/)
 		{
-			renderCenteredSchematicAt(schem.schem, width-75, 5, 80-10, entryHeight-10, gui.xRotate, gui.yRotate, 180, 1);
+			GuiRenderSchematic.renderCenteredSchematicAt(schem.schem, width-75, 5, 80-10, entryHeight-10, gui.xRotate, gui.yRotate, 0, 1);
 		}
 		
 	}
 	
-	public static void renderCenteredSchematicAt(Schematic schem, float x, float y, float maxWidth, float maxHeight, float rotateX, float rotateY, float rotateZ, float scaleFactor)
-	{
-//		schem.storeOnGPU(false);
-		
-		//Calculate scaling
-		float scale = 1.0f;
-		
-		float dx = schem.xSize/2.0f;
-		float dy = schem.ySize/2.0f;
-		float dz = schem.zSize/2.0f;
-		
-		float maxRadi = (float)Math.sqrt(dx*dx + dy*dy + dz*dz);
-		
-		float minDimension = Math.min(maxWidth, maxHeight);
-		
-		scale = minDimension / (maxRadi*2);
-		
-		
-		/*
-		float schemWidth = Math.max(schem.xSize, schem.zSize);
-		float schemHeight = schem.ySize;
-		
-//		float maxRadius = Math.sqrt()
-		
-		scale = Math.min(maxWidth/schemWidth, maxHeight/schemHeight);*/
-		
-		scale *= scaleFactor;
-		
-		GL11.glPushMatrix();
-		
-		/*GL11.glTranslatef(x, y, 0);
-		GL11.glTranslatef(maxWidth/2.0f, maxHeight/2.0f, 0);
-		GL11.glTranslatef(0, 0, 500);*/
-		
-		GL11.glTranslatef(x + maxWidth/2.0f, y + maxHeight/2.0f, maxRadi*scale);
-		
-		GL11.glScalef(scale, scale, scale);
-		
-		GL11.glScalef(1, -1, 1);
-		
-		GL11.glRotatef(rotateZ, 0.0f, 0.0f, 1.0f);
-		GL11.glRotatef(rotateY, 0.0f, 1.0f, 0.0f);
-		GL11.glRotatef(rotateX, 1.0f, 0.0f, 0.0f);
-		
-		GL11.glTranslatef(-schem.xSize/2.0f, -schem.ySize/2.0f, -schem.zSize/2.0f);
-		
-		schem.render();
-		
-		GL11.glPopMatrix();
-	}
+	
 
 
 	

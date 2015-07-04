@@ -34,24 +34,31 @@ public class Handler7CloneClones extends Handler{
 
 	}
 
-	public Handler7CloneClones(EntityClone clone, int amount){
+	public Handler7CloneClones(EntityClone clone, int amount)
+	{
 		this.entityId = clone.getEntityId();
 		this.amount = amount;
 	}
 
 	@Override
 	public void handle(Side side, EntityPlayer player) {
-		if(side == Side.SERVER){
-			if(amount > 50){
+		if(side == Side.SERVER)
+		{
+			if(amount > 50)
+			{
 				amount = 50;
 			}
-			if(amount > 0){
-				if(player.capabilities.isCreativeMode){
+			if(amount > 0)
+			{
+				if(player.capabilities.isCreativeMode)
+				{
 					Random r = new Random();
 					Entity e = player.worldObj.getEntityByID(entityId);
 					if(e != null && e instanceof EntityClone){
 						EntityClone toCopy = (EntityClone)e;
-						if(toCopy != null && toCopy.canUseThisEntity(player)){
+						
+						if(toCopy != null && toCopy.canUseThisEntity(player))
+						{
 							NBTTagCompound cloneTag = new NBTTagCompound();
 							toCopy.writeToNBT(cloneTag);
 							for(int a = 0; a < amount; a++){

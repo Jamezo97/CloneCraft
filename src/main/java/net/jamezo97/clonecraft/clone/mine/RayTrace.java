@@ -51,8 +51,6 @@ public class RayTrace {
 		
 		int maxIterations = (int)Math.ceil(maxAddedUnits*2)+5;
 		
-//		System.out.println(maxIterations);
-		
 		double nextWholeX, nextWholeY, nextWholeZ;
 		
 		double dxu, dyu, dzu;

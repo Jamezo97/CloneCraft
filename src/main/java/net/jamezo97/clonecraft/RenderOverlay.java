@@ -8,12 +8,6 @@ import org.lwjgl.opengl.GL11;
 
 public class RenderOverlay implements Renderable{
 
-	
-	@Override
-	public void onRemoved() {
-		// TODO Auto-generated method stub
-		
-	}
 
 	RenderManager renderManager;
 	
@@ -24,14 +18,16 @@ public class RenderOverlay implements Renderable{
 	double minX, minY, minZ;
 	double maxX, maxY, maxZ;
 	
-	float red, green, blue, alpha;
+	public Colour defaultColour;
+	/**
+	 * 0: -X -Y -Z
+	 * 1:
+	 */
+	public Colour[] cornerColours = new Colour[8];
 	
-	public RenderOverlay(int colour) {
+	public RenderOverlay(Colour colour) {
 		renderManager = RenderManager.instance;
-		this.red = ((colour>>16) & 0xff) / 255.0f;
-		this.green = ((colour>>8) & 0xff) / 255.0f;
-		this.blue = ((colour) & 0xff) / 255.0f;
-		this.alpha = ((colour>>24) & 0xff) / 255.0f;
+		this.defaultColour = colour;
 	}
 	
 	public void setBounds(double minX, double minY, double minZ, double maxX, double maxY, double maxZ){
@@ -56,13 +52,10 @@ public class RenderOverlay implements Renderable{
 	}
 	
 
-	public void renderOverlay(float partial){
+	public void renderOverlay(float partial)
+	{
 		GL11.glDisable(GL11.GL_TEXTURE_2D);
 		
-		
-		GL11.glColor4f(1.0f, 0.0f, 0.0f, 1.0f);//red, green, blue, alpha);
-		
-//		System.out.println(red + ", " + green + ", " + blue + ", " + alpha);
 		
 		GL11.glLineWidth(2.0f);
 		
@@ -77,18 +70,18 @@ public class RenderOverlay implements Renderable{
 		double minZ = this.minZ - b;
 		double maxZ = this.maxZ + b;
 		
-		if(posX != Double.MAX_VALUE && posY != Double.MAX_VALUE && posZ != Double.MAX_VALUE){
+		if(posX != Double.MAX_VALUE && posY != Double.MAX_VALUE && posZ != Double.MAX_VALUE)
+		{
 			GL11.glTranslated(posX, posY, posZ);
 		}
 		
 		GL11.glRotatef(rotate%360, 0, 1, 0);
 		
-//		System.out.println(rotate);
 		
 		GL11.glEnable(GL11.GL_BLEND);
 		GL11.glBlendFunc(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA);
 		
-		GL11.glColor4f(red, green, blue, alpha*opacity);
+		GL11.glColor4f(defaultColour.getRedF(), defaultColour.getGreenF(), defaultColour.getBlueF(), defaultColour.getAlphaF()*opacity);
 		
 		GL11.glBegin(GL11.GL_LINES);
 		GL11.glVertex3d(maxX, minY, minZ);
@@ -100,17 +93,29 @@ public class RenderOverlay implements Renderable{
 		GL11.glEnd();
 		
 		GL11.glBegin(GL11.GL_LINE_STRIP);
+		//this.colour(2);
 		GL11.glVertex3d(minX, maxY, minZ);
+		//this.colour(6);
 		GL11.glVertex3d(maxX, maxY, minZ);
+		//this.colour(7);
 		GL11.glVertex3d(maxX, maxY, maxZ);
+		//this.colour(3);
 		GL11.glVertex3d(minX, maxY, maxZ);
+		//this.colour(2);
 		GL11.glVertex3d(minX, maxY, minZ);
 		
+
+		//this.colour(0);
 		GL11.glVertex3d(minX, minY, minZ);
+		//this.colour(4);
 		GL11.glVertex3d(maxX, minY, minZ);
+		//this.colour(5);
 		GL11.glVertex3d(maxX, minY, maxZ);
+		//this.colour(1);
 		GL11.glVertex3d(minX, minY, maxZ);
+		//this.colour(0);
 		GL11.glVertex3d(minX, minY, minZ);
+		
 		GL11.glEnd();
 		
 		
@@ -119,35 +124,61 @@ public class RenderOverlay implements Renderable{
 		
 		
 		GL11.glBegin(GL11.GL_QUADS);
+		
+		//this.colour(4);
 		GL11.glVertex3d(maxX, minY, minZ);
+		//this.colour(5);
 		GL11.glVertex3d(maxX, minY, maxZ);
+		//this.colour(1);
 		GL11.glVertex3d(minX, minY, maxZ);
+		//this.colour(0);
 		GL11.glVertex3d(minX, minY, minZ);
 		
+		//this.colour(2);
 		GL11.glVertex3d(minX, maxY, minZ);
+		//this.colour(2);
 		GL11.glVertex3d(minX, maxY, maxZ);
+		//this.colour(7);
 		GL11.glVertex3d(maxX, maxY, maxZ);
+		//this.colour(6);
 		GL11.glVertex3d(maxX, maxY, minZ);
 		
+		//this.colour(0);
 		GL11.glVertex3d(minX, minY, minZ);
+		//this.colour(1);
 		GL11.glVertex3d(minX, minY, maxZ);
+		//this.colour(3);
 		GL11.glVertex3d(minX, maxY, maxZ);
+		//this.colour(2);
 		GL11.glVertex3d(minX, maxY, minZ);
 		
+		//this.colour(6);
 		GL11.glVertex3d(maxX, maxY, minZ);
+		//this.colour(7);
 		GL11.glVertex3d(maxX, maxY, maxZ);
+		//this.colour(5);
 		GL11.glVertex3d(maxX, minY, maxZ);
+		//this.colour(4);
 		GL11.glVertex3d(maxX, minY, minZ);
 		
+		//this.colour(2);
 		GL11.glVertex3d(minX, maxY, minZ);
+		//this.colour(6);
 		GL11.glVertex3d(maxX, maxY, minZ);
+		//this.colour(4);
 		GL11.glVertex3d(maxX, minY, minZ);
+		//this.colour(0);
 		GL11.glVertex3d(minX, minY, minZ);
 		
+		//this.colour(1);
 		GL11.glVertex3d(minX, minY, maxZ);
+		//this.colour(5);
 		GL11.glVertex3d(maxX, minY, maxZ);
+		//this.colour(7);
 		GL11.glVertex3d(maxX, maxY, maxZ);
+		//this.colour(3);
 		GL11.glVertex3d(minX, maxY, maxZ);
+		
 		GL11.glEnd();
 
 		
@@ -155,6 +186,21 @@ public class RenderOverlay implements Renderable{
 		
 		GL11.glEnable(GL11.GL_TEXTURE_2D);
 	}
+	
+	private void colour(int corner)
+	{
+		/*if(this.cornerColours[corner] != null)
+		{
+			GL11.glColor4f(this.cornerColours[corner].getRedF(), this.cornerColours[corner].getGreenF(), this.cornerColours[corner].getBlueF(), this.cornerColours[corner].getAlphaF()*opacity);
+		}
+		else
+		{
+			GL11.glColor4f(defaultColour.getRedF(), defaultColour.getGreenF(), defaultColour.getBlueF(), defaultColour.getAlphaF()*opacity);
+		}*/
+	}
+	
+	
+	
 	
 	float rotate = 0.0f;
 	
@@ -193,7 +239,13 @@ public class RenderOverlay implements Renderable{
 		
 	}
 	
+
 	
+	@Override
+	public void onRemoved() {
+		// TODO Auto-generated method stub
+		
+	}
 
 
 	

@@ -12,6 +12,7 @@ import java.nio.IntBuffer;
 import java.nio.ShortBuffer;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 
 import net.minecraft.block.Block;
 import net.minecraft.client.Minecraft;
@@ -21,13 +22,15 @@ import net.minecraft.client.renderer.RenderBlocks;
 import net.minecraft.client.renderer.Tessellator;
 import net.minecraft.client.renderer.texture.TextureMap;
 import net.minecraft.client.shader.TesselatorVertexState;
+import net.minecraft.init.Blocks;
 import net.minecraft.nbt.CompressedStreamTools;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.nbt.NBTTagList;
+import net.minecraft.tileentity.TileEntity;
 import net.minecraft.world.IBlockAccess;
 import net.minecraft.world.World;
+import net.minecraftforge.common.util.Constants.NBT;
 
-import org.lwjgl.BufferUtils;
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL15;
 
@@ -41,6 +44,10 @@ public class Schematic {
 	
 	public short[] blockIds;
 	public short[] blockMetas;
+	
+	HashMap<Integer, NBTTagCompound> posToTileEntity = new HashMap<Integer, NBTTagCompound>();
+	
+	public ArrayList<NBTTagCompound> tileEntities = new ArrayList<NBTTagCompound>();
 	
 	
 	boolean isHashDirty = true;
@@ -59,6 +66,40 @@ public class Schematic {
 	public Schematic(String name, int xSize, int ySize, int zSize)
 	{
 		this(name, xSize, ySize, zSize, new short[xSize*ySize*zSize], new short[xSize*ySize*zSize]);
+	}
+	
+	public Schematic(String name, int xSize, int ySize, int zSize, short[] blockIds, short[] blockMetas, NBTTagCompound[] tes)
+	{
+		this(name, xSize, ySize, zSize, blockIds, blockMetas);
+		if(tes != null)
+		{
+			for(int a = 0; a < tes.length; a++)
+			{
+				NBTTagCompound nbtTag = tes[a];
+				int posX = nbtTag.getInteger("x");
+				int posY = nbtTag.getInteger("y");
+				int posZ = nbtTag.getInteger("z");
+				
+				int index = this.posToIndex(posX, posY, posZ);
+				
+				if(index >= 0 && index < this.blockIds.length)
+				{
+					if(posToTileEntity.containsKey(index))
+					{
+						System.err.println("Schematic " + name + " contains duplicate TileEntities at position (" + posX + ", " + posY + ", " + posZ + "). Skipping");
+					}
+					else
+					{
+						this.posToTileEntity.put(index, nbtTag);
+						this.tileEntities.add(nbtTag);
+					}
+				}
+				else
+				{
+					System.err.println("Schematic " + name + " contains TileEntity outside of block list range. Skipping");	
+				}
+			}
+		}
 	}
 	
 	public Schematic(String name, int xSize, int ySize, int zSize, short[] blockIds, short[] blockMetas)
@@ -103,6 +144,9 @@ public class Schematic {
 		
 		int said = 0;
 		
+		Block block;
+		int meta;
+		
 		for(int y = startY; y < maxY; y++)
 		{
 			for(int z = startZ; z < maxZ; z++)
@@ -111,7 +155,39 @@ public class Schematic {
 				{
 					if(this.blockIdAt(pos) != 0 && y > -1 && y < 256)
 					{
-						world.setBlock(x, y, z, this.blockAt(pos), this.blockMetaAt(pos), flag);
+//						world.getBlock(p_147439_1_, p_147439_2_, p_147439_3_)
+						
+						world.setBlock(x, y, z, block = this.blockAt(pos), meta = this.blockMetaAt(pos), flag);
+						if(block.hasTileEntity(meta))
+						{
+							System.out.println("Has TE");
+							
+							NBTTagCompound teData = this.posToTileEntity.get(pos);
+							
+							if(teData != null)
+							{
+								TileEntity te = world.getTileEntity(x, y, z);
+								
+								System.out.println("Found te..");
+								
+								if(te != null)
+								{
+									System.out.println("Loaded te");
+									te.readFromNBT(teData);
+									te.xCoord = x;
+									te.yCoord = y;
+									te.zCoord = z;
+								}
+								else
+								{
+									System.out.println("Te no in world!");
+								}
+							}
+							else
+							{
+								System.out.println("TE Not Found for " + x + ", " + y + ", " + z);
+							}
+						}
 					}
 					pos++;
 				}
@@ -160,6 +236,20 @@ public class Schematic {
 			byte[] Blocks_byte = nbt.getByteArray("Blocks");
 			byte[] Data_byte = nbt.getByteArray("Data");
 			
+			NBTTagCompound[] tes = null;
+			
+			NBTTagList list = nbt.getTagList("TileEntities", NBT.TAG_COMPOUND);
+			
+			if(list != null)
+			{
+				tes = new NBTTagCompound[list.tagCount()];
+				for(int a = 0; a < tes.length; a++)
+				{
+					tes[a] = list.getCompoundTagAt(a);
+				}
+			}
+			
+			
 			if(Blocks_byte.length == Data_byte.length && Blocks_byte.length == Width*Height*Length)
 			{
 				short[] Blocks = new short[Blocks_byte.length];
@@ -171,7 +261,7 @@ public class Schematic {
 					Data[a] = (short)(Data_byte[a] & 0xFF);
 				}
 				
-				return new Schematic("Schematic_" + Width + "_" + Height + "_" + Length, Width, Height, Length, Blocks, Data);
+				return new Schematic("Schematic_" + Width + "_" + Height + "_" + Length, Width, Height, Length, Blocks, Data, tes);
 			}
 			else
 			{
@@ -188,7 +278,7 @@ public class Schematic {
 						Data[a] =   (short) (BlocksData[a] & 0xFFFF);
 					}
 					
-					return new Schematic("Schematic_" + Width + "_" + Height + "_" + Length, Width, Height, Length, Blocks, Data);
+					return new Schematic("Schematic_" + Width + "_" + Height + "_" + Length, Width, Height, Length, Blocks, Data, tes);
 				}
 			}
 		}
@@ -269,12 +359,16 @@ public class Schematic {
 			nbt.setByteArray("Data", Data_byte);
 		}
 		
+		nbt.setTag("Entities", new NBTTagList());
 		
+		NBTTagList tes = new NBTTagList();
 		
-		NBTTagList emptyList = new NBTTagList();
+		for(int a = 0; a < this.tileEntities.size(); a++)
+		{
+			tes.appendTag(this.tileEntities.get(a));
+		}
 		
-		nbt.setTag("Entities", emptyList);
-		nbt.setTag("TileEntities", emptyList);
+		nbt.setTag("TileEntities", tes);
 		
 		return nbt;
 	}
@@ -317,6 +411,88 @@ public class Schematic {
 		return false;
 	}
 	
+	/**
+	 * Creates a Schematic from what's currently in the world. min and max values are inclusive. i.e. from x = 2 to x = 3, includes 2 and 3, thus width = 2 (not 3-2 = 1)
+	 * @param minX 
+	 * @param minY
+	 * @param minZ
+	 * @param maxX
+	 * @param maxY
+	 * @param maxZ
+	 * @param world The world from which to grab the block and tile entity data.
+	 * @return
+	 */
+	public static Schematic createSchematic(int minX, int minY, int minZ, int maxX, int maxY, int maxZ, World world)
+	{
+		int width = maxX - minX + 1;
+		int height = maxY - minY + 1;
+		int length = maxZ - minZ + 1;
+		
+		if(width <= 0 || height <= 0 || length <= 0)
+		{
+			System.err.println("Invalid schematic dimensions: " + width + ", " + height + ", " + length);
+			return null;
+		}
+		
+		short[] BlocksValues = new short[width*height*length];
+		short[] MetasValues  = new short[width*height*length];
+		
+		ArrayList<NBTTagCompound> tileEntities = new ArrayList<NBTTagCompound>();
+		
+		
+		int index = 0;
+		
+		for(int y = minY; y <= maxY; y++)
+		{
+			for(int z = minZ; z <= maxZ; z++)
+			{
+				for(int x = minX; x <= maxX; x++)
+				{
+					Block block = world.getBlock(x, y, z);
+					
+					if(block != Blocks.air)
+					{
+						BlocksValues[index] = (short)Block.getIdFromBlock(block);
+						
+						int meta;
+						
+						MetasValues[index] = (short)(meta=world.getBlockMetadata(x, y, z));
+						
+						if(block.hasTileEntity(meta))
+						{
+							TileEntity te = world.getTileEntity(x, y, z);
+							
+							if(te != null)
+							{
+								NBTTagCompound teNbt = new NBTTagCompound();
+								te.writeToNBT(teNbt);
+								
+								teNbt.setInteger("x", x-minX);
+								teNbt.setInteger("y", y-minY);
+								teNbt.setInteger("z", z-minZ);
+								
+//								System.out.println("A");
+								
+								tileEntities.add(teNbt);
+							}
+						}
+					}
+					
+					index++;
+				}
+			}
+		}
+		
+		return new Schematic(String.format("Generated Schem %d %d %d", width, height, length), 
+				width, height, length, BlocksValues, MetasValues, tileEntities.toArray(new NBTTagCompound[tileEntities.size()]));
+	}
+
+	
+	
+	
+	
+	
+	
 	public boolean coordExists(int x, int y, int z)
 	{
 		return !(x < 0 || y < 0 || z < 0 || x >= xSize || y >= ySize || z >= zSize);
@@ -349,6 +525,12 @@ public class Schematic {
 	
 	int vertexCount = -1;
 	
+	/**
+	 * If the schematic is just air, then there are no vertices, and attempting to retrieve the Tessellator state will result in a crash
+	 * because the priority queue has a hissy fit or something. Dammit priority queue.
+	 */
+	boolean doNotRenderNoVertices = false;
+	
 	private boolean storeOnGPU = true;
 	
 	/**
@@ -372,6 +554,11 @@ public class Schematic {
 	 */
 	private boolean ensureRenderBuffer()
 	{
+		if(doNotRenderNoVertices)
+		{
+			return true;
+		}
+		
 		if(vertexCount == -1)
 		{
 			int index = 0;
@@ -385,6 +572,8 @@ public class Schematic {
 			
 			ArrayList<Integer> nonOpaque = new ArrayList<Integer>();
 			
+			boolean atLeastOneNonAir = false;
+			
 			for(int y = 0; y < ySize; y++)
 			{
 				for(int z = 0; z < zSize; z++)
@@ -396,31 +585,39 @@ public class Schematic {
 						if(blockId > 0)
 						{
 							RenderBlocks.getInstance().renderBlockByRenderType(Block.getBlockById(blockId), x, y, z);
+							atLeastOneNonAir = true;
 						}
 					}
 				}
 			}
 			
 			//Well that was easy.
+			if(atLeastOneNonAir)
+			{
+				TesselatorVertexState state = Tessellator.instance.getVertexState(0.0f, 0.0f, 0.0f);
+				
+				vertexCount = state.getVertexCount();
+				
+				RenderBlocks.getInstance().blockAccess = backup;
+				
+				int[] rawBuffer = state.getRawBuffer();
+				
+				byteBuffer = GLAllocation.createDirectByteBuffer(vertexCount * 32);
+				intBuffer = byteBuffer.asIntBuffer();
+				intBuffer.put(rawBuffer, 0, state.getVertexCount()*8);
+				
+				floatBuffer = byteBuffer.asFloatBuffer();
+				shortBuffer = byteBuffer.asShortBuffer();
+			}
+			else
+			{
+				doNotRenderNoVertices = true;
+			}
 			
-			TesselatorVertexState state = Tessellator.instance.getVertexState(0.0f, 0.0f, 0.0f);
 			Tessellator.instance.setVertexState(new TesselatorVertexState(new int[0], 0, 0, true, false, false, false));
-			
-			vertexCount = state.getVertexCount();
-			
-			RenderBlocks.getInstance().blockAccess = backup;
-			
-			int[] rawBuffer = state.getRawBuffer();
-			
-			byteBuffer = GLAllocation.createDirectByteBuffer(vertexCount * 32);
-			intBuffer = byteBuffer.asIntBuffer();
-			intBuffer.put(rawBuffer, 0, state.getVertexCount()*8);
-			
-			floatBuffer = byteBuffer.asFloatBuffer();
-			shortBuffer = byteBuffer.asShortBuffer();
 		}
 		
-		if(storeOnGPU && bufferHandler == -1)
+		if(!doNotRenderNoVertices && storeOnGPU && bufferHandler == -1)
 		{
 			bufferHandler = GL15.glGenBuffers();
 			
@@ -448,6 +645,11 @@ public class Schematic {
 	{
 		if(ensureRenderBuffer())
 		{
+			if(doNotRenderNoVertices)
+			{
+				return;
+			}
+			
 			Minecraft.getMinecraft().renderEngine.bindTexture(TextureMap.locationBlocksTexture);
 			
 			GL11.glTranslatef(0.01f, 0.01f, 0.01f);

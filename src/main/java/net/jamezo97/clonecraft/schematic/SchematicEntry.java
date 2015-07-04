@@ -6,7 +6,7 @@ public class SchematicEntry implements Comparable<SchematicEntry>{
 	
 	public Schematic schem;
 	
-	String theName;
+	public String theName;
 	
 	public File fileLoc;
 	

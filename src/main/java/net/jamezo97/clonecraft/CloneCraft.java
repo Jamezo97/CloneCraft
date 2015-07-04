@@ -10,6 +10,7 @@ import net.jamezo97.clonecraft.item.ItemEmptyEgg;
 import net.jamezo97.clonecraft.item.ItemNeedle;
 import net.jamezo97.clonecraft.item.ItemSpawnEgg;
 import net.jamezo97.clonecraft.item.ItemTestTube;
+import net.jamezo97.clonecraft.item.ItemWoodStaff;
 import net.jamezo97.clonecraft.network.PacketHandler;
 import net.jamezo97.clonecraft.recipe.RecipeClearDNAItem;
 import net.jamezo97.clonecraft.recipe.RecipeEmptyEggToSpawnEgg;
@@ -86,7 +87,7 @@ public class CloneCraft {
 	public ItemEmptyEgg itemEmptyEgg;
 	public ItemSpawnEgg itemSpawnEgg;
 	
-	public Item itemGrowBall;
+	public ItemWoodStaff itemWoodStaff;
 	
 	public BlockSterilizer blockSterilizer;
 	public BlockCentrifuge blockCentrifuge;
@@ -113,10 +114,10 @@ public class CloneCraft {
 		itemSpawnEgg = (ItemSpawnEgg) new ItemSpawnEgg().setUnlocalizedName("ccSpawnEgg");
 		GameRegistry.registerItem(itemSpawnEgg, config.ID_SPAWNEGG);
 		
-		itemGrowBall = new Item().setTextureName("clonecraft:growBall").setUnlocalizedName("ccGrowBall");
-		itemGrowBall.setCreativeTab(CloneCraft.creativeTab);
+		itemWoodStaff = (ItemWoodStaff)new ItemWoodStaff().setTextureName("clonecraft:woodStaff").setUnlocalizedName("ccWoodStaff");
 		
-		GameRegistry.registerItem(itemGrowBall, config.ID_GROWBALL);
+		
+		GameRegistry.registerItem(itemWoodStaff, config.ID_GROWBALL);
 		
 		
 		
@@ -211,10 +212,14 @@ public class CloneCraft {
 			"XYX", "XYX", "XYX", Character.valueOf('X'), Items.iron_ingot, Character.valueOf('Y'), Items.gold_ingot
 		});
 		
-		GameRegistry.addShapelessRecipe(new ItemStack(this.itemGrowBall), new Object[]{
+		GameRegistry.addShapedRecipe(new ItemStack(itemWoodStaff, 1), new Object[]{
+			"  Y", " X ", "X  ", Character.valueOf('X'), Items.stick, Character.valueOf('Y'), Blocks.planks
+		});
+		
+		/*GameRegistry.addShapelessRecipe(new ItemStack(this.itemGrowBall), new Object[]{
 			//Melon, BoneMeal, Brown Mushroom, Charcoal, Jungle Leaves
 			Items.melon, new ItemStack(Items.dye, 1, 15), Blocks.brown_mushroom, new ItemStack(Items.coal, 1, 1), new ItemStack(Blocks.leaves, 1, 3)
-		});
+		});*/
 		//Ink, Slime, furnace, diamond, iron, gold
 //		GameRegistry.addRecipe(new ItemStack(dnaSequencer), new Object[]{
 //			"ABA", "ACA", "ADA", 

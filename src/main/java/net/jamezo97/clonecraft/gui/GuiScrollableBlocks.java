@@ -47,16 +47,27 @@ public class GuiScrollableBlocks extends GuiScrollable{
 		}
 	}
 	
-	public String getTransName(long blockId){
+	public String getTransName(long blockId)
+	{
 		int id = BreakableBlocks.getId(blockId);
 		int meta = BreakableBlocks.getMeta(blockId);
-		ItemStack stackTemp = new ItemStack(Block.getBlockById(id), 1, meta);
-		return stackTemp.getDisplayName();
-//		return "TRANSNAME";
+		Block block = Block.getBlockById(id);
+		
+		if(block != null)
+		{
+			ItemStack stackTemp = new ItemStack(Block.getBlockById(id), 1, meta);
+			return stackTemp.getDisplayName();
+		}
+		else
+		{
+			return "Unknown";
+		}
+		
 	}
 
 	@Override
-	public boolean isEntrySelected(int entryIndex) {
+	public boolean isEntrySelected(int entryIndex)
+	{
 		return breakables.canBreak(viewable.get(entryIndex));
 	}
 

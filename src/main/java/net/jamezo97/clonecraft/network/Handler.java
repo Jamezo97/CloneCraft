@@ -167,6 +167,7 @@ public abstract class Handler{
 		registerHandler(10, Handler10ChangeOwner.class);
 		registerHandler(11, Handler11SendSchematic.class);
 		registerHandler(12, Handler12BuildSchematic.class);
+		registerHandler(13, Handler13CloneSay.class);
 		
 		
 	}

@@ -24,6 +24,7 @@ import net.minecraft.util.Vec3;
 import net.minecraft.world.World;
 import net.minecraftforge.client.event.RenderWorldLastEvent;
 import net.minecraftforge.event.ServerChatEvent;
+import net.minecraftforge.event.world.BlockEvent;
 
 import org.lwjgl.opengl.GL11;
 
@@ -44,9 +45,12 @@ public class CCEventListener {
 	
 	@SideOnly(value = Side.CLIENT)
 	@SubscribeEvent
-	public void renderLast(RenderWorldLastEvent event){
+	public void renderLast(RenderWorldLastEvent event)
+	{
 		EntityLivingBase renderView = Minecraft.getMinecraft().renderViewEntity;
-		if(renderView != null){
+		
+		if(renderView != null)
+		{
 			float p = event.partialTicks;
 			GL11.glPushMatrix();
 			GL11.glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
@@ -96,6 +100,15 @@ public class CCEventListener {
 		GL11.glEnable(GL11.GL_LIGHTING);
 		GL11.glEnable(GL11.GL_TEXTURE_2D);
 	}
+
+/*	@SubscribeEvent
+	public void onBreakBlock(BlockEvent.BreakEvent event)
+	{
+		if(event.getPlayer().getCurrentEquippedItem() != null && event.getPlayer().getCurrentEquippedItem().getItem() == CloneCraft.INSTANCE.itemWoodStaff)
+		{
+			event.setCanceled(true);
+		}
+	}*/
 	
 	
 	

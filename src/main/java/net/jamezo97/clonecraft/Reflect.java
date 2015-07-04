@@ -13,7 +13,9 @@ import net.minecraft.client.renderer.entity.Render;
 import net.minecraft.client.renderer.texture.TextureManager;
 import net.minecraft.client.resources.IResourceManager;
 import net.minecraft.entity.EntityList;
+import net.minecraft.entity.EntityLiving;
 import net.minecraft.entity.ai.EntityAINearestAttackableTarget;
+import net.minecraft.pathfinding.PathNavigate;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.Session;
 import cpw.mods.fml.relauncher.Side;
@@ -26,21 +28,29 @@ public class Reflect {
 
 	public static Method Render_getEntityTexture;
 	
-	public static Field TextureManager_theResourceManager, Minecraft_isGamePaused, EffectRenderer_fxLayers, EntityAINearestAttackableTarget_targetClass;
+	public static Field TextureManager_theResourceManager, Minecraft_isGamePaused, EffectRenderer_fxLayers, EntityAINearestAttackableTarget_targetClass,
+	EntityLiving_navigator;
 	
-	public static void init(Side side) {
-		if(side == Side.CLIENT){
+	public static void init(Side side) 
+	{
+		if(side == Side.CLIENT)
+		{
 			loadClient();
-		}else{
+		}
+		else
+		{
 			loadCommon();
 		}
 		
 		
 	}
+	
 	static boolean clientLoaded = false;
 	@SideOnly(value = Side.CLIENT)
-	public static void loadClient(){
-		if(!clientLoaded){
+	public static void loadClient()
+	{
+		if(!clientLoaded)
+		{
 			clientLoaded = true;
 			Render_getEntityTexture = getMethodViaReturnType(Render.class, ResourceLocation.class, 0);
 			TextureManager_theResourceManager = getFieldByType(TextureManager.class, IResourceManager.class, 0);
@@ -48,11 +58,15 @@ public class Reflect {
 			EffectRenderer_fxLayers = getFieldByType(EffectRenderer.class, List[].class, 0);
 		}
 	}
+	
 	static boolean commonLoaded = false;
-	public static void loadCommon(){
-		if(!commonLoaded){
+	public static void loadCommon()
+	{
+		if(!commonLoaded)
+		{
 			commonLoaded = true;
 			EntityAINearestAttackableTarget_targetClass = getFieldByType(EntityAINearestAttackableTarget.class, Class.class, 0);
+			EntityLiving_navigator = getFieldByType(EntityLiving.class, PathNavigate.class, 0);
 			try {
 				EntityList_classToIDMapping = (Map)getFieldByMapValueTypes(EntityList.class, null, Class.class, Integer.class).get(null);
 			} catch (IllegalArgumentException e) {
@@ -60,8 +74,22 @@ public class Reflect {
 			} catch (IllegalAccessException e) {
 				e.printStackTrace();
 			}
-//			System.out.println("I GOT THIS:" + EntityList_classToIDMapping);
 		}
+	}
+	
+	public static boolean setFieldValue(Field f, Object instance, Object value)
+	{
+		try {
+			f.set(instance, value);
+			return true;
+		} catch (IllegalArgumentException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (IllegalAccessException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		return false;
 	}
 	
 	public static Object getFieldValue(Field f, Object instance){

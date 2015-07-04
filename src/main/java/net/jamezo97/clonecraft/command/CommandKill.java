@@ -2,7 +2,7 @@ package net.jamezo97.clonecraft.command;
 
 import java.util.List;
 
-import net.jamezo97.clonecraft.Reflect;
+import net.jamezo97.clonecraft.CCEntityList;
 import net.jamezo97.clonecraft.clone.EntityClone;
 import net.jamezo97.clonecraft.command.parameter.PGuess;
 import net.jamezo97.clonecraft.command.parameter.ParamGuess;
@@ -204,9 +204,21 @@ public class CommandKill extends Command{
 			
 			int[] ids = new int[this.classesToAttack.length];
 			
+			int index = 0;
+			
 			for(int a = 0; a < this.classesToAttack.length; a++)
 			{
-				ids[a] = (Integer)Reflect.EntityList_classToIDMapping.get(this.classesToAttack[a]);
+				Integer ID = CCEntityList.classToId.get(this.classesToAttack[a]);
+				if(ID != null)
+				{
+					ids[index++] = ID;
+				}
+				else
+				{
+					int[] newIds = new int[ids.length - 1];
+					System.arraycopy(ids, 0, newIds, 0, newIds.length);
+					ids = newIds;
+				}
 			}
 			
 			nbt.setIntArray("AttackIds", ids);
@@ -222,9 +234,22 @@ public class CommandKill extends Command{
 			this.classesToAttack = new Class[array.length];
 			
 			try{
+				int index = 0;
+				
 				for(int a = 0; a < array.length; a++)
 				{
-					this.classesToAttack[a] = (Class)EntityList.IDtoClassMapping.get(array[a]);
+					Class theClass = CCEntityList.idToClass.get(array[a]);
+					
+					if(theClass != null)
+					{
+						this.classesToAttack[index++] = theClass;
+					}
+					else
+					{
+						Class[] newClass = new Class[this.classesToAttack.length-1];
+						System.arraycopy(this.classesToAttack, 0, newClass, 0, newClass.length);
+						this.classesToAttack = newClass;
+					}
 				}
 			}catch(Exception e){classesToAttack = null;}
 			

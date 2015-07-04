@@ -46,6 +46,8 @@ import net.minecraft.client.renderer.ThreadDownloadImageData;
 import net.minecraft.client.renderer.texture.ITextureObject;
 import net.minecraft.client.renderer.texture.SimpleTexture;
 import net.minecraft.client.renderer.texture.TextureManager;
+import net.minecraft.crash.CrashReport;
+import net.minecraft.crash.CrashReportCategory;
 import net.minecraft.enchantment.Enchantment;
 import net.minecraft.enchantment.EnchantmentHelper;
 import net.minecraft.entity.Entity;
@@ -101,6 +103,7 @@ import net.minecraft.util.EnumChatFormatting;
 import net.minecraft.util.IIcon;
 import net.minecraft.util.MathHelper;
 import net.minecraft.util.MovingObjectPosition;
+import net.minecraft.util.ReportedException;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.Vec3;
 import net.minecraft.world.CloneCraftWorld;
@@ -140,10 +143,10 @@ public class EntityClone extends EntityLiving implements RenderableManager{
 	
 	float lastScaleUpdate = 0.5f;
 	float preciseScale = 0.5f;
-	float maxScale = 2f;
+	float maxScale = 1.25f;
 //	float maxMaxScale = 10.0f;
-	
-	float defaultGrowthFactor = 0.000000347f;
+	float defaultGrowthFactor = 0.000020833f;
+//	float defaultGrowthFactor = 0.000000347f;
 	float maxGrowthFactor = 100f;
 	float growthFactor = defaultGrowthFactor;//3.47E-07//0.00002f;0.00002f; Approximately 20 Minutes
 	float maxGrowthSpeed;
@@ -155,6 +158,14 @@ public class EntityClone extends EntityLiving implements RenderableManager{
 	public EntityClone(World world)
 	{
 		super(world);
+		
+		boolean set = Reflect.setFieldValue(Reflect.EntityLiving_navigator, this, new ClonePathNavigate(this, world));
+		
+		if(!set)
+		{
+			System.err.println("Failed to replace Clone navigator with custom navigator. Paths may not be calculated nicely.");
+		}
+		
 		inventory = new InventoryClone(this);
 		watcher = new Syncer(this, 1);
 		options = new CloneOptions(this);
@@ -180,22 +191,9 @@ public class EntityClone extends EntityLiving implements RenderableManager{
 		
 		maxGrowthSpeed = maxGrowthFactor / defaultGrowthFactor;
 		
-		maxScale = 2f;
+		maxScale = 1.25f;
 	}
 	
-	
-	/*public void readFromNBT(NBTTagCompound p_70020_1_)
-    {
-		try
-		{
-			super.readFromNBT(p_70020_1_);
-		}
-		catch(Throwable throwable)
-		{
-			this.setDead();
-			System.out.println("I FAILED");
-		}
-    }*/
 	
 	
 	CloneExtraRender extraRender = null;
@@ -366,10 +364,16 @@ public class EntityClone extends EntityLiving implements RenderableManager{
 		return this.getHealth() > 0.0F && this.getHealth() < getMaxHealth();
 	}
 
+	int sneakCountdown = 0;
+	
 	@Override
 	public void onUpdate()
 	{
 		super.onUpdate();
+		
+		this.maxScale = 1.25f;
+		
+//		defaultGrowthFactor = 0.000020833f;
 		
 		maxGrowthFactor = 100;
 		
@@ -429,16 +433,46 @@ public class EntityClone extends EntityLiving implements RenderableManager{
 			updateBPhysics();
 		}
 		
+		{
+			
+		}
+		
+		if(sneakCountdown == 0)
+		{
+			Block atHead = worldObj.getBlock((int)Math.floor(posX), (int)Math.floor(posY + actualHeight), (int)Math.floor(posZ));
+			if(atHead != null && atHead.isNormalCube())
+			{
+				this.setSneaking(true);
+			}
+			else
+			{
+				this.setSneaking(false);
+			}
+		}
+		else
+		{
+			sneakCountdown--;
+		}
+		
 		
 		
 		
 		if(this.playerInterface != null)
 		{
-//			this.playerInterface.posX = this.posX;
-//			this.playerInterface.posY = this.posY;
-//			this.playerInterface.posZ = this.posZ;
-
-//			this.playerInterface.boundingBox = this.boundingBox;
+			this.playerInterface.posX = this.posX;
+			this.playerInterface.posY = this.posY;
+			this.playerInterface.posZ = this.posZ;
+		}
+		
+		if(this.isSneaking())
+		{
+			this.height = this.actualHeight * 0.88f;
+			this.boundingBox.maxY = this.boundingBox.minY + this.height;
+		}
+		else
+		{
+			this.height = this.actualHeight;
+			this.boundingBox.maxY = this.boundingBox.minY + this.height;
 		}
 		
 		this.updateScale();
@@ -455,6 +489,52 @@ public class EntityClone extends EntityLiving implements RenderableManager{
 	
 	
 	
+	
+	@Override
+	public void moveEntity(double toX, double toY, double toZ) 
+	{
+		if(this.preciseScale > this.defaultScale && (toX != 0 || toZ != 0 || toY != 0) && toX != toZ)
+		{
+			float height = this.height;
+			this.height = 1.8f;
+			this.boundingBox.maxY = this.boundingBox.minY + this.height;
+			
+			super.moveEntity(toX - (this.posX - posX), toY - (this.posY - posY), toZ - (this.posZ - posZ));
+			
+			this.height = height;
+			this.boundingBox.maxY = this.boundingBox.minY + height;
+			
+			
+			
+			
+/*			double posX = this.posX;
+			double posY = this.posY;
+			double posZ = this.posZ;
+			
+			super.moveEntity(toX, toY, toZ);
+			
+			if((posX + toX != this.posX) || (posY + toY != this.posY) || (posZ + toZ != this.posZ))
+			{
+				float height = this.height;
+				this.height = 1.8f;
+				this.boundingBox.maxY = this.boundingBox.minY + this.height;
+				
+				super.moveEntity(toX - (this.posX - posX), toY - (this.posY - posY), toZ - (this.posZ - posZ));
+				
+				this.boundingBox.maxY = this.boundingBox.minY + height;
+				
+				System.out.println("Try");
+			}*/
+		}
+		else
+		{
+			super.moveEntity(toX, toY, toZ);
+		}
+		
+		
+		
+	}
+
 	@Override
 	public boolean isInRangeToRender3d(double p_145770_1_, double p_145770_3_, double p_145770_5_) {
 		return true;
@@ -492,9 +572,12 @@ public class EntityClone extends EntityLiving implements RenderableManager{
 	}
 
 	@Override
-	public void onDeath(DamageSource p_70645_1_) {
+	public void onDeath(DamageSource p_70645_1_)
+	{
 		super.onDeath(p_70645_1_);
-		if(!worldObj.isRemote){
+		
+		if(!worldObj.isRemote)
+		{
 			this.inventory.dropAllItems();
 			dropAllXP();
 		}
@@ -534,10 +617,9 @@ public class EntityClone extends EntityLiving implements RenderableManager{
 	public void updateBPhysics()
 	{
 		if(this.getOptions().female.get())
-		{			
-			boolean p = CloneCraft.INSTANCE.config.DEBUG_ENABLED;
+		{
 			
-			double len = maxBDisp = (p?3:4);
+			double len = maxBDisp = 4;
 			
 			if(meParticle == null)
 			{
@@ -548,17 +630,17 @@ public class EntityClone extends EntityLiving implements RenderableManager{
 				leftBParticle.setPosition(posX, posY, posZ);
 				rightBParticle.setPosition(posX, posY, posZ);
 				
-				leftBParticle.accY = (p?900:300);
-				rightBParticle.accY = (p?900:300);
+				leftBParticle.accY = 300;
+				rightBParticle.accY = 300;
 				
-				leftBParticle.accX = (p?80:50);
-				rightBParticle.accX = -(p?80:50);
+				leftBParticle.accX = 50;
+				rightBParticle.accX = -50;
 				
 				
-				leftBParticle.resX = leftBParticle.resY = leftBParticle.resZ = (p?0.75:0.65);
-				rightBParticle.resX = rightBParticle.resY = rightBParticle.resZ = (p?0.75:0.65);
+				leftBParticle.resX = leftBParticle.resY = leftBParticle.resZ = 0.65;
+				rightBParticle.resX = rightBParticle.resY = rightBParticle.resZ = 0.65;
 				
-				int k = (p?250:210);
+				int k = 210;
 				
 				//Above Spring.
 				springs[0] = new Spring(0, len, 0, len, k*0.75);
@@ -567,10 +649,10 @@ public class EntityClone extends EntityLiving implements RenderableManager{
 				springs[1] = new Spring(0, -len, 0, len, k);
 				
 				//Left Spring
-				springs[2] = new Spring(-len, 0, 0, len, p?k*0.3:k*3);
+				springs[2] = new Spring(-len, 0, 0, len, k*3);
 				
 				//Right Spring
-				springs[3] = new Spring(len, 0, 0, len, p?k*0.3:k*3);
+				springs[3] = new Spring(len, 0, 0, len, k*3);
 
 			}
 			
@@ -607,15 +689,15 @@ public class EntityClone extends EntityLiving implements RenderableManager{
 			springs[3].length = len;
 			
 
-			leftBParticle.mass = 0.95 + this.getScale()/(p?100.0f:20.0f);
-			rightBParticle.mass = 0.95 + this.getScale()/(p?100.0f:20.0f);
+			leftBParticle.mass = 0.95 + this.getScale()/(20);
+			rightBParticle.mass = 0.95 + this.getScale()/(20);
 			
 			meParticle.setPosition(posX, posY, posZ);
 			meParticle.tickBackward(physicsTimeStep);//50 ms, 20 ticks per second
 			
 			Vector impulse = meParticle.theImpulse;
 			
-			impulse = impulse.multiply((p?-4:-1) * (this.getRNG().nextFloat() * 0.6f + 0.7f));
+			impulse = impulse.multiply((-1) * (this.getRNG().nextFloat() * 0.6f + 0.7f));
 			
 			impulse.y = impulse.y * impulse.y;
 			
@@ -635,7 +717,7 @@ public class EntityClone extends EntityLiving implements RenderableManager{
                 f6 = 1.0F;
             }
             
-            double armSwing = Math.cos(f7) * f6 * (p?8.0f:1f);
+            double armSwing = Math.cos(f7) * f6 * 1;
             
             this.leftBParticle.velY += armSwing;
 
@@ -645,14 +727,15 @@ public class EntityClone extends EntityLiving implements RenderableManager{
             
             if(rotate != 0)
             {
-            	this.leftBParticle.velX -= rotate * (this.getRNG().nextFloat() * 0.1f + 0.95f)  * (p?1.5:0.2);
+            	this.leftBParticle.velX -= rotate * (this.getRNG().nextFloat() * 0.1f + 0.95f)  * 0.2;
                 
-                this.rightBParticle.velX -= rotate * (this.getRNG().nextFloat() * 0.1f + 0.95f) * (p?1.5:0.2);
+                this.rightBParticle.velX -= rotate * (this.getRNG().nextFloat() * 0.1f + 0.95f) * 0.2;
             }
             
 			for(int a = 0; a < 4; a++)
 			{
 				Spring spring = springs[a];
+				
 				if(a == 0 || a == 1)
 				{
 					spring.apply(leftBParticle, physicsTimeStep);
@@ -671,8 +754,6 @@ public class EntityClone extends EntityLiving implements RenderableManager{
 			
 			leftBParticle.tickForward(physicsTimeStep);
 			rightBParticle.tickForward(physicsTimeStep);
-			
-//			System.out.println(this.leftBParticle.posY);
 			
 			Particle[] particles = new Particle[]{leftBParticle, rightBParticle};
 
@@ -768,13 +849,11 @@ public class EntityClone extends EntityLiving implements RenderableManager{
 			{
 				if(this.aimForScale == this.defaultScale || (increaseHeight && this.aimForScale < this.maxScale))
 				{
-//					System.out.println("a");
 					this.aimForScale += 0.05D;
-					this.shrinkCooldown += 600;
+					this.shrinkCooldown += 300;
 				}
 				else
 				{
-//					System.out.println("b");
 					this.shrinkCooldown += 1200;
 				}
 			}
@@ -783,11 +862,9 @@ public class EntityClone extends EntityLiving implements RenderableManager{
 				this.aimForScale += 0.1D;
 			}
 			
-			this.inventory.consumeInventoryItem(CloneCraft.INSTANCE.itemGrowBall);
 		}
 		else
 		{
-//			System.out.println("c" + this.aimForScale + ", " + maxScale);
 			this.shrinkCooldown += 1200;
 		}
 	}
@@ -838,7 +915,7 @@ public class EntityClone extends EntityLiving implements RenderableManager{
 			this.aimForScale = this.maxScale;
 		}
 		
-		this.maxScale = 2f;
+		this.maxScale = 1.25f;
 
 		if(this.preciseScale < this.defaultScale)
 		{
@@ -869,10 +946,6 @@ public class EntityClone extends EntityLiving implements RenderableManager{
 		{
 			this.growthFactor = (float)(diff / 50.0f + Math.signum(diff) * 0.00005f);
 		}
-		
-//		this.commitSuicide();
-		
-//		System.out.println(this.growthFactor);
 	}
 	
 	public void setScale(float scale)
@@ -925,6 +998,8 @@ public class EntityClone extends EntityLiving implements RenderableManager{
 	
 	
 	float boundingBoxShift = 0;
+	
+	float actualHeight = 0.5f;
 	
 	protected void setSize(float newWidth, float newHeight)
     {
@@ -982,7 +1057,11 @@ public class EntityClone extends EntityLiving implements RenderableManager{
         
         //Always resize the height, to make the Name and Stats move smoothly with scale.
         {
-            this.height = newHeight;
+        	this.actualHeight = newHeight;
+        	if(this.isSneaking())
+        	{
+        		this.height = newHeight * 0.88f;
+        	}
             this.boundingBox.maxY = this.boundingBox.minY + (double)this.height;
         }
 
@@ -1049,7 +1128,7 @@ public class EntityClone extends EntityLiving implements RenderableManager{
 	
 	@Override
 	public float getEyeHeight() {
-		return super.getEyeHeight() * (preciseScale);
+		return super.getEyeHeight() * (preciseScale) * (this.isSneaking()?0.88f:1.0f);
 	}
 	
 	
@@ -1125,6 +1204,10 @@ public class EntityClone extends EntityLiving implements RenderableManager{
 	
 	public PlayerTeam setCTeam(PlayerTeam team)
 	{
+		if(team != this.team)
+		{
+			this.setAttackTarget(null);
+		}
 		return this.team = team;
 	}
 	
@@ -1197,7 +1280,7 @@ public class EntityClone extends EntityLiving implements RenderableManager{
 		
 		if(!this.canEntityBeSeen(attack))
 		{
-			selectBestDamageItem(false);
+			selectBestDamageItem(true);
 			return;
 		}
 		
@@ -1208,7 +1291,7 @@ public class EntityClone extends EntityLiving implements RenderableManager{
 		
 		if(distanceSquared < attackDist)
 		{
-			selectBestDamageItem(false);
+			selectBestDamageItem(true);
 			this.clearItemInUse();
 			
 			if((float)attack.hurtResistantTime <= (float)attack.maxHurtResistantTime / 2.0F && attackTimer == 0)
@@ -1216,8 +1299,6 @@ public class EntityClone extends EntityLiving implements RenderableManager{
 				this.swingItem();
 				this.attackTargetEntityWithCurrentItem(attack);
 				attackTimer = this.getRNG().nextInt(10)+8;
-				
-				System.out.println(attack);
 			}
 		}
 		else if(distanceSquared < 400)
@@ -1340,8 +1421,10 @@ public class EntityClone extends EntityLiving implements RenderableManager{
 	public void selectBestDamageItem(boolean searchWhole){
 		int index = -1;
 		float best = -1;
-		for(int a = 0; a < (searchWhole?36:9); a++){
-			if(inventory.getStackInSlot(a) != null){
+		for(int a = 0; a < (searchWhole?36:9); a++)
+		{
+			if(inventory.getStackInSlot(a) != null)
+			{
 				ItemStack stack = inventory.getStackInSlot(a);
 				float goodness = getWeaponGoodness(stack);
 				if(goodness > best){
@@ -1590,7 +1673,6 @@ public class EntityClone extends EntityLiving implements RenderableManager{
     
     @Override
 	public boolean attackEntityFrom(DamageSource damageSource, float damageAmount) {
-//    	if(!worldObj.isRemote)
     	{
     		Entity e = damageSource.getEntity();
     		
@@ -1598,12 +1680,6 @@ public class EntityClone extends EntityLiving implements RenderableManager{
     		
     		if(e instanceof EntityPlayer)
     		{
-/*    			if(((EntityPlayer)e).isSneaking())
-    			{
-    				this.setPosition(posX, posY+120, posZ);
-    				this.velocityChanged = true;
-    				return false;
-    			}*/
     			//Show the user that the clone has been injected with something.
     			ItemStack hitWith = ((EntityPlayer) e).getCurrentEquippedItem();
     			if(hitWith != null && hitWith.getItem() == CloneCraft.INSTANCE.itemNeedle && hitWith.getItemDamage() == 3)
@@ -1614,9 +1690,16 @@ public class EntityClone extends EntityLiving implements RenderableManager{
 				
     		}
     	}
+ /*   	
+    	if(!this.worldObj.isRemote)
+    	{
+    		Thread.dumpStack();
+    		this.isEntityInsideOpaqueBlock();
+    		System.out.println(this.height);
+    	}*/
 
     	
-    	if(this.getGrowthFactor() != 0 && damageSource == DamageSource.inWall)
+    	if(this.preciseScale > this.defaultScale && damageSource == DamageSource.inWall)
     	{
     		return false;
     	}
@@ -2403,6 +2486,9 @@ public class EntityClone extends EntityLiving implements RenderableManager{
 		
 		this.foodStats.readNBT(nbt);
 		this.options.readFromNBT(nbt);
+		
+		//Set the watchable object, otherwise the CloneOptions may be rest when loaded.
+		this.dataWatcher.updateObject(ID_OPTIONS, Integer.valueOf(options.toInteger()));
 	}
 	
 	public Set<EntityPlayer> getWatchingEntities(){
@@ -2413,7 +2499,7 @@ public class EntityClone extends EntityLiving implements RenderableManager{
 	}
 	
 	//==================================================================================================================
-	//TODO Owner
+	//kkk
 	//==================================================================================================================
 	String ownerName = "";
 	
