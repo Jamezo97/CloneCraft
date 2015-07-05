@@ -51,12 +51,6 @@ public class GuiSaveSchematic extends GuiScreen{
 			if(size < maxSize)
 			{
 				theSchematic = Schematic.createSchematic(minX, minY, minZ, maxX, maxY, maxZ, world);
-				
-//				renderSchem.toRender = theSchematic;
-			}
-			else
-			{
-				//TODO Handle this
 			}
 		}
 		
@@ -191,7 +185,7 @@ public class GuiSaveSchematic extends GuiScreen{
 
 					File baseFolder = new File(CloneCraft.INSTANCE.getDataDir(), "Schematics");
 					
-					File saveTo = new File(baseFolder, "InGame/" + this.theSchematic.name + ".schematic");
+					File saveTo = new File(baseFolder, this.theSchematic.name + ".schematic");
 					
 					if(!saveTo.getParentFile().exists())
 					{

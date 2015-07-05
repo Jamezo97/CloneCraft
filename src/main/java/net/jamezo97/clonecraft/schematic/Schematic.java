@@ -13,6 +13,7 @@ import java.nio.ShortBuffer;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.Map.Entry;
 
 import net.minecraft.block.Block;
 import net.minecraft.client.Minecraft;
@@ -21,6 +22,7 @@ import net.minecraft.client.renderer.OpenGlHelper;
 import net.minecraft.client.renderer.RenderBlocks;
 import net.minecraft.client.renderer.Tessellator;
 import net.minecraft.client.renderer.texture.TextureMap;
+import net.minecraft.client.renderer.tileentity.TileEntityRendererDispatcher;
 import net.minecraft.client.shader.TesselatorVertexState;
 import net.minecraft.init.Blocks;
 import net.minecraft.nbt.CompressedStreamTools;
@@ -33,6 +35,9 @@ import net.minecraftforge.common.util.Constants.NBT;
 
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL15;
+
+import cpw.mods.fml.relauncher.Side;
+import cpw.mods.fml.relauncher.SideOnly;
 
 public class Schematic {
 	
@@ -58,6 +63,12 @@ public class Schematic {
 		if(isHashDirty)
 		{
 			lastHash = (((long)Arrays.hashCode(blockIds)) << 32) | ((long)Arrays.hashCode(blockMetas));
+			
+			for(Entry<Integer, NBTTagCompound> entry : posToTileEntity.entrySet())
+			{
+				lastHash += entry.getKey().hashCode() + entry.getValue().hashCode();
+			}
+			
 			isHashDirty = false;
 		}
 		return lastHash;
@@ -155,37 +166,22 @@ public class Schematic {
 				{
 					if(this.blockIdAt(pos) != 0 && y > -1 && y < 256)
 					{
-//						world.getBlock(p_147439_1_, p_147439_2_, p_147439_3_)
-						
 						world.setBlock(x, y, z, block = this.blockAt(pos), meta = this.blockMetaAt(pos), flag);
 						if(block.hasTileEntity(meta))
 						{
-							System.out.println("Has TE");
-							
 							NBTTagCompound teData = this.posToTileEntity.get(pos);
 							
 							if(teData != null)
 							{
 								TileEntity te = world.getTileEntity(x, y, z);
 								
-								System.out.println("Found te..");
-								
 								if(te != null)
 								{
-									System.out.println("Loaded te");
 									te.readFromNBT(teData);
 									te.xCoord = x;
 									te.yCoord = y;
 									te.zCoord = z;
 								}
-								else
-								{
-									System.out.println("Te no in world!");
-								}
-							}
-							else
-							{
-								System.out.println("TE Not Found for " + x + ", " + y + ", " + z);
 							}
 						}
 					}
@@ -458,12 +454,17 @@ public class Schematic {
 						
 						MetasValues[index] = (short)(meta=world.getBlockMetadata(x, y, z));
 						
+						
+						
 						if(block.hasTileEntity(meta))
 						{
 							TileEntity te = world.getTileEntity(x, y, z);
 							
+							
+							
 							if(te != null)
 							{
+								
 								NBTTagCompound teNbt = new NBTTagCompound();
 								te.writeToNBT(teNbt);
 								
@@ -487,9 +488,12 @@ public class Schematic {
 				width, height, length, BlocksValues, MetasValues, tileEntities.toArray(new NBTTagCompound[tileEntities.size()]));
 	}
 
-	
-	
-	
+	public boolean hasTileEntityAt(int index)
+	{
+		return this.posToTileEntity.containsKey(index);
+	}
+
+
 	
 	
 	
@@ -515,13 +519,75 @@ public class Schematic {
 	}
 	
 	
-	IBlockAccess schematicBlockAccess = null;
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	@SideOnly(value = Side.CLIENT)
+	public TileEntity getTileEntity(int x, int y, int z, World world)
+	{
+		int index = this.posToIndex(x, y, z);
+		return this.getTileEntity(index, world);
+	}
+	
+	@SideOnly(value = Side.CLIENT)
+	public TileEntity getTileEntity(int index, World world)
+	{
+//		System.out.println("GIMME");
+		try
+		{
+			Block block = this.blockAt(index);
+			
+			int meta = this.blockMetaAt(index);
+			
+			if(block != null && block.hasTileEntity(meta))
+			{
+				TileEntity te = block.createTileEntity(world, meta);
+				
+				if(te != null)
+				{
+					NBTTagCompound teNbt = this.posToTileEntity.get(index);
+					
+					if(teNbt != null)
+					{
+						te.readFromNBT(teNbt);
+					}
+
+					int[] pos = this.indexToPos(index);
+					te.xCoord = pos[0];
+					te.yCoord = pos[1];
+					te.zCoord = pos[2];
+					
+					te.setWorldObj(world);
+					
+//					System.out.println("TILE ENTITY:: " + te);
+					return te;
+				}
+			}
+		}
+		catch(Throwable t)
+		{
+			System.err.println("Error occured whilst creating TileEntity for render:");
+			t.printStackTrace();
+		}
+		return null;
+	}
+	
+//	@SideOnly(value = Side.CLIENT)
+	World schematicBlockAccess = null;
 	
 	ByteBuffer byteBuffer;
 	
 	IntBuffer intBuffer;
 	FloatBuffer floatBuffer;
 	ShortBuffer shortBuffer;
+	
+	ArrayList<TileEntity> tileEntityRenders = new ArrayList<TileEntity>();
 	
 	int vertexCount = -1;
 	
@@ -538,6 +604,7 @@ public class Schematic {
 	 * <br>It will be added back later if this state is toggled back to true. 
 	 * @see Schematic#ensureRenderBuffer()
 	*/
+	@SideOnly(value = Side.CLIENT)
 	public void storeOnGPU(boolean state)
 	{
 		if(state == false && storeOnGPU)
@@ -552,6 +619,7 @@ public class Schematic {
 	/**
 	 * Ensures that the render buffer is setup, and ready to be rendered.
 	 */
+	@SideOnly(value = Side.CLIENT)
 	private boolean ensureRenderBuffer()
 	{
 		if(doNotRenderNoVertices)
@@ -559,88 +627,157 @@ public class Schematic {
 			return true;
 		}
 		
-		if(vertexCount == -1)
+		
+		
+		try
 		{
-			int index = 0;
-			
-			//Let's hijack the Tessellator class and get it to do the rendering for us
-																			//Texture, Brightness, Normals, Colour
-			Tessellator.instance.setVertexState(new TesselatorVertexState(new int[0], 0, 0, true, true, true, true));
-			
-			IBlockAccess backup = RenderBlocks.getInstance().blockAccess;
-			RenderBlocks.getInstance().blockAccess = new SchematicBlockAccess(this, 0, 0, 0, Minecraft.getMinecraft().theWorld);
-			
-			ArrayList<Integer> nonOpaque = new ArrayList<Integer>();
-			
-			boolean atLeastOneNonAir = false;
-			
-			for(int y = 0; y < ySize; y++)
+			if(vertexCount == -1)
 			{
-				for(int z = 0; z < zSize; z++)
+				if(schematicBlockAccess == null)
 				{
-					for(int x = 0; x < xSize; x++, index++)
+					schematicBlockAccess = new SchematicBlockAccess();
+				}
+				
+				
+				
+				
+				int index = 0;
+				
+				//Let's hijack the Tessellator class and get it to do the rendering for us
+																				//Texture, Brightness, Normals, Colour
+				Tessellator.instance.setVertexState(new TesselatorVertexState(new int[0], 0, 0, true, true, true, true));
+				
+				IBlockAccess backup = RenderBlocks.getInstance().blockAccess;
+				RenderBlocks.getInstance().blockAccess = schematicBlockAccess;
+				((SchematicBlockAccess)schematicBlockAccess).loadData(this, 0, 0, 0);
+				
+				ArrayList<Integer> nonOpaque = new ArrayList<Integer>();
+				
+				boolean atLeastOneNonAir = false;
+				
+				Block block;
+				int blockId;
+				int meta;
+				
+				
+				for(int y = 0; y < ySize; y++)
+				{
+					for(int z = 0; z < zSize; z++)
 					{
-						int blockId = this.blockIdAt(index);
-						
-						if(blockId > 0)
+						for(int x = 0; x < xSize; x++, index++)
 						{
-							RenderBlocks.getInstance().renderBlockByRenderType(Block.getBlockById(blockId), x, y, z);
-							atLeastOneNonAir = true;
+							blockId = this.blockIdAt(index);
+							
+							if(blockId > 0)
+							{
+								block = Block.getBlockById(blockId);
+								meta = this.blockMetaAt(index);
+								
+								try
+								{
+									RenderBlocks.getInstance().renderBlockByRenderType(block, x, y, z);
+									
+									atLeastOneNonAir = true;
+									
+									if(block.hasTileEntity(meta))
+									{
+										TileEntity te = this.getTileEntity(index, schematicBlockAccess);
+										
+										if(te != null)
+										{
+											te.xCoord = x;
+											te.yCoord = y;
+											te.zCoord = z;
+											tileEntityRenders.add(te);
+										}
+									}
+								}
+								catch(Throwable t)
+								{
+									System.err.println("Error occure whilst rendering block (id: " + blockId + ", block: " + block + ", " + meta + ":");
+									t.printStackTrace();
+								}
+							}
 						}
 					}
 				}
+				
+				
+				
+				//Well that was easy.
+				if(atLeastOneNonAir)
+				{
+					TesselatorVertexState state = Tessellator.instance.getVertexState(0.0f, 0.0f, 0.0f);
+					
+					vertexCount = state.getVertexCount();
+					
+					RenderBlocks.getInstance().blockAccess = backup;
+					
+					int[] rawBuffer = state.getRawBuffer();
+					
+					byteBuffer = GLAllocation.createDirectByteBuffer(vertexCount * 32);
+					intBuffer = byteBuffer.asIntBuffer();
+					intBuffer.put(rawBuffer, 0, state.getVertexCount()*8);
+					
+					floatBuffer = byteBuffer.asFloatBuffer();
+					shortBuffer = byteBuffer.asShortBuffer();
+				}
+				else
+				{
+					doNotRenderNoVertices = true;
+				}
+				
+				Tessellator.instance.setVertexState(new TesselatorVertexState(new int[0], 0, 0, true, false, false, false));
 			}
 			
-			//Well that was easy.
-			if(atLeastOneNonAir)
+			if(!doNotRenderNoVertices && storeOnGPU && bufferHandler == -1)
 			{
-				TesselatorVertexState state = Tessellator.instance.getVertexState(0.0f, 0.0f, 0.0f);
+				bufferHandler = GL15.glGenBuffers();
 				
-				vertexCount = state.getVertexCount();
+				GL15.glBindBuffer(GL15.GL_ARRAY_BUFFER, bufferHandler);
+				GL15.glBufferData(GL15.GL_ARRAY_BUFFER, byteBuffer, GL15.GL_STATIC_DRAW);
 				
-				RenderBlocks.getInstance().blockAccess = backup;
-				
-				int[] rawBuffer = state.getRawBuffer();
-				
-				byteBuffer = GLAllocation.createDirectByteBuffer(vertexCount * 32);
-				intBuffer = byteBuffer.asIntBuffer();
-				intBuffer.put(rawBuffer, 0, state.getVertexCount()*8);
-				
-				floatBuffer = byteBuffer.asFloatBuffer();
-				shortBuffer = byteBuffer.asShortBuffer();
+				GL15.glBindBuffer(GL15.GL_ARRAY_BUFFER, 0);
 			}
-			else
-			{
-				doNotRenderNoVertices = true;
-			}
+		}
+		catch(Throwable e)
+		{
+			System.err.println("A fatal error has occured during schematic render. This schematic will not be rendered. Sorry!");
+			e.printStackTrace();
+			doNotRenderNoVertices = true;
 			
-			Tessellator.instance.setVertexState(new TesselatorVertexState(new int[0], 0, 0, true, false, false, false));
+			cleanGPU();
+			
+			IBlockAccess schematicBlockAccess = null;
+			
+			byteBuffer = null;
+			
+			intBuffer = null;
+			floatBuffer = null;
+			shortBuffer = null;
+			
+			vertexCount = -1;
+		}
+		finally
+		{
+			
 		}
 		
-		if(!doNotRenderNoVertices && storeOnGPU && bufferHandler == -1)
-		{
-			bufferHandler = GL15.glGenBuffers();
-			
-			GL15.glBindBuffer(GL15.GL_ARRAY_BUFFER, bufferHandler);
-			GL15.glBufferData(GL15.GL_ARRAY_BUFFER, byteBuffer, GL15.GL_STATIC_DRAW);
-			
-			GL15.glBindBuffer(GL15.GL_ARRAY_BUFFER, 0);
-		}
 		
 		return true;
 	}
 	
-
+	@SideOnly(value = Side.CLIENT)
 	public void cleanGPU()
 	{
 		if(bufferHandler != -1)
 		{
-			System.out.println("Cleaned");
 			GL15.glDeleteBuffers(bufferHandler);
 			bufferHandler = -1;
 		}
 	}
 	
+	@SideOnly(value = Side.CLIENT)
 	public void render()
 	{
 		if(ensureRenderBuffer())
@@ -648,6 +785,18 @@ public class Schematic {
 			if(doNotRenderNoVertices)
 			{
 				return;
+			}
+			
+			int bindBufferPost = 0;
+			
+			try
+			{
+				bindBufferPost = GL11.glGetInteger(GL15.GL_ARRAY_BUFFER_BINDING);
+			}
+			catch(Throwable t)
+			{
+				t.printStackTrace();
+				bindBufferPost = 0;
 			}
 			
 			Minecraft.getMinecraft().renderEngine.bindTexture(TextureMap.locationBlocksTexture);
@@ -658,7 +807,6 @@ public class Schematic {
 			
 			if(storeOnGPU)
 			{
-//				System.out.println();
 				GL15.glBindBuffer(GL15.GL_ARRAY_BUFFER, bufferHandler);
 				
 				GL11.glTexCoordPointer(2, GL11.GL_FLOAT, 32, /*3*4=*/12L);
@@ -719,12 +867,57 @@ public class Schematic {
 
 			GL11.glDisableClientState(GL11.GL_NORMAL_ARRAY);
 
+
+			GL15.glBindBuffer(GL15.GL_ARRAY_BUFFER, bindBufferPost);
+//			GL15.glBindBuffer(GL15.GL_ARRAY_BUFFER, 0);
 			
-			GL15.glBindBuffer(GL15.GL_ARRAY_BUFFER, 0);
+			{
+//				RenderHelper.enableStandardItemLighting();
+				double lastX = TileEntityRendererDispatcher.instance.field_147560_j;
+				double lastY = TileEntityRendererDispatcher.instance.field_147561_k;
+				double lastZ = TileEntityRendererDispatcher.instance.field_147558_l;
+				
+				World lastWorld = TileEntityRendererDispatcher.instance.field_147550_f;
+				
+				TileEntityRendererDispatcher.instance.field_147560_j = 0;
+				TileEntityRendererDispatcher.instance.field_147561_k = 0;
+				TileEntityRendererDispatcher.instance.field_147558_l = 0;
+
+				TileEntityRendererDispatcher.instance.field_147550_f = this.schematicBlockAccess;
+				
+				try
+				{
+					for (int i = 0; i < this.tileEntityRenders.size(); ++i)
+		            {
+		                TileEntity tile = this.tileEntityRenders.get(i);
+
+		                
+		                TileEntityRendererDispatcher.instance.renderTileEntityAt(tile, tile.xCoord, tile.yCoord, tile.zCoord, 0);
+		            }
+					
+				}
+				catch(Throwable t)
+				{
+					t.printStackTrace();
+				}
+				finally
+				{
+					TileEntityRendererDispatcher.instance.field_147560_j = lastX;
+					TileEntityRendererDispatcher.instance.field_147561_k = lastY;
+					TileEntityRendererDispatcher.instance.field_147558_l = lastZ;
+					
+					TileEntityRendererDispatcher.instance.field_147550_f = lastWorld;
+				}
+				
+			}
+			
+			
 			
 			GL11.glTranslatef(-0.01f, -0.01f, -0.01f);
 		}
 	}
+
+
 
 	
 	

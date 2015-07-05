@@ -76,12 +76,12 @@ public class GuiScrollableEntities extends GuiScrollable{
 	}
 
 	@Override
-	public void entryClicked(int entryIndex) {
+	public void entryClicked(int entryIndex, int mouseX, int mouseY) {
 		attackables.toggleEntity(viewable.get(entryIndex).entityId);
 	}
 
 	@Override
-	public void renderEntry(int entryIndex, int width, int height) {
+	public void renderEntry(int entryIndex, int width, int height, int mX, int mY) {
 		int colour = (viewable.get(entryIndex).getBgColour());
 		
 		if(this.isEntrySelected(entryIndex)){

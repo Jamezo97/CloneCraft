@@ -91,7 +91,7 @@ public class GuiChooseSchematic extends GuiScreen{
 		this.searchField.mouseClicked(mX, mY, btn);
 	}
 
-	public static int displayMode = 0;
+	public static int displayMode = 1;
 
 	@Override
 	protected void actionPerformed(GuiButton btn)
@@ -150,6 +150,8 @@ public class GuiChooseSchematic extends GuiScreen{
 		this.buttonList.add(btnAll = 		new GuiButton(2, 135, 5, 40, 20, "All"));
 
 		this.searchField = new GuiTextField(mc.fontRenderer, 50, 30, 150, 20);
+		
+		displayMode = 1;
 		
 		switch(displayMode)
 		{

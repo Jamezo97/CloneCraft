@@ -44,8 +44,11 @@ public class EntityAIMine extends EntityAIBase{
 	}
 
 	@Override
-	public boolean shouldExecute() {
-		return currentFinder != null && clone.getOptions().breakBlocks.get() && selectNextBlock(5);
+	public boolean shouldExecute()
+	{
+		//Make sure they're not currently using an item, otherwise when we call 'selectNextBlock' we will disrupt the current item in use
+		//causing the clone to switch between eating and not eating, and just.. yeah. buggerry stuff
+		return !clone.isUsingItem() && currentFinder != null && clone.getOptions().breakBlocks.get() && selectNextBlock(5);
 	}
 	
 	public boolean selectNextBlock(int iterations)

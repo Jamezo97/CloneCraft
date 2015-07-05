@@ -8,6 +8,7 @@ import net.minecraft.block.Block;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.RenderHelper;
 import net.minecraft.client.renderer.entity.RenderItem;
+import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 
 import org.lwjgl.opengl.GL11;
@@ -25,7 +26,8 @@ public class GuiScrollableBlocks extends GuiScrollable{
 	
 	RenderItem itemRenderer;
 	
-	public GuiScrollableBlocks(int xPosition, int yPosition, int width, int height, EntityClone clone) {
+	public GuiScrollableBlocks(int xPosition, int yPosition, int width, int height, EntityClone clone)
+	{
 		super(xPosition, yPosition, width, height);
 		this.breakables = clone.getOptions().breakables;
 		this.clone = clone;
@@ -35,13 +37,18 @@ public class GuiScrollableBlocks extends GuiScrollable{
 		itemRenderer = new RenderItem();
 	}
 	
-	public void updateViewable(String searchCrit){
+	public void updateViewable(String searchCrit)
+	{
 		searchCrit = searchCrit==null?null:searchCrit.toLowerCase();
 		viewable.clear();
 		long block;
-		for(int a = 0; a < allViewable.size(); a++){
+		
+		for(int a = 0; a < allViewable.size(); a++)
+		{
 			block = allViewable.get(a);
-			if(searchCrit == null || searchCrit.length() == 0 || getTransName(block).toLowerCase().contains(searchCrit)){
+			
+			if(searchCrit == null || searchCrit.length() == 0 || getTransName(block).toLowerCase().contains(searchCrit))
+			{
 				viewable.add(block);
 			}
 		}
@@ -55,14 +62,19 @@ public class GuiScrollableBlocks extends GuiScrollable{
 		
 		if(block != null)
 		{
-			ItemStack stackTemp = new ItemStack(Block.getBlockById(id), 1, meta);
-			return stackTemp.getDisplayName();
+			Item theItem = Item.getItemFromBlock(block);
+			
+			if(theItem != null)
+			{
+				ItemStack stackTemp = new ItemStack(theItem, 1, meta);
+				return stackTemp.getDisplayName();
+			}
+			else
+			{
+				return block.getLocalizedName();
+			}
 		}
-		else
-		{
-			return "Unknown";
-		}
-		
+		return "Unknown";
 	}
 
 	@Override
@@ -82,12 +94,14 @@ public class GuiScrollableBlocks extends GuiScrollable{
 	}
 
 	@Override
-	public void entryClicked(int entryIndex) {
+	public void entryClicked(int entryIndex, int mouseX, int mouseY)
+	{
 		breakables.toggleBlock(viewable.get(entryIndex));
 	}
 
 	@Override
-	public void renderEntry(int entryIndex, int width, int height) {
+	public void renderEntry(int entryIndex, int width, int height, int mX, int mY)
+	{
 		long blockId = viewable.get(entryIndex);
 		
 		int colour = bc.getColourFor(blockId);

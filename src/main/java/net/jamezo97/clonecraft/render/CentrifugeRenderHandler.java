@@ -22,29 +22,12 @@ import org.lwjgl.opengl.GL12;
 import cpw.mods.fml.client.registry.ISimpleBlockRenderingHandler;
 
 public class CentrifugeRenderHandler extends TileEntitySpecialRenderer implements ISimpleBlockRenderingHandler {
-	
-//	int t1 = 0;
-//	int t2 = 0;
-//	int t3 = 0;
 
     private static final ResourceLocation tex = new ResourceLocation("clonecraft:textures/entity/centrifuge/centrifugeTex128.png");
 	ModelCentrifuge model = new ModelCentrifuge();
 	
-//	boolean was = false;
-	
-//	Lightning light = new Lightning(436, 6, -60, 437, 12, -60, 12, false, true);
-	
-	public void renderCentrifuge(TileEntityCentrifuge te, int i, double x, double y, double z, float partial){
-//		t1++;
-//		if(Minecraft.getMinecraft().isGamePaused()){
-//			if(was == false){
-//				model = new ModelCentrifuge();
-//			}
-//			was = true;
-//		}else{
-//			was = false;
-//		}
-		
+	public void renderCentrifuge(TileEntityCentrifuge te, int i, double x, double y, double z, float partial)
+	{
 		i &= 3;
 		
 		Minecraft mc = Minecraft.getMinecraft();
@@ -174,6 +157,10 @@ public class CentrifugeRenderHandler extends TileEntitySpecialRenderer implement
 	
 	@Override
 	public void renderTileEntityAt(TileEntity teGeneric, double x, double y, double z, float partial) {
+		
+//		System.out.println("RENDER");
+		
+//		Thread.dumpStack();
 		TileEntityCentrifuge te = (TileEntityCentrifuge)teGeneric;
 		float f1 = te.prevLidAngle + (te.lidAngle - te.prevLidAngle) * partial;
         f1 = 1.0F - f1;

@@ -4,8 +4,11 @@ import net.jamezo97.clonecraft.CloneCraft;
 import net.jamezo97.clonecraft.clone.EntityClone;
 import net.jamezo97.clonecraft.schematic.Schematic;
 import net.jamezo97.clonecraft.schematic.SchematicEntry;
+import net.jamezo97.clonecraft.tileentity.CCTileEntityRegistry;
+import net.minecraft.block.Block;
 import net.minecraft.entity.ai.EntityAIBase;
 import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.tileentity.TileEntity;
 
 public class EntityAIBuild extends EntityAIBase{
 	
@@ -44,6 +47,11 @@ public class EntityAIBuild extends EntityAIBase{
 		this.schem = schem;
 		this.index = 0;
 	}
+	
+	public float getAngularRotation()
+	{
+		return (this.rotate % 4) * 90;
+	}
 
 	public void setBuilding(boolean b)
 	{
@@ -67,8 +75,11 @@ public class EntityAIBuild extends EntityAIBase{
 	{
 //		System.out.println("Build");
 		
-		for(int a = 0; a < 60; a++)
+		int max = 300;
+		
+		for(int a = 0; a < 60 && max-- > 0; a++)
 		{
+//			System.out.println("G");
 			if(index < schem.blockIds.length)
 			{
 				int[] pos = schem.indexToPos(index);
@@ -76,9 +87,48 @@ public class EntityAIBuild extends EntityAIBase{
 				int y = posY + pos[1];
 				int z = posZ + pos[2];
 				
+				if(y < 0 || y >= clone.worldObj.getHeight())
+				{
+					a--;
+					index++;
+					continue;
+				}
+				
+				Block current = clone.worldObj.getBlock(x, y, z);
+				int currentMeta = clone.worldObj.getBlockMetadata(x, y, z);
+				
+				Block newBlock = schem.blockAt(index);
+				int newMeta = schem.blockMetaAt(index);
+				
+				if(current == newBlock && currentMeta == newMeta)
+				{
+					a--;
+					index++;
+					continue;
+				}
+				
+				
+				
 				
 				
 				clone.worldObj.setBlock(x, y, z, schem.blockAt(index), schem.blockMetaAt(index), 3);
+				
+				if(schem.hasTileEntityAt(index))
+				{
+					TileEntity te = schem.getTileEntity(index, clone.worldObj);
+					te.xCoord = x;
+					te.yCoord = y;
+					te.zCoord = z;
+					
+					//Makes sure we're not cloning ItemStacks
+					CCTileEntityRegistry.clearItemstacks(te);
+					
+					if(y >= 0 && y < clone.worldObj.getHeight())
+					{
+						clone.worldObj.setTileEntity(x, y, z, te);
+					}
+					
+				}
 				
 				clone.getLookHelper().setLookPosition(x, y, z, 1.0f, clone.getVerticalFaceSpeed());
 				
@@ -93,7 +143,7 @@ public class EntityAIBuild extends EntityAIBase{
 			this.isBuilding = false;
 			this.schem = null;
 			this.index = 0;
-			clone.say("Done!", 16);
+			clone.say("Done!", 64);
 		}
 		
 	}

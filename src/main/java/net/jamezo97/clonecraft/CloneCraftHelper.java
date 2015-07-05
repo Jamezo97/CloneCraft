@@ -90,7 +90,7 @@ public class CloneCraftHelper {
 		
 		item.delayBeforeCanPickup = 20;
 		item.setEntityItemStack(stack);
-		item.setPosition(entity.posX, entity.posY + entity.getEyeHeight()==0?entity.height/2:entity.getEyeHeight(), entity.posZ);
+		item.setPosition(entity.posX, entity.posY + (entity.getEyeHeight()==0?entity.height/2:entity.getEyeHeight()), entity.posZ);
 		
 		Random rand = new Random();
 		

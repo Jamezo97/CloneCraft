@@ -66,11 +66,11 @@ public class ModelCentrifuge extends ModelBase{
         this.sideBox.render(0.0625F);
         this.box.render(0.0625F);
         this.panel.render(0.0625F);
-        
+//        
         GL11.glDisable(GL11.GL_CULL_FACE);
         this.inner.render(0.0625F);
         GL11.glEnable(GL11.GL_CULL_FACE);
-
+//
         this.innerStand.rotateAngleY = 0+rotateCentrifuge;
         this.innerStand.render(0.0625F);
         //45 deg = (Math.PI/4.0F) radians, = 0.7854

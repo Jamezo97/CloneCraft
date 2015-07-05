@@ -2325,12 +2325,13 @@ public class EntityClone extends EntityLiving implements RenderableManager{
 	{
 		if(this.getFlag(4))
 		{
-			ItemStack currentItem = this.getHeldItem();
+			return true;
+			/*ItemStack currentItem = this.getHeldItem();
 			
 			if(currentItem != null && currentItem.getItem() instanceof ItemFood)
 			{
 				return true;
-			}
+			}*/
 		}
 		return false;
 	}
@@ -2366,14 +2367,19 @@ public class EntityClone extends EntityLiving implements RenderableManager{
 	}
 	
 	public void checkHunger(){
-		if(!this.getFlag(4) && this.foodStats.getFoodLevel() < 20 && (this.getAttackTarget() == null || this.foodStats.getFoodLevel() < criticalEatingPoint)){
+		if(!this.getFlag(4) && this.foodStats.getFoodLevel() < 20 && (this.getAttackTarget() == null || this.foodStats.getFoodLevel() < criticalEatingPoint))
+		{
 			ItemStack foodStack;
 			ItemFood food;
-			for(int a = 0; a < this.inventory.mainInventory.length; a++){
-				if(this.inventory.mainInventory[a] != null && this.inventory.mainInventory[a].getItem() instanceof ItemFood){
+			for(int a = 0; a < this.inventory.mainInventory.length; a++)
+			{
+				if(this.inventory.mainInventory[a] != null && this.inventory.mainInventory[a].getItem() instanceof ItemFood)
+				{
+					
 					foodStack = this.inventory.mainInventory[a];
 					food = (ItemFood)this.inventory.mainInventory[a].getItem();
-					if(foodStack.stackSize > 0){
+					if(foodStack.stackSize > 0)
+					{
 						forceEatFood(a);
 						return;
 					}
@@ -2726,9 +2732,16 @@ public class EntityClone extends EntityLiving implements RenderableManager{
 	@Override
 	public void setCurrentItemOrArmor(int slot, ItemStack stack)
 	{
-		if(slot == 0){
+		if(!worldObj.isRemote)
+		{
+			Thread.dumpStack();
+		}
+		if(slot == 0)
+		{
 			inventory.setInventorySlotContents(this.inventory.currentItem, stack);
-		}else{
+		}
+		else
+		{
 			inventory.setArmour(slot-1, stack);
 		}
 	}
@@ -2870,6 +2883,7 @@ public class EntityClone extends EntityLiving implements RenderableManager{
 	{
 		if (this.itemInUse != null)
         {
+			
             ItemStack itemstack = this.getHeldItem();
 
             if (itemstack == this.itemInUse)
@@ -2981,6 +2995,7 @@ public class EntityClone extends EntityLiving implements RenderableManager{
      */
     public void setItemInUse(ItemStack stack, int maxDuration)
     {
+
         if (stack != this.itemInUse)
         {
             if (maxDuration <= 0) return;

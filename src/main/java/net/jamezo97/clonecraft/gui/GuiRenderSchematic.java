@@ -23,6 +23,8 @@ public class GuiRenderSchematic extends GuiButton{
 	
 	float rotateY = 0.0f;
 	
+	float rotateZ = 0.0f;
+	
 	float transX = 0.0f;
 	
 	float transY = 0.0f;
@@ -34,6 +36,9 @@ public class GuiRenderSchematic extends GuiButton{
 		this.posY = posY;
 		this.width = width;
 		this.height = height;
+		
+		this.rotateY = 30;
+		this.rotateX = 15;
 	}
 
 	@Override
@@ -84,6 +89,7 @@ public class GuiRenderSchematic extends GuiButton{
 		{
 			this.rotateX = 0;
 			this.rotateY = 0;
+			this.rotateZ = 0;
 			this.scale = 1.0f;
 			this.transX = 0;
 			this.transY = 0;
@@ -118,7 +124,26 @@ public class GuiRenderSchematic extends GuiButton{
 			float rY = dMY / 1.0f;
 			
 			this.rotateY -= rX;
-			this.rotateX = (float)Math.sin(rotateY / 148 * Math.PI) * 12f;
+			
+			this.rotateX -= rY;// * Math.cos(this.rotateY / 180.0 * Math.PI);
+			
+//			this.rotateZ -= rY * Math.sin(this.rotateY / 180.0 * Math.PI);
+			
+			
+			if(this.rotateX > 90)
+			{
+				this.rotateX = 90;
+			}
+			if(this.rotateX < -90)
+			{
+				this.rotateX = -90;
+			}
+			
+//			double angle = Math.asin(rotateX / 90f) / Math.PI * 180.0f;
+			
+//			angle -= rY;
+			
+//			this.rotateX = (float)Math.sin(angle / 180 * Math.PI) * 90f /** (float)Math.sin(this.rotateY)*/;
 		}
 		else if(isHovering && lastButton == 0)
 		{
@@ -161,8 +186,8 @@ public class GuiRenderSchematic extends GuiButton{
 		GL11.glScalef(1, -1, 1);
 		
 		GL11.glRotatef(rotateZ, 0.0f, 0.0f, 1.0f);
-		GL11.glRotatef(rotateY, 0.0f, 1.0f, 0.0f);
 		GL11.glRotatef(rotateX, 1.0f, 0.0f, 0.0f);
+		GL11.glRotatef(rotateY, 0.0f, 1.0f, 0.0f);
 		
 		GL11.glTranslatef(-schem.xSize/2.0f, -schem.ySize/2.0f, -schem.zSize/2.0f);
 		
