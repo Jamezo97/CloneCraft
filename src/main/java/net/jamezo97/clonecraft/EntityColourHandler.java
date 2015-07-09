@@ -294,7 +294,7 @@ public class EntityColourHandler {
 	static
 	{
 		//Human
-		addCustomColour(CCEntityList.classToId.get(EntityClone.class), 0xffd72a2a, 0xfffad4ad);
+		addCustomColour(CCEntityList.classToId.get(EntityClone.class), 0xffd72a2a, 0xffff9900);
 		//TNT
 		addCustomColour(CCEntityList.classToId.get(EntityTNTPrimed.class), 0xffdc1e1e, 0xffededed);
 		//EnderCrystal

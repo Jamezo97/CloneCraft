@@ -146,7 +146,7 @@ public class CloneCraft {
 
 		config = new CConfig(event.getSuggestedConfigurationFile());
 		
-		schematicList = new SchematicList(this);
+		
 		
 		initItemsAndBlocks();
 		
@@ -183,6 +183,7 @@ public class CloneCraft {
 	{
 		proxy.postInit(this);
 		CCEntityList.initEntities();
+		schematicList = new SchematicList(this);
 	}
 	
 	

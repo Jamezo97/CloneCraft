@@ -28,6 +28,7 @@ import net.minecraft.init.Blocks;
 import net.minecraft.nbt.CompressedStreamTools;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.nbt.NBTTagList;
+import net.minecraft.nbt.NBTTagString;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.world.IBlockAccess;
 import net.minecraft.world.World;
@@ -223,7 +224,7 @@ public class Schematic {
 	public static Schematic loadFrom(NBTTagCompound nbt)
 	{
 		if(nbt.hasKey("Width") && nbt.hasKey("Height") && nbt.hasKey("Length") &&
-				nbt.hasKey("Blocks") && nbt.hasKey("Data"))
+				((nbt.hasKey("Blocks") && nbt.hasKey("Data")) || nbt.hasKey("BlocksData")))
 		{
 			int Width = nbt.getShort("Width");
 			int Height = nbt.getShort("Height");
@@ -234,30 +235,30 @@ public class Schematic {
 			
 			NBTTagCompound[] tes = null;
 			
-			NBTTagList list = nbt.getTagList("TileEntities", NBT.TAG_COMPOUND);
+			NBTTagList tileEntityList = nbt.getTagList("TileEntities", NBT.TAG_COMPOUND);
 			
-			if(list != null)
+			if(tileEntityList != null)
 			{
-				tes = new NBTTagCompound[list.tagCount()];
+				tes = new NBTTagCompound[tileEntityList.tagCount()];
 				for(int a = 0; a < tes.length; a++)
 				{
-					tes[a] = list.getCompoundTagAt(a);
+					tes[a] = tileEntityList.getCompoundTagAt(a);
 				}
 			}
 			
+			short[] BlockID = null;
+			short[] DataID = null;
 			
 			if(Blocks_byte.length == Data_byte.length && Blocks_byte.length == Width*Height*Length)
 			{
-				short[] Blocks = new short[Blocks_byte.length];
-				short[] Data = new short[Data_byte.length];
+				BlockID = new short[Blocks_byte.length];
+				DataID = new short[Data_byte.length];
 				
-				for(int a = 0; a < Blocks.length; a++)
+				for(int a = 0; a < BlockID.length; a++)
 				{
-					Blocks[a] = (short)(Blocks_byte[a] & 0xFF);
-					Data[a] = (short)(Data_byte[a] & 0xFF);
+					BlockID[a] = (short)(Blocks_byte[a] & 0xFF);
+					DataID[a] = (short)(Data_byte[a] & 0xFF);
 				}
-				
-				return new Schematic("Schematic_" + Width + "_" + Height + "_" + Length, Width, Height, Length, Blocks, Data, tes);
 			}
 			else
 			{
@@ -265,17 +266,77 @@ public class Schematic {
 				
 				if(BlocksData.length == Width*Length*Height)
 				{
-					short[] Blocks = new short[BlocksData.length];
-					short[] Data = new short[BlocksData.length];
+					BlockID = new short[BlocksData.length];
+					DataID = new short[BlocksData.length];
 				
 					for(int a = 0; a < BlocksData.length; a++)
 					{
-						Blocks[a] = (short) (BlocksData[a] >>    16);
-						Data[a] =   (short) (BlocksData[a] & 0xFFFF);
+						BlockID[a] = (short) (BlocksData[a] >>    16);
+						DataID[a] =   (short) (BlocksData[a] & 0xFFFF);
+					}
+				}
+				else
+				{
+					System.out.println("Block data length is unequal to block count! " + BlocksData.length + ", " + (Width * Length * Height));
+				}
+			}
+			
+			if(BlockID != null && nbt.hasKey("nameToId"))
+			{
+				NBTTagList list = nbt.getTagList("nameToId", NBT.TAG_STRING);
+				
+				if(list.tagCount() > 0)
+				{
+					HashMap<Short, Short> intToIntMapping = new HashMap<Short, Short>();
+					
+					for(int a = 0; a < list.tagCount(); a++)
+					{
+						String s = list.getStringTagAt(a);
+					
+						if(s.length() > 1)
+						{
+							short oldId = (short) s.charAt(0);
+							
+							String blockUID = s.substring(1);
+							
+							Block block = Block.getBlockFromName(blockUID);
+							
+							if(block != null)
+							{
+								short newId = (short)Block.getIdFromBlock(block);
+								
+								
+								
+								if(newId != oldId)
+								{
+									System.out.println("Found non matching block ids for block " + blockUID + ". Old ID: " + oldId + ", New ID: " + newId);
+									intToIntMapping.put(oldId, newId);
+								}
+							}
+						}
 					}
 					
-					return new Schematic("Schematic_" + Width + "_" + Height + "_" + Length, Width, Height, Length, Blocks, Data, tes);
+					int reAssigned = 0;
+					
+					for(int a = 0; a < BlockID.length; a++)
+					{
+						if(intToIntMapping.containsKey(BlockID[a]))
+						{
+							BlockID[a] = intToIntMapping.get(BlockID[a]);
+							reAssigned++;
+						}
+					}
+					if(reAssigned != 0)
+					{
+						System.out.println("Reassigned " + reAssigned + " block IDs");
+					}
+					
 				}
+			}
+			
+			if(BlockID != null)
+			{
+				return new Schematic("Schematic_" + Width + "_" + Height + "_" + Length, Width, Height, Length, BlockID, DataID, tes);
 			}
 		}
 		return null;
@@ -323,13 +384,13 @@ public class Schematic {
 		return null;
 	}
 	
-	public NBTTagCompound saveTo(NBTTagCompound nbt, boolean saveShorts)
+	public NBTTagCompound saveTo(NBTTagCompound nbt)
 	{
 		nbt.setShort("Width", (short)this.xSize);
 		nbt.setShort("Height", (short)this.ySize);
 		nbt.setShort("Length", (short)this.zSize);
 		
-		if(saveShorts)
+		if(true)
 		{
 			int[] BlocksData = new int[this.blockIds.length];
 			
@@ -340,7 +401,7 @@ public class Schematic {
 			
 			nbt.setIntArray("BlocksData", BlocksData);
 		}
-		else
+		/*else
 		{
 			byte[] Block_byte = new byte[this.blockIds.length];
 			byte[] Data_byte = new byte[this.blockMetas.length];
@@ -353,7 +414,7 @@ public class Schematic {
 			
 			nbt.setByteArray("Blocks", Block_byte);
 			nbt.setByteArray("Data", Data_byte);
-		}
+		}*/
 		
 		nbt.setTag("Entities", new NBTTagList());
 		
@@ -366,17 +427,70 @@ public class Schematic {
 		
 		nbt.setTag("TileEntities", tes);
 		
+		
+		ArrayList<Short> shortList = new ArrayList<Short>();
+		
+		for(int a = 0; a < this.blockIds.length; a++)
+		{
+			if(!shortList.contains(this.blockIds[a]))
+			{
+				shortList.add(this.blockIds[a]);
+			}
+		}
+		
+		NBTTagList nameIdList = new NBTTagList();
+		
+		int saved = 0;
+		
+		for(int a = 0; a < shortList.size(); a++)
+		{
+			String theString = "";
+			
+			theString += (char) ( (short)shortList.get(a) );
+			
+			Block block = Block.getBlockById(shortList.get(a));
+			
+			if(block != null)
+			{
+				String name = Block.blockRegistry.getNameForObject(block);
+				
+				if(name != null && name.length() > 0)
+				{
+					theString += name;
+					
+					saved++;
+					
+					nameIdList.appendTag(new NBTTagString(theString));
+				}
+			}
+		}
+		
+		if(saved > 0)
+		{
+			System.out.println("Saved " + saved + " block id mappings.");
+		}
+		
+		nbt.setTag("nameToId", nameIdList);
+		
+		
+		
+		
+		
+		
+		
+		
+		
 		return nbt;
 	}
 	
-	public void saveTo(OutputStream out, boolean saveShorts) throws IOException
+	public void saveTo(OutputStream out) throws IOException
 	{
-		NBTTagCompound nbt = this.saveTo(new NBTTagCompound(), saveShorts);
+		NBTTagCompound nbt = this.saveTo(new NBTTagCompound());
 		
 		CompressedStreamTools.writeCompressed(nbt, out);
 	}
 	
-	public boolean saveTo(File file, boolean saveShorts)
+	public boolean saveTo(File file)
 	{
 		OutputStream output = null;
 		
@@ -384,7 +498,7 @@ public class Schematic {
 		{
 			output = new FileOutputStream(file);
 			
-			this.saveTo(output, saveShorts);
+			this.saveTo(output);
 			
 			return true;
 		}

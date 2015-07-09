@@ -194,7 +194,7 @@ public class GuiSaveSchematic extends GuiScreen{
 
 					if(!saveTo.exists() || currentState)
 					{
-						this.theSchematic.saveTo(saveTo, false);
+						this.theSchematic.saveTo(saveTo);
 						this.setOverwriteState(false);
 						
 						this.mc.displayGuiScreen(null);

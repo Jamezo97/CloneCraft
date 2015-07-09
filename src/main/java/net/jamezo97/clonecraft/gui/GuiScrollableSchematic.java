@@ -8,6 +8,7 @@ import net.jamezo97.clonecraft.CloneCraft;
 import net.jamezo97.clonecraft.schematic.Schematic;
 import net.jamezo97.clonecraft.schematic.SchematicEntry;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.audio.PositionedSoundRecord;
 import net.minecraft.util.ResourceLocation;
 
 public class GuiScrollableSchematic extends GuiScrollable{
@@ -83,6 +84,7 @@ public class GuiScrollableSchematic extends GuiScrollable{
 	@Override
 	public void entryClicked(int entryIndex, int mX, int mY)
 	{
+		Minecraft.getMinecraft().getSoundHandler().playSound(PositionedSoundRecord.func_147674_a(new ResourceLocation("gui.button.press"), 1.0F));
 		int width = this.width - this.scrollBarWidth;
 		
 		if(mX >= width-13 && mX < width-2 && mY >= 2 && mY < 13)
@@ -105,6 +107,8 @@ public class GuiScrollableSchematic extends GuiScrollable{
 			else
 			{
 				deleteSchem = schemEntry.schem;
+				
+//				Minecraft.getMinecraft().getSoundHandler().playSound(PositionedSoundRecord.func_147674_a(new ResourceLocation("gui.button.press"), 1.0F));
 			}
 		}
 		else if(isEntrySelected(entryIndex))

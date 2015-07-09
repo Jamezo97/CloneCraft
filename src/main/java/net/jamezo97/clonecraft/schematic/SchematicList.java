@@ -169,7 +169,7 @@ public class SchematicList {
 			saveTo = new File(CloneCraft.INSTANCE.getDataDir(), "Schematics/" + sender + "/" + schem.name + "_" + (newCount++) + ".schematic");
 		}*/
 		
-		schem.saveTo(saveTo, false);
+		schem.saveTo(saveTo);
 		
 		reloadSchematics();
 	}
