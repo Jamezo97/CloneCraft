@@ -49,7 +49,6 @@ public class SmartArrow extends Entity implements IProjectile{
 
 	@Override
 	protected void readEntityFromNBT(NBTTagCompound nbt) {
-		// TODO Auto-generated method stub
 		
 	}
 
@@ -57,7 +56,6 @@ public class SmartArrow extends Entity implements IProjectile{
 
 	@Override
 	protected void writeEntityToNBT(NBTTagCompound nbt) {
-		// TODO Auto-generated method stub
 		
 	}
 	

@@ -15,7 +15,8 @@ public class CConfig {
 	public String ID_TESTTUBE;
 	public String ID_EMPTYEGG;
 	public String ID_SPAWNEGG;
-	public String ID_GROWBALL;
+	public String ID_WOODSTAFF;
+	public String ID_ROTATE;
 	public String ID_STERILIZER;
 	public String ID_CENTRIFUGE;
 	public String ID_LIFEINDUCER;
@@ -48,7 +49,8 @@ public class CConfig {
 		ID_TESTTUBE = c.get("Item/Block IDs", "TestTubeID", "ccTestTube").getString();
 		ID_EMPTYEGG = c.get("Item/Block IDs", "EmptyEggID", "ccEmptyEgg").getString();
 		ID_SPAWNEGG = c.get("Item/Block IDs", "SpawnEggID", "ccSpawnEgg").getString();
-		ID_GROWBALL = c.get("Item/Block IDs", "GrowBallID", "ccGrowBall").getString();
+		ID_WOODSTAFF = c.get("Item/Block IDs", "SchemStaffID", "ccWoodStaff").getString();
+		ID_ROTATE = c.get("Item/Block IDs", "RotateBinderID", "ccRotateMapper").getString();
 		ID_STERILIZER = c.get("Item/Block IDs", "SterilizerID", "ccSterilizer").getString();
 		ID_CENTRIFUGE = c.get("Item/Block IDs", "CentrifugeID", "ccCentrifuge").getString();
 		ID_LIFEINDUCER = c.get("Item/Block IDs", "LifeInducerID", "ccLifeInducer").getString();

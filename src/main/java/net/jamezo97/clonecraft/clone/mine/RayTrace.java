@@ -49,7 +49,7 @@ public class RayTrace {
 		
 		double addedUnits = 0;
 		
-		int maxIterations = (int)Math.ceil(maxAddedUnits*2)+5;
+		int maxIterations = (int)Math.ceil(maxAddedUnits*2)+10;
 		
 		double nextWholeX, nextWholeY, nextWholeZ;
 		
@@ -103,7 +103,8 @@ public class RayTrace {
 			
 			addedUnits += du;
 			
-			if(addedUnits >= maxAddedUnits /*|| Math.abs(addedUnits - maxAddedUnits) < 0.0000000001*/){
+			if(addedUnits >= maxAddedUnits /*|| Math.abs(addedUnits - maxAddedUnits) < 0.0000000001*/)
+			{
 				break;
 			}
 			
@@ -187,6 +188,7 @@ public class RayTrace {
 					if(hitBlocks.get(a).equals(c2))
 					{
 						contains = true;
+						break;
 					}
 				}
 				

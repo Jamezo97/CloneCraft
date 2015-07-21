@@ -63,8 +63,14 @@ public class Schematic {
 	{
 		if(isHashDirty)
 		{
-			lastHash = (((long)Arrays.hashCode(blockIds)) << 32) | ((long)Arrays.hashCode(blockMetas));
+			long blockHash = Arrays.hashCode(blockIds) & Integer.MAX_VALUE;
+			long metaHash = Arrays.hashCode(blockMetas) & Integer.MAX_VALUE;
 			
+			lastHash = blockHash << 32;
+			
+			
+			lastHash |= (metaHash);
+				
 			for(Entry<Integer, NBTTagCompound> entry : posToTileEntity.entrySet())
 			{
 				lastHash += entry.getKey().hashCode() + entry.getValue().hashCode();
@@ -83,6 +89,36 @@ public class Schematic {
 	public Schematic(String name, int xSize, int ySize, int zSize, short[] blockIds, short[] blockMetas, NBTTagCompound[] tes)
 	{
 		this(name, xSize, ySize, zSize, blockIds, blockMetas);
+		loadTileEntities(tes);
+	}
+	
+	public Schematic(String name, int xSize, int ySize, int zSize, short[] blockIds, short[] blockMetas)
+	{
+		this.name = name;
+		
+		this.xSize = xSize;
+		this.ySize = ySize;
+		this.zSize = zSize;
+		this.blockIds = blockIds;
+		this.blockMetas = blockMetas;
+		
+		int length = xSize*ySize*zSize;
+		
+		if(blockIds.length != length || blockMetas.length != length)
+		{
+			System.err.println("x*y*z Size Does not match block and meta list array lengths!");
+			this.xSize = 0;
+			this.ySize = 0;
+			this.zSize = 0;
+			this.blockIds = new short[0];
+			this.blockMetas = new short[0];
+		}
+		
+		this.layerSize = this.xSize * this.zSize;
+	}
+	
+
+	public void loadTileEntities(NBTTagCompound[] tes) {
 		if(tes != null)
 		{
 			for(int a = 0; a < tes.length; a++)
@@ -114,29 +150,9 @@ public class Schematic {
 		}
 	}
 	
-	public Schematic(String name, int xSize, int ySize, int zSize, short[] blockIds, short[] blockMetas)
+	public int getLayerSize()
 	{
-		this.name = name;
-		
-		this.xSize = xSize;
-		this.ySize = ySize;
-		this.zSize = zSize;
-		this.blockIds = blockIds;
-		this.blockMetas = blockMetas;
-		
-		int length = xSize*ySize*zSize;
-		
-		if(blockIds.length != length || blockMetas.length != length)
-		{
-			System.err.println("x*y*z Size Does not match block and meta list array lengths!");
-			this.xSize = 0;
-			this.ySize = 0;
-			this.zSize = 0;
-			this.blockIds = new short[0];
-			this.blockMetas = new short[0];
-		}
-		
-		this.layerSize = this.xSize * this.zSize;
+		return this.layerSize;
 	}
 	
 	public void buildInstantly(int startX, int startY, int startZ, World world)
@@ -206,6 +222,24 @@ public class Schematic {
 		return new int[]{x, y, z};
 	}
 	
+	public Block blockAtSafe(int index)
+	{
+		if(index >= 0 && index < this.blockIds.length)
+		{
+			return this.blockAt(index);
+		}
+		return Blocks.air;
+	}
+	
+	public int blockIdAtSafe(int index)
+	{
+		if(index >= 0 && index < this.blockIds.length)
+		{
+			return this.blockIdAt(index);
+		}
+		return 0;
+	}
+	
 	public int blockIdAt(int pos)
 	{
 		return this.blockIds[pos];
@@ -219,6 +253,15 @@ public class Schematic {
 	public int blockMetaAt(int pos)
 	{
 		return this.blockMetas[pos];
+	}
+	
+	public int blockMetaAtSafe(int index)
+	{
+		if(index >= 0 && index < this.blockIds.length)
+		{
+			return this.blockMetaAt(index);
+		}
+		return 0;
 	}
 	
 	public static Schematic loadFrom(NBTTagCompound nbt)
@@ -1030,6 +1073,11 @@ public class Schematic {
 			GL11.glTranslatef(-0.01f, -0.01f, -0.01f);
 		}
 	}
+
+	
+
+
+
 
 
 

@@ -102,6 +102,8 @@ public class GuiScrollableSchematic extends GuiScrollable{
 				this.setSearchString(searchStringCurrent);
 				
 				
+				gui.clone.getBuildAI().setSchematic(null);
+				
 				deleteSchem = null;
 			}
 			else

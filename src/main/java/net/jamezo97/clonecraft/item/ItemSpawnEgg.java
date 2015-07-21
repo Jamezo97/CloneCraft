@@ -143,7 +143,8 @@ public class ItemSpawnEgg extends Item{
             par5 += Facing.offsetsYForSide[par7];
             par6 += Facing.offsetsZForSide[par7];
             float addY = 0;
-            if(EntityTNTPrimed.class == EntityList.IDtoClassMapping.get(new ItemData(par1ItemStack).getId())){
+            if(EntityTNTPrimed.class == CCEntityList.idToClass.get(new ItemData(par1ItemStack).getId()))
+            {
             	addY = 0.5f;
             }
             double d0 = 0.0D;
@@ -155,7 +156,8 @@ public class ItemSpawnEgg extends Item{
             
             Entity entity = new ItemData(par1ItemStack).spawnEntity(par4 + 0.5, par5+addY, par6 + 0.5, par3World);
             
-            if(entity instanceof EntityClone){
+            if(entity instanceof EntityClone)
+            {
 				((EntityClone)entity).onSpawnedBy(par2EntityPlayer.getCommandSenderName());
 			}
             

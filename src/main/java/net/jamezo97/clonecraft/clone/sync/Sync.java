@@ -46,7 +46,8 @@ public abstract class Sync {
 
 	public abstract void read(DataInputStream in, EntityClone clone)throws IOException;
 	
-	public void setDirty(){
+	public void setDirty()
+	{
 		isDirty = true;
 	}
 	

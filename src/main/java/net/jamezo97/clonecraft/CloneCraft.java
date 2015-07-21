@@ -6,8 +6,14 @@ import net.jamezo97.clonecraft.block.BlockAntenna;
 import net.jamezo97.clonecraft.block.BlockCentrifuge;
 import net.jamezo97.clonecraft.block.BlockLifeInducer;
 import net.jamezo97.clonecraft.block.BlockSterilizer;
+import net.jamezo97.clonecraft.build.BlockItemRegistry;
+import net.jamezo97.clonecraft.build.BlockLists;
+import net.jamezo97.clonecraft.build.CustomBuilders;
+import net.jamezo97.clonecraft.build.RotationMapping;
+import net.jamezo97.clonecraft.clone.ai.ImportantBlockRegistry;
 import net.jamezo97.clonecraft.item.ItemEmptyEgg;
 import net.jamezo97.clonecraft.item.ItemNeedle;
+import net.jamezo97.clonecraft.item.ItemRotateMapper;
 import net.jamezo97.clonecraft.item.ItemSpawnEgg;
 import net.jamezo97.clonecraft.item.ItemTestTube;
 import net.jamezo97.clonecraft.item.ItemWoodStaff;
@@ -22,8 +28,8 @@ import net.minecraft.block.Block;
 import net.minecraft.client.Minecraft;
 import net.minecraft.init.Blocks;
 import net.minecraft.init.Items;
-import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
+import net.minecraft.nbt.NBTTagCompound;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.oredict.RecipeSorter;
 import cpw.mods.fml.common.FMLCommonHandler;
@@ -88,6 +94,7 @@ public class CloneCraft {
 	public ItemSpawnEgg itemSpawnEgg;
 	
 	public ItemWoodStaff itemWoodStaff;
+	public ItemRotateMapper itemRotateMapper;
 	
 	public BlockSterilizer blockSterilizer;
 	public BlockCentrifuge blockCentrifuge;
@@ -115,10 +122,11 @@ public class CloneCraft {
 		GameRegistry.registerItem(itemSpawnEgg, config.ID_SPAWNEGG);
 		
 		itemWoodStaff = (ItemWoodStaff)new ItemWoodStaff().setTextureName("clonecraft:woodStaff").setUnlocalizedName("ccWoodStaff");
+		GameRegistry.registerItem(itemWoodStaff, config.ID_WOODSTAFF);
 		
-		
-		GameRegistry.registerItem(itemWoodStaff, config.ID_GROWBALL);
-		
+		itemRotateMapper = (ItemRotateMapper)new ItemRotateMapper().setTextureName("clonecraft:rotateMapper").setUnlocalizedName("ccRotateMapper");
+		GameRegistry.registerItem(itemRotateMapper, config.ID_ROTATE);
+		itemRotateMapper.setCreativeTab(creativeTab);
 		
 		
 		blockSterilizer = (BlockSterilizer) new BlockSterilizer().setBlockName("sterilizer").setStepSound(Block.soundTypeMetal).setHardness(3.5f).setCreativeTab(creativeTab);
@@ -166,8 +174,6 @@ public class CloneCraft {
 	@EventHandler
 	public void init(FMLInitializationEvent event)
 	{
-		
-		
 		proxy.init(this);
 		
 		PacketHandler.initPackets();
@@ -184,6 +190,11 @@ public class CloneCraft {
 		proxy.postInit(this);
 		CCEntityList.initEntities();
 		schematicList = new SchematicList(this);
+		BlockLists.init();
+		CustomBuilders.init();
+		BlockItemRegistry.init();
+		
+		RotationMapping.init();
 	}
 	
 	
@@ -258,16 +269,27 @@ public class CloneCraft {
 		RecipeSorter.register("clonecraft:clearData", RecipeClearDNAItem.class, RecipeSorter.Category.SHAPELESS, "after:minecraft:shaped");
 		RecipeSorter.register("clonecraft:emptyEgg", RecipeEmptyEggToSpawnEgg.class, RecipeSorter.Category.SHAPELESS, "after:minecraft:shaped");
 		RecipeSorter.register("clonecraft:stemCell", RecipeStemCells.class, RecipeSorter.Category.SHAPELESS, "after:minecraft:shaped");
-//		GameRegistry.addRecipe(new RecipeAddGenes());
-//		GameRegistry.addRecipe(new RecipeGeneDNA());
-//		GameRegistry.addRecipe(new RecipeMutateSerum());
-//		GameRegistry.addRecipe(new RecipeAddGeneToSerum());
+	}
+	
+	public static boolean isGuiOpen() {
+		return Minecraft.getMinecraft().currentScreen != null && Minecraft.getMinecraft().currentScreen instanceof net.minecraft.client.gui.GuiIngameMenu;
 	}
 	
 	
-
-	public static boolean isGuiOpen() {
-		return Minecraft.getMinecraft().currentScreen != null && Minecraft.getMinecraft().currentScreen instanceof net.minecraft.client.gui.GuiIngameMenu;
+	
+	public NBTTagCompound saveWorldData(NBTTagCompound nbt)
+	{
+//		CCBlockList.saveIdToId(nbt);
+		
+		return nbt;
+	}
+	
+	public void loadWorldData(NBTTagCompound nbt)
+	{
+		ImportantBlockRegistry.determineImportantBlocks();
+//		CCBlockList.loadIdToId(nbt);
+		
+		
 	}
 	
 }

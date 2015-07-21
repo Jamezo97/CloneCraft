@@ -12,7 +12,6 @@ public class EntityAICloneReturnToGuard extends EntityAIBase {
 	}
 	@Override
 	public boolean shouldExecute() {
-		// TODO Auto-generated method stub
 		return false;
 	}
 

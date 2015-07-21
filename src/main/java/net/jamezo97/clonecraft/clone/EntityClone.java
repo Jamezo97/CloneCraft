@@ -12,15 +12,18 @@ import net.jamezo97.clonecraft.CCPostRender;
 import net.jamezo97.clonecraft.CloneCraft;
 import net.jamezo97.clonecraft.GuiHandler;
 import net.jamezo97.clonecraft.Reflect;
+import net.jamezo97.clonecraft.build.EntityAIBuild;
 import net.jamezo97.clonecraft.clone.ai.EntityAIAttackEnemies;
-import net.jamezo97.clonecraft.clone.ai.EntityAIBuild;
 import net.jamezo97.clonecraft.clone.ai.EntityAICloneLookIdle;
 import net.jamezo97.clonecraft.clone.ai.EntityAICloneWalkToItems;
 import net.jamezo97.clonecraft.clone.ai.EntityAICloneWander;
 import net.jamezo97.clonecraft.clone.ai.EntityAICommand;
+import net.jamezo97.clonecraft.clone.ai.EntityAIFetchItemStack;
 import net.jamezo97.clonecraft.clone.ai.EntityAIFollowCloneOwner;
 import net.jamezo97.clonecraft.clone.ai.EntityAIReturnGuard;
 import net.jamezo97.clonecraft.clone.ai.EntityAIShare;
+import net.jamezo97.clonecraft.clone.ai.ImportantBlockRegistry;
+import net.jamezo97.clonecraft.clone.ai.Notifier;
 import net.jamezo97.clonecraft.clone.ai.block.DefaultBlockFinder;
 import net.jamezo97.clonecraft.clone.ai.block.EntityAIMine;
 import net.jamezo97.clonecraft.clone.mine.RayTrace;
@@ -33,6 +36,7 @@ import net.jamezo97.clonecraft.entity.EntityExplodeCollapseFX;
 import net.jamezo97.clonecraft.musics.MusicBase;
 import net.jamezo97.clonecraft.render.Renderable;
 import net.jamezo97.clonecraft.render.RenderableManager;
+import net.jamezo97.clonecraft.util.RelativeCoord;
 import net.jamezo97.physics.Particle;
 import net.jamezo97.physics.Spring;
 import net.jamezo97.physics.Vector;
@@ -46,8 +50,6 @@ import net.minecraft.client.renderer.ThreadDownloadImageData;
 import net.minecraft.client.renderer.texture.ITextureObject;
 import net.minecraft.client.renderer.texture.SimpleTexture;
 import net.minecraft.client.renderer.texture.TextureManager;
-import net.minecraft.crash.CrashReport;
-import net.minecraft.crash.CrashReportCategory;
 import net.minecraft.enchantment.Enchantment;
 import net.minecraft.enchantment.EnchantmentHelper;
 import net.minecraft.entity.Entity;
@@ -65,7 +67,6 @@ import net.minecraft.entity.ai.EntityAITasks;
 import net.minecraft.entity.ai.attributes.AttributeModifier;
 import net.minecraft.entity.boss.EntityDragonPart;
 import net.minecraft.entity.item.EntityItem;
-import net.minecraft.entity.item.EntityItemFrame;
 import net.minecraft.entity.item.EntityXPOrb;
 import net.minecraft.entity.monster.IMob;
 import net.minecraft.entity.player.EntityPlayer;
@@ -88,12 +89,9 @@ import net.minecraft.item.ItemTool;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.nbt.NBTTagList;
 import net.minecraft.network.Packet;
-import net.minecraft.network.play.server.S0BPacketAnimation;
 import net.minecraft.pathfinding.PathEntity;
 import net.minecraft.potion.Potion;
 import net.minecraft.potion.PotionEffect;
-import net.minecraft.scoreboard.Team;
-import net.minecraft.util.AxisAlignedBB;
 import net.minecraft.util.ChatComponentText;
 import net.minecraft.util.ChatStyle;
 import net.minecraft.util.ChunkCoordinates;
@@ -102,8 +100,6 @@ import net.minecraft.util.EntityDamageSource;
 import net.minecraft.util.EnumChatFormatting;
 import net.minecraft.util.IIcon;
 import net.minecraft.util.MathHelper;
-import net.minecraft.util.MovingObjectPosition;
-import net.minecraft.util.ReportedException;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.Vec3;
 import net.minecraft.world.CloneCraftWorld;
@@ -144,15 +140,15 @@ public class EntityClone extends EntityLiving implements RenderableManager{
 	float lastScaleUpdate = 0.5f;
 	float preciseScale = 0.5f;
 	float maxScale = 1.25f;
-//	float maxMaxScale = 10.0f;
-	float defaultGrowthFactor = 0.000020833f;
-//	float defaultGrowthFactor = 0.000000347f;
+
+	float defaultGrowthFactor = 0.000020833f; //Approximately 20 Minutes
 	float maxGrowthFactor = 100f;
-	float growthFactor = defaultGrowthFactor;//3.47E-07//0.00002f;0.00002f; Approximately 20 Minutes
+	float growthFactor = defaultGrowthFactor;
 	float maxGrowthSpeed;
 	
 	
-	
+
+	ImportantBlockRegistry iBlockReg;
 	
 
 	public EntityClone(World world)
@@ -180,6 +176,8 @@ public class EntityClone extends EntityLiving implements RenderableManager{
 		{
 			interpretter = new Interpretter(this);
 			
+			iBlockReg = new ImportantBlockRegistry(this);
+			
 			this.setName(options.female.get()?NameRegistry.getGirlName():NameRegistry.getBoyName());
 		}
 		else
@@ -192,6 +190,13 @@ public class EntityClone extends EntityLiving implements RenderableManager{
 		maxGrowthSpeed = maxGrowthFactor / defaultGrowthFactor;
 		
 		maxScale = 1.25f;
+		
+		this.actualHeight = this.height = 0.9f;
+		
+		if(this.boundingBox != null)
+		{
+			this.boundingBox.maxX = this.boundingBox.minX + this.height;
+		}
 	}
 	
 	
@@ -204,8 +209,14 @@ public class EntityClone extends EntityLiving implements RenderableManager{
 		CCPostRender.addRenderable(this, extraRender = new CloneExtraRender(this));
 	}
 	
-	public Interpretter getInterpretter(){
+	public Interpretter getInterpretter()
+	{
 		return this.interpretter;
+	}
+	
+	public ImportantBlockRegistry getIBlockReg()
+	{
+		return iBlockReg;
 	}
 	
 	public boolean isAIEnabled()
@@ -221,13 +232,23 @@ public class EntityClone extends EntityLiving implements RenderableManager{
 	
 	EntityAIBuild aiBuild;
 	
-	public void initAI(){
+	EntityAIFetchItemStack aiFetch;
+	
+	DefaultBlockFinder defaultBlockFinder;
+	
+	
+	
+	
+	public void initAI()
+	{
 		
 		this.tasks.addTask(0, new EntityAISwimming(this));
 		this.tasks.addTask(1, new EntityAIAttackEnemies(this));
 		this.tasks.addTask(2, new EntityAIFollowCloneOwner(this));
 		
 		this.tasks.addTask(3, aiCommand = new EntityAICommand(this));
+		
+		this.tasks.addTask(4, aiFetch = new EntityAIFetchItemStack(this));
 		
 		this.tasks.addTask(4, aiBreakBlocks = new EntityAIMine(this));
 		this.tasks.addTask(5, aiBuild = new EntityAIBuild(this));
@@ -239,11 +260,26 @@ public class EntityClone extends EntityLiving implements RenderableManager{
 		this.tasks.addTask(20, new EntityAICloneWander(this, 1.0F));
 		
 		
-		this.aiBreakBlocks.setBlockFinder(new DefaultBlockFinder());
+		this.aiBreakBlocks.setBlockFinder(getDefaultBlockFinder());
 	}
 	
-	public EntityAIShare getShareAI(){
+	public EntityAIFetchItemStack getFetchAI()
+	{
+		return this.aiFetch;
+	}
+	
+	public EntityAIShare getShareAI()
+	{
 		return aiShareItems;
+	}
+	
+	public DefaultBlockFinder getDefaultBlockFinder()
+	{
+		if(defaultBlockFinder == null)
+		{
+			defaultBlockFinder = new DefaultBlockFinder();
+		}
+		return defaultBlockFinder;
 	}
 	
 	public EntityAIMine getBlockAI(){
@@ -371,12 +407,6 @@ public class EntityClone extends EntityLiving implements RenderableManager{
 	{
 		super.onUpdate();
 		
-		this.maxScale = 1.25f;
-		
-//		defaultGrowthFactor = 0.000020833f;
-		
-		maxGrowthFactor = 100;
-		
 		if(!worldObj.isRemote){
 
 			pickupNearbyItems();
@@ -427,14 +457,20 @@ public class EntityClone extends EntityLiving implements RenderableManager{
 				}
 			}
 			
+			if(this.options.smartMemory.get())
+			{
+				iBlockReg.onUpdate();
+			}
+			
 		}
 		else
 		{
 			updateBPhysics();
 		}
 		
+		if(displayMessageCooldown > 0)
 		{
-			
+			displayMessageCooldown--;
 		}
 		
 		if(sneakCountdown == 0)
@@ -453,9 +489,6 @@ public class EntityClone extends EntityLiving implements RenderableManager{
 		{
 			sneakCountdown--;
 		}
-		
-		
-		
 		
 		if(this.playerInterface != null)
 		{
@@ -480,8 +513,7 @@ public class EntityClone extends EntityLiving implements RenderableManager{
 		this.updateUsingItem();
 		this.updateArmSwingProgress();
 		this.options.onTick();
-		
-		
+
 		if(!worldObj.isRemote){/*long l1=System.nanoTime();*/watcher.tick();/*System.out.println((System.nanoTime()-l1) / 1000000.0f);*/}
 	}
 	
@@ -584,11 +616,58 @@ public class EntityClone extends EntityLiving implements RenderableManager{
 	}
 
 
-
-	
-
-	public void onSpawnedBy(String spawnedBy) {
+	public void onSpawnedBy(String spawnedBy) 
+	{
 		this.setOwner(spawnedBy);
+	}
+	
+	//==================================================================================================================
+	//TODO Message display
+	//==================================================================================================================
+	
+	int displayMessageCooldown = 0;
+	
+	String displayMessage = "";
+	
+	int displayMessageColour = 0;
+	
+	public String getDisplayMessage()
+	{
+		return this.displayMessage;
+	}
+	
+	public int getDisplayMessageColour()
+	{
+		return this.displayMessageColour;
+	}
+	
+	public int getDisplayMessageCooldown()
+	{
+		return this.displayMessageCooldown;
+	}
+
+	public void setDisplayMessage(String s) 
+	{
+		if(s == null)
+		{
+			s = "";
+		}
+		
+		this.displayMessage = s;
+	}
+
+	public void setDisplayMessageColour(int colour) 
+	{
+		this.displayMessageColour = colour;
+	}
+
+	public void setDisplayMessageCooldown(int cooldown)
+	{
+		if(displayMessageCooldown != cooldown)
+		{
+			this.getWatcher().getSync(Syncer.ID_MESG).setDirty();
+		}
+		this.displayMessageCooldown = cooldown;
 	}
 	
 	//==================================================================================================================
@@ -1672,7 +1751,26 @@ public class EntityClone extends EntityLiving implements RenderableManager{
     
     
     @Override
-	public boolean attackEntityFrom(DamageSource damageSource, float damageAmount) {
+	public boolean attackEntityFrom(DamageSource damageSource, float damageAmount) 
+    {
+    
+    	if(!worldObj.isRemote)
+    	{
+    		ArrayList<RelativeCoord> coords = this.iBlockReg.getNearbyBlocks(Blocks.chest, 128);
+        	
+    		System.out.println("LOAD" + coords);
+    		
+        	if(coords !=  null && !coords.isEmpty())
+        	{
+        		for(int a = 0; a < coords.size(); a++)
+        		{
+        			RelativeCoord rec = coords.get(a);
+        			worldObj.setBlock(rec.xPos, rec.yPos, rec.zPos, Blocks.diamond_block);
+        		}
+        	}
+    	}
+    	
+    	
     	{
     		Entity e = damageSource.getEntity();
     		
@@ -1690,20 +1788,13 @@ public class EntityClone extends EntityLiving implements RenderableManager{
 				
     		}
     	}
- /*   	
-    	if(!this.worldObj.isRemote)
-    	{
-    		Thread.dumpStack();
-    		this.isEntityInsideOpaqueBlock();
-    		System.out.println(this.height);
-    	}*/
 
-    	
+
     	if(this.preciseScale > this.defaultScale && damageSource == DamageSource.inWall)
     	{
     		return false;
     	}
-    	
+
 		if(damageSource instanceof EntityDamageSource)
 		{
 			if(this.getOptions().retaliate.get() && this.getOptions().fight.get())
@@ -1759,152 +1850,7 @@ public class EntityClone extends EntityLiving implements RenderableManager{
 		}
 		
 		return super.attackEntityFrom(damageSource, damageAmount);
-		
-/*//		this.rotationYaw = 0;
-		
-//		boolean b = super.attackEntityFrom(damageSource, damageAmount);
-		
-//		this.rotationYaw = this.attackedAtYaw;
-		
-		
-		{
-			if (ForgeHooks.onLivingAttack(this, damageSource, damageAmount)) return false;
-	        if (this.isEntityInvulnerable())
-	        {
-	            return false;
-	        }
-	        else if (this.worldObj.isRemote)
-	        {
-	            return false;
-	        }
-	        else
-	        {
-	            this.entityAge = 0;
-
-	            if (this.getHealth() <= 0.0F)
-	            {
-	                return false;
-	            }
-	            else if (damageSource.isFireDamage() && this.isPotionActive(Potion.fireResistance))
-	            {
-	                return false;
-	            }
-	            else
-	            {
-	                if ((damageSource == DamageSource.anvil || damageSource == DamageSource.fallingBlock) && this.getEquipmentInSlot(4) != null)
-	                {
-	                    this.getEquipmentInSlot(4).damageItem((int)(damageAmount * 4.0F + this.rand.nextFloat() * damageAmount * 2.0F), this);
-	                    damageAmount *= 0.75F;
-	                }
-
-	                this.limbSwingAmount = 1.5F;
-	                boolean flag = true;
-
-	                if ((float)this.hurtResistantTime > (float)this.maxHurtResistantTime / 2.0F)
-	                {
-	                    if (damageAmount <= this.lastDamage)
-	                    {
-	                        return false;
-	                    }
-
-	                    this.damageEntity(damageSource, damageAmount - this.lastDamage);
-	                    this.lastDamage = damageAmount;
-	                    flag = false;
-	                }
-	                else
-	                {
-	                    this.lastDamage = damageAmount;
-	                    this.prevHealth = this.getHealth();
-	                    this.hurtResistantTime = this.maxHurtResistantTime;
-	                    this.damageEntity(damageSource, damageAmount);
-	                    this.hurtTime = this.maxHurtTime = 10;
-	                }
-
-	                this.attackedAtYaw = 0.0F;
-	                Entity entity = damageSource.getEntity();
-
-	                if (entity != null)
-	                {
-	                    if (entity instanceof EntityLivingBase)
-	                    {
-	                        this.setRevengeTarget((EntityLivingBase)entity);
-	                    }
-
-	                    if (entity instanceof EntityPlayer)
-	                    {
-	                        this.recentlyHit = 100;
-	                        this.attackingPlayer = (EntityPlayer)entity;
-	                    }
-	                    else if (entity instanceof net.minecraft.entity.passive.EntityTameable)
-	                    {
-	                        net.minecraft.entity.passive.EntityTameable entitywolf = (net.minecraft.entity.passive.EntityTameable)entity;
-
-	                        if (entitywolf.isTamed())
-	                        {
-	                            this.recentlyHit = 100;
-	                            this.attackingPlayer = null;
-	                        }
-	                    }
-	                }
-
-	                if (flag)
-	                {
-	                    this.worldObj.setEntityState(this, (byte)2);
-
-	                    if (damageSource != DamageSource.drown)
-	                    {
-	                        this.setBeenAttacked();
-	                    }
-
-	                    if (entity != null)
-	                    {
-	                    	double d1 = entity.posX - this.posX;
-	                        double d0;
-
-	                        for (d0 = entity.posZ - this.posZ; d1 * d1 + d0 * d0 < 1.0E-4D; d0 = (Math.random() - Math.random()) * 0.01D)
-	                        {
-	                            d1 = (Math.random() - Math.random()) * 0.01D;
-	                        }
-
-//	                        this.attackedAtYaw = (float)(Math.atan2(d0, d1) * 180.0D / Math.PI) - this.rotationYaw;
-	                        this.knockBack(entity, damageAmount, d1, d0);
-	                    }
-	                    else
-	                    {
-	                        this.attackedAtYaw = (float)((int)(Math.random() * 2.0D) * 180);
-	                    }
-	                }
-
-	                String s;
-
-	                if (this.getHealth() <= 0.0F)
-	                {
-	                    s = this.getDeathSound();
-
-	                    if (flag && s != null)
-	                    {
-	                        this.playSound(s, this.getSoundVolume(), this.getSoundPitch());
-	                    }
-
-	                    this.onDeath(damageSource);
-	                }
-	                else
-	                {
-	                    s = this.getHurtSound();
-
-	                    if (flag && s != null)
-	                    {
-	                        this.playSound(s, this.getSoundVolume(), this.getSoundPitch());
-	                    }
-	                }
-
-	                return true;
-	            }
-	        }
-		}
-		
-//		return false;
-*/	}
+	}
     
 	
 	@Override
@@ -2395,6 +2341,7 @@ public class EntityClone extends EntityLiving implements RenderableManager{
 	public void writeEntityToNBT(NBTTagCompound nbt)
 	{
 		super.writeEntityToNBT(nbt);
+		
 		nbt.setString("Name_U", this.nameUnedited);
 		nbt.setString("Owner", ownerName);
 		nbt.setInteger("Team", team.teamID);
@@ -2402,6 +2349,12 @@ public class EntityClone extends EntityLiving implements RenderableManager{
 		nbt.setFloat("scale", this.preciseScale);
 		nbt.setDouble("scaleAim", this.aimForScale);
 		nbt.setInteger("shrinkCooldown", this.shrinkCooldown);
+		
+
+		nbt.setInteger("displayMessageCooldown", this.displayMessageCooldown);
+		nbt.setInteger("displayMessageColour", this.displayMessageColour);
+		nbt.setString("displayMessage", this.displayMessage);
+	
 		
 		nbt.setIntArray("guardPosition", new int[]{
 				guardPosition.posX,
@@ -2425,7 +2378,8 @@ public class EntityClone extends EntityLiving implements RenderableManager{
 			nbt.setTag("CommAITask", nbtBase);
 		}
 		
-		nbt.setTag("aiBuild", aiBuild.saveState(new NBTTagCompound()));
+		nbt.setTag("aiBuild", aiBuild.saveBuildState(new NBTTagCompound()));
+		nbt.setTag("aiFetch", aiFetch.writeToNBT(new NBTTagCompound()));
 		
 		this.foodStats.writeNBT(nbt);
 		this.options.writeNBT(nbt);
@@ -2443,6 +2397,11 @@ public class EntityClone extends EntityLiving implements RenderableManager{
 		this.inventory.readFromNBT(nbt.getTagList("Inventory", 10));
 		this.setAimScale(nbt.getDouble("scaleAim"));
 		this.shrinkCooldown = nbt.getInteger("shrinkCooldown");
+		
+		this.displayMessageCooldown = nbt.getInteger("displayMessageCooldown");
+		this.displayMessageColour = nbt.getInteger("displayMessageColour");
+		this.displayMessage = nbt.getString("displayMessage");
+
 		
 		float scale = nbt.getFloat("scale");
 		
@@ -2486,8 +2445,9 @@ public class EntityClone extends EntityLiving implements RenderableManager{
 				}
 			}
 		}
-		
-		this.aiBuild.loadState(nbt.getCompoundTag("aiBuild"));
+
+		this.aiBuild.loadBuildState(nbt.getCompoundTag("aiBuild"));
+		this.aiFetch.readFromNBT(nbt.getCompoundTag("aiFetch"));
 		
 		
 		this.foodStats.readNBT(nbt);
@@ -2609,33 +2569,14 @@ public class EntityClone extends EntityLiving implements RenderableManager{
 			{
 				ItemStack picked = pickupItem(eItem.getEntityItem());
 				
-				/*if(picked != null && picked.getItem() == CloneCraft.INSTANCE.itemGrowBall && picked.stackSize > 0)
+				if(picked != null)
 				{
+					this.getFetchAI().pickedUpItem(picked);
 					
-					for(int b = 0; b < picked.stackSize; b++)
-					{
-						injectStemcells(true);
-					}
-					
-					if(picked.stackSize > 0 && !worldObj.isRemote)
-					{
-						this.getWatcher().getSync(Syncer.ID_SHRINKCOOL).setDirty();
-					}
-
-					
-					this.worldObj.playSoundAtEntity(this, "random.burp", 0.5F, this.rand.nextFloat() * 0.1F + 0.9F);
-					this.worldObj.playSoundAtEntity(this, "random.eat", 0.5F + 0.5F * (float)this.rand.nextInt(2), (this.rand.nextFloat() - this.rand.nextFloat()) * 0.2F + 1.0F);
-				}
-				else */if(picked != null && picked.getItem() == Items.milk_bucket && picked.stackSize > 0)
-				{
-					if(this.getShrinkCooldown() > 0 || this.aimForScale > this.defaultScale)
+					if((picked.getItem() == Items.milk_bucket && picked.stackSize > 0) && 
+							(this.getShrinkCooldown() > 0 || this.aimForScale > this.defaultScale))
 					{
 						this.forceEatFood(this.inventory.getSlotForItem(Items.milk_bucket));
-						
-//						this.setShrinkCooldown(0);
-//						this.setAimScale(this.defaultScale);
-//						this.getWatcher().getSync(Syncer.ID_SHRINKCOOL).setDirty();
-//						this.inventory.consumeInventoryItem(Items.milk_bucket);
 					}
 				}
 				
@@ -2647,7 +2588,8 @@ public class EntityClone extends EntityLiving implements RenderableManager{
 		}
 	}
 	
-	public ItemStack pickupItem(ItemStack stack){
+	public ItemStack pickupItem(ItemStack stack)
+	{
 		if(stack.stackSize > 0 && stack.getItem() instanceof ItemArmor)
 		{
 			ItemArmor item = (ItemArmor)stack.getItem();
@@ -2672,6 +2614,7 @@ public class EntityClone extends EntityLiving implements RenderableManager{
 				return pickedUp;
 			}
 		}
+		
 		int removed = inventory.tryFitInInventory(stack);
 		
 		if(removed > 0)
@@ -2684,7 +2627,8 @@ public class EntityClone extends EntityLiving implements RenderableManager{
 		return pickedUp;
 	}
 
-	public boolean isBetterArmorType(ItemStack stackBetterDur, ItemStack thanMe, ItemArmor isBetterThan, ItemArmor me){
+	public boolean isBetterArmorType(ItemStack stackBetterDur, ItemStack thanMe, ItemArmor isBetterThan, ItemArmor me)
+	{
 		if(getArmourDamageReduction(stackBetterDur, isBetterThan) <= getArmourDamageReduction(thanMe, me))
 		{
 			if(isBetterThan != me || stackBetterDur.getItemDamage() >= thanMe.getItemDamage())
@@ -2715,6 +2659,12 @@ public class EntityClone extends EntityLiving implements RenderableManager{
 	}
 
 	
+	public void goFetchItem(ItemStack fetch, Notifier notifier)
+	{
+		this.aiFetch.setNotifier(notifier);
+		this.aiFetch.fetchItem(fetch);
+	}
+	
 	
 	//==================================================================================================================
 	//TODO Inventory
@@ -2732,10 +2682,6 @@ public class EntityClone extends EntityLiving implements RenderableManager{
 	@Override
 	public void setCurrentItemOrArmor(int slot, ItemStack stack)
 	{
-		if(!worldObj.isRemote)
-		{
-			Thread.dumpStack();
-		}
 		if(slot == 0)
 		{
 			inventory.setInventorySlotContents(this.inventory.currentItem, stack);
@@ -2758,7 +2704,8 @@ public class EntityClone extends EntityLiving implements RenderableManager{
 		return inventory.getCurrentItem();//inventory.getStackInSlot(this.inventory.currentItem);
 	}
 	
-	public ItemStack getOfferedItem(){
+	public ItemStack getOfferedItem()
+	{
 		return this.getShareAI().getOfferedItem();
 	}
 
@@ -3407,8 +3354,8 @@ public class EntityClone extends EntityLiving implements RenderableManager{
 	public final static int ID_OPTIONS = 12;
 	
 	@Override
-	public void onRemoved() {
-		// TODO Auto-generated method stub
+	public void onRemoved() 
+	{
 		
 	}
 	
@@ -3430,6 +3377,10 @@ public class EntityClone extends EntityLiving implements RenderableManager{
 				((EntityPlayer)lstPlayers.get(a)).addChatMessage(chat);
 			}
 		}
+		
+		this.setDisplayMessage(string);
+		this.setDisplayMessageColour(0xffffffff);
+		this.setDisplayMessageCooldown(40 + string.length() * 2);
 	}
 
 	public void say(String string, EntityPlayer... sender)
@@ -3450,6 +3401,10 @@ public class EntityClone extends EntityLiving implements RenderableManager{
 				((EntityPlayer)this.worldObj.playerEntities.get(a)).addChatMessage(chat);
 			}
 		}
+		
+		this.setDisplayMessage(string);
+		this.setDisplayMessageColour(0xffffffff);
+		this.setDisplayMessageCooldown(40 + string.length() * 2);
 		
 	}
 
@@ -3508,7 +3463,8 @@ public class EntityClone extends EntityLiving implements RenderableManager{
 		return isMaterial(seeThruMaterials, m);
 	}
 	
-	public static boolean isMaterial(Material[] materials, Material material){
+	public static boolean isMaterial(Material[] materials, Material material)
+	{
     	for(int a = 0; a < materials.length; a++)
     	{
     		if(material == materials[a])
@@ -3518,6 +3474,7 @@ public class EntityClone extends EntityLiving implements RenderableManager{
     	}
     	return false;
     }
+
 
 	
 

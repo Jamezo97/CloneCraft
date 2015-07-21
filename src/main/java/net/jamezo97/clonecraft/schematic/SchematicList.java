@@ -10,8 +10,7 @@ import net.jamezo97.clonecraft.network.Handler11SendSchematic;
 import net.jamezo97.clonecraft.network.Handler12BuildSchematic;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
-import net.minecraft.server.MinecraftServer;
-import net.minecraft.server.integrated.IntegratedServer;
+import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.ChatComponentText;
 import net.minecraft.util.ChatStyle;
 import net.minecraft.util.EnumChatFormatting;
@@ -113,6 +112,7 @@ public class SchematicList {
 			if(a == 0)
 			{
 				handler.loadInitialData(build);
+				handler.tileEntities = schem.tileEntities.toArray(new NBTTagCompound[schem.tileEntities.size()]);
 			}
 			
 			a += length;
@@ -159,15 +159,6 @@ public class SchematicList {
 		{
 			saveTo.getParentFile().mkdirs();
 		}
-		
-		//Don't use this. Overwrite old schematics instead. Because they are located within their own folders,
-		//only the original uploader can modify them..
-		/*int newCount = 1;
-		
-		while(saveTo.exists())
-		{
-			saveTo = new File(CloneCraft.INSTANCE.getDataDir(), "Schematics/" + sender + "/" + schem.name + "_" + (newCount++) + ".schematic");
-		}*/
 		
 		schem.saveTo(saveTo);
 		

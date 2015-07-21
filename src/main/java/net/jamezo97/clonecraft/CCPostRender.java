@@ -69,6 +69,8 @@ public class CCPostRender {
 	{
 		ItemWoodStaff staff = CloneCraft.INSTANCE.itemWoodStaff;
 		
+		
+		
 		if(staff.pos1 != null && staff.pos2 != null)
 		{
 			int minX = Math.min(staff.pos1.posX, staff.pos2.posX);
@@ -106,6 +108,28 @@ public class CCPostRender {
 			overlay.render(partial);
 //			GL11.glEnable(GL11.GL_CULL_FACE);
 			
+		}
+		else
+		{
+			if(staff.pos1 != null)
+			{
+				if(overlayc1 == null)
+				{
+					overlayc1 = new RenderOverlay(new Colour(0xffee3333));
+				}
+				overlayc1.setBounds(staff.pos1.posX-0.01, staff.pos1.posY-0.01, staff.pos1.posZ-0.01, staff.pos1.posX+1.01, staff.pos1.posY+1.01, staff.pos1.posZ+1.01);
+				overlayc1.render(partial);
+			}
+			
+			if(staff.pos2 != null)
+			{
+				if(overlayc2 == null)
+				{
+					overlayc2 = new RenderOverlay(new Colour(0xff33ee33));
+				}
+				overlayc2.setBounds(staff.pos2.posX-0.02, staff.pos2.posY-0.02, staff.pos2.posZ-0.02, staff.pos2.posX+1.02, staff.pos2.posY+1.02, staff.pos2.posZ+1.02);
+				overlayc2.render(partial);
+			}
 		}
 		
 	}

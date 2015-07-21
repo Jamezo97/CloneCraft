@@ -209,6 +209,8 @@ public class Syncer {
 		syncs.add(new SyncScale(ID_SCAL));
 		syncs.add(new SyncItemOffer(ID_OFFR));
 		syncs.add(new SyncShrinkCooldown(ID_SHRINKCOOL));
+		syncs.add(new SyncDisplayMessage(ID_MESG));
+		syncs.add(new SyncBlockHighlight(ID_HIGH));
 	}
 	public static final int ID_TEAM = 	0;
 	public static final int ID_EXPE = 	1;
@@ -222,6 +224,9 @@ public class Syncer {
 	public static final int ID_SCAL = 	9;
 	public static final int ID_OFFR = 	10;
 	public static final int ID_SHRINKCOOL =	11;
+	public static final int ID_MESG =	12;
+	public static final int ID_HIGH =	13;
+	
 
 
 	public void sendValueToServer(int idName) {

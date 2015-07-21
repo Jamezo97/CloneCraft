@@ -19,7 +19,8 @@ public class CloneOptions {
 	public CloneOption wander;
 	public CloneOption jump;
 	public CloneOption curious;
-	public CloneOption breakExtraBlocks;
+	public CloneOption smartMemory;
+//	public CloneOption breakExtraBlocks;
 	public CloneOption stats;
 	public CloneOption female;
 	public CloneOption breakBlocks;
@@ -60,7 +61,7 @@ public class CloneOptions {
 		addOption(stats = new CloneOption(10, "stats", true, this));
 		addOption(female = new CloneOption(11, "female", clone.getRNG().nextBoolean(), this));
 		addOption(breakBlocks = new CloneOption(12, "breakBlocks", false, this));
-		addOption(breakExtraBlocks = new CloneOption(13, "breakExtraBlocks", false, this));
+		addOption(smartMemory = new CloneOption(13, "smartMemory", true, this));
 		addOption(farming = new CloneOption(14, "farm", false, this));
 		addOption(share = new CloneOption(15, "share", false, this));
 		addOption(command = new CloneOption(16, "command", true, this));

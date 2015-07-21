@@ -1,9 +1,9 @@
 package net.jamezo97.clonecraft.entity;
 
+import net.jamezo97.clonecraft.CCEntityList;
 import net.jamezo97.clonecraft.clone.EntityClone;
 import net.jamezo97.clonecraft.item.ItemData;
 import net.minecraft.entity.Entity;
-import net.minecraft.entity.EntityList;
 import net.minecraft.entity.EntityLiving;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.item.EntityTNTPrimed;
@@ -74,15 +74,20 @@ public class EntitySpawnEgg extends EntityThrowable{
 
 	@Override
 	protected void onImpact(MovingObjectPosition mop) {
-		if(stack != null){
-			if(!worldObj.isRemote){
+		if(stack != null)
+		{
+			if(!worldObj.isRemote)
+			{
 				float addY = 0;
-				if(EntityTNTPrimed.class == EntityList.IDtoClassMapping.get(new ItemData(stack).getId())){
+				
+				if(EntityTNTPrimed.class == CCEntityList.idToClass.get(new ItemData(stack).getId()))
+				{
 					mop.hitVec.yCoord += 0.5;
 				}
 				Entity entity = new ItemData(stack).spawn(mop, this);
 				
-				if (entity != null){
+				if (entity != null)
+				{
 					entity.worldObj.playSoundAtEntity(entity, "clonecraft:general.pop", 1.0f, 0.9f + (worldObj.rand.nextFloat()/5));
 					if (entity instanceof EntityLivingBase && stack.hasDisplayName())
 					{

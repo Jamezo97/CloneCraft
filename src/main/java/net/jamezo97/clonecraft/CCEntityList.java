@@ -128,8 +128,10 @@ public class CCEntityList {
 		return null;
 	}
 
-	public static int mcToMyId(int entityId) {
+	public static int mcToMyId(int entityId) 
+	{
 		Integer integer = CCEntityList.mcIdToMyId.get(entityId);
+		
 		if(integer != null)
 		{
 			return integer;

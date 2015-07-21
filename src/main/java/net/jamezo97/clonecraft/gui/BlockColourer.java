@@ -78,7 +78,6 @@ public class BlockColourer {
 //					try {
 //						ImageIO.write(output, "PNG", new File("C:/Users/James/Desktop/Output/" + bloc.getLocalizedName() + "_" + meta + ".png"));
 //					} catch (IOException e) {
-//						// TODO Auto-generated catch block
 //						e.printStackTrace();
 //					}
 					
@@ -155,7 +154,6 @@ public class BlockColourer {
 //			try {
 //				ImageIO.write(theImage, "PNG", new File("C:/Users/James/Desktop/BigOne.png"));
 //			} catch (IOException e) {
-//				// TODO Auto-generated catch block
 //				e.printStackTrace();
 //			}
 		}else{

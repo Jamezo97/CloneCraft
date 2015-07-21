@@ -31,6 +31,8 @@ public class Handler12BuildSchematic extends Handler{
 	
 	int posX, posY, posZ;
 	
+	int rotate;
+	
 	int cloneEntityID;
 	
 	public Handler12BuildSchematic()
@@ -49,6 +51,8 @@ public class Handler12BuildSchematic extends Handler{
 		this.posX = builder.getBuildAI().posX;
 		this.posY = builder.getBuildAI().posY;
 		this.posZ = builder.getBuildAI().posZ;
+		
+		this.rotate = builder.getBuildAI().getRotate();
 		
 		this.cloneEntityID = builder.getEntityId();
 	}
@@ -121,6 +125,8 @@ public class Handler12BuildSchematic extends Handler{
 				clone.getBuildAI().posY = posY;
 				clone.getBuildAI().posZ = posZ;
 				
+				clone.getBuildAI().setRotate(this.rotate);
+				
 				clone.getBuildAI().setSchematic(entry.schem);
 
 				clone.getBuildAI().setBuilding(true);
@@ -166,6 +172,8 @@ public class Handler12BuildSchematic extends Handler{
 		ySize = buf.readInt();
 		zSize = buf.readInt();
 		
+		rotate = buf.readInt();
+		
 		cloneEntityID = buf.readInt();
 		
 		posX = buf.readInt();
@@ -191,6 +199,8 @@ public class Handler12BuildSchematic extends Handler{
 		buf.writeInt(xSize);
 		buf.writeInt(ySize);
 		buf.writeInt(zSize);
+
+		buf.writeInt(rotate);
 		
 		buf.writeInt(this.cloneEntityID);
 		

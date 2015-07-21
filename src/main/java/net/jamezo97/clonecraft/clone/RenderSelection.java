@@ -53,8 +53,8 @@ public class RenderSelection implements Renderable{
 
 
 	@Override
-	public void onRemoved() {
-		// TODO Auto-generated method stub
+	public void onRemoved() 
+	{
 		
 	}
 
@@ -281,8 +281,8 @@ public class RenderSelection implements Renderable{
 	}
 
 	@Override
-	public void onTick() {
-		// TODO Auto-generated method stub
+	public void onTick() 
+	{
 		
 	}
 

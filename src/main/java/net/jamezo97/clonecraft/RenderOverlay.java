@@ -234,16 +234,16 @@ public class RenderOverlay implements Renderable{
 	}
 
 	@Override
-	public void onTick() {
-		// TODO Auto-generated method stub
+	public void onTick() 
+	{
 		
 	}
 	
 
 	
 	@Override
-	public void onRemoved() {
-		// TODO Auto-generated method stub
+	public void onRemoved() 
+	{
 		
 	}
 

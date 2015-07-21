@@ -151,7 +151,7 @@ public class RenderClone extends RendererLivingEntity {
      * (Render<T extends Entity) and this method has signature public void func_76986_a(T entity, double d, double d1,
      * double d2, float f, float f1). But JAD is pre 1.5 so doesn't do that.
      */
-    public void doRender(EntityClone clone, double p_76986_2_, double p_76986_4_, double p_76986_6_, float p_76986_8_, float p_76986_9_)
+    public void doRender(EntityClone clone, double xPos, double yPos, double zPos, float p_76986_8_, float p_76986_9_)
     {
     	this.shadowSize = 0.5F * clone.getScale();
     	
@@ -183,7 +183,7 @@ public class RenderClone extends RendererLivingEntity {
         }
 
         this.modelArmorChestplate.isSneak = this.modelArmor.isSneak = this.modelBipedMain.isSneak = clone.isSneaking();
-        double d3 = p_76986_4_ - (double)clone.yOffset;
+        double d3 = yPos - (double)clone.yOffset;
 
         if (clone.isSneaking())
         {
@@ -195,7 +195,7 @@ public class RenderClone extends RendererLivingEntity {
         this.textureForPass = clone.getTexture();
         
         
-        super.doRender((EntityLivingBase)clone, p_76986_2_, d3, p_76986_6_, p_76986_8_, p_76986_9_);
+        super.doRender((EntityLivingBase)clone, xPos, d3, zPos, p_76986_8_, p_76986_9_);
 
         
         
@@ -226,7 +226,6 @@ public class RenderClone extends RendererLivingEntity {
             for (int k = 0; k < 3; ++k)
             {
                 GL11.glDisable(GL11.GL_LIGHTING);
-//                float f10 = 1.0F;
                 GL11.glColor4f(0.5F * intensity, 0.25F * intensity, 0.8F * intensity, 1.0F);
                 GL11.glBlendFunc(GL11.GL_SRC_COLOR, GL11.GL_ONE);
                 GL11.glMatrixMode(GL11.GL_TEXTURE);
@@ -246,7 +245,7 @@ public class RenderClone extends RendererLivingEntity {
                     float f4;
 
                     float f13 = clone.prevRotationPitch + (clone.rotationPitch - clone.prevRotationPitch) * p_76986_9_;
-                    super.renderLivingAt(clone, p_76986_2_, p_76986_4_, p_76986_6_);
+                    super.renderLivingAt(clone, xPos, yPos, zPos);
                     f4 = this.handleRotationFloat(clone, p_76986_9_);
                     super.rotateCorpse(clone, f4, f2, p_76986_9_);
                     float f5 = 0.0625F;
@@ -285,36 +284,6 @@ public class RenderClone extends RendererLivingEntity {
             GL11.glEnable(GL11.GL_LIGHTING);
             GL11.glDisable(GL11.GL_BLEND);
             GL11.glDepthFunc(GL11.GL_LEQUAL);
-        	
-        	/*GL11.glDepthFunc(GL11.GL_EQUAL);
-            GL11.glDisable(GL11.GL_LIGHTING);
-            Minecraft.getMinecraft().renderEngine.bindTexture(RES_ITEM_GLINT);
-            GL11.glEnable(GL11.GL_BLEND);
-            OpenGlHelper.glBlendFunc(768, 1, 1, 0);
-            float f7 = 0.76F;
-            GL11.glColor4f(0.5F * f7, 0.25F * f7, 0.8F * f7, 1.0F);
-            GL11.glMatrixMode(GL11.GL_TEXTURE);
-            GL11.glPushMatrix();
-            float f8 = 0.125F;
-            GL11.glScalef(f8, f8, f8);
-            float f9 = (float)(Minecraft.getSystemTime() % 3000L) / 3000.0F * 8.0F;
-            GL11.glTranslatef(f9, 0.0F, 0.0F);
-            GL11.glRotatef(-50.0F, 0.0F, 0.0F, 1.0F);
-            super.doRender((EntityLivingBase)clone, p_76986_2_, d3, p_76986_6_, p_76986_8_, p_76986_9_);
-//            renderItemIn2D(tessellator, 0.0F, 0.0F, 1.0F, 1.0F, 256, 256, 0.0625F);
-            GL11.glPopMatrix();
-            GL11.glPushMatrix();
-            GL11.glScalef(f8, f8, f8);
-            f9 = (float)(Minecraft.getSystemTime() % 4873L) / 4873.0F * 8.0F;
-            GL11.glTranslatef(-f9, 0.0F, 0.0F);
-            GL11.glRotatef(10.0F, 0.0F, 0.0F, 1.0F);
-//            super.doRender((EntityLivingBase)clone, p_76986_2_, d3, p_76986_6_, p_76986_8_, p_76986_9_);
-//            renderItemIn2D(tessellator, 0.0F, 0.0F, 1.0F, 1.0F, 256, 256, 0.0625F);
-            GL11.glPopMatrix();
-            GL11.glMatrixMode(GL11.GL_MODELVIEW);
-            GL11.glDisable(GL11.GL_BLEND);
-            GL11.glEnable(GL11.GL_LIGHTING);
-            GL11.glDepthFunc(GL11.GL_LEQUAL);*/
         }
         
         
@@ -327,8 +296,90 @@ public class RenderClone extends RendererLivingEntity {
         
       
         if(clone.getOptions().stats.get() && clone.canUseThisEntity(Minecraft.getMinecraft().thePlayer)){
-        	renderStatus(clone,Math.round(clone.getHealth()) + "/" + Math.round(clone.getMaxHealth()), clone.getHealth() / clone.getMaxHealth(), p_76986_2_, p_76986_4_, p_76986_6_, p_76986_9_, 0);
-        	renderStatus(clone, clone.foodStats.getFoodLevel() + "/20", clone.foodStats.getFoodLevel()/20.0f, p_76986_2_, p_76986_4_, p_76986_6_, p_76986_9_, 1);
+        	renderStatus(clone,Math.round(clone.getHealth()) + "/" + Math.round(clone.getMaxHealth()), clone.getHealth() / clone.getMaxHealth(), xPos, yPos, zPos, p_76986_9_, 0);
+        	renderStatus(clone, clone.foodStats.getFoodLevel() + "/20", clone.foodStats.getFoodLevel()/20.0f, xPos, yPos, zPos, p_76986_9_, 1);
+        }
+        
+        if(clone.getDisplayMessageCooldown() != 0)
+        {
+        	
+        	FontRenderer fontrenderer = this.getFontRendererFromRenderManager();
+            float f1 = 0.009F;
+            GL11.glPushMatrix();
+            GL11.glTranslatef((float)xPos, (float)yPos + clone.height + 1f, (float)zPos);
+            GL11.glNormal3f(0.0F, 1.0F, 0.0F);
+            GL11.glRotatef(-this.renderManager.playerViewY, 0.0F, 1.0F, 0.0F);
+            GL11.glRotatef(this.renderManager.playerViewX, 1.0F, 0.0F, 0.0F);
+            GL11.glScalef(-f1, -f1, f1);
+            GL11.glDisable(GL11.GL_LIGHTING);
+            GL11.glDepthMask(false);
+            GL11.glDisable(GL11.GL_DEPTH_TEST);
+            GL11.glEnable(GL11.GL_BLEND);
+            OpenGlHelper.glBlendFunc(770, 771, 1, 0);
+            
+            GL11.glScalef(3, 3, 3);
+            
+            
+            
+            for(int pass = 0; pass < 2; pass++)
+            {
+            	GL11.glDisable(GL11.GL_TEXTURE_2D);
+                
+
+                Tessellator tessellator = Tessellator.instance;
+                
+                int stringHalfWidth = fontrenderer.getStringWidth(clone.getDisplayMessage()) / 2;
+                
+                
+                
+           	 	tessellator.startDrawingQuads();
+                
+           	 	int remain = Math.min(20, clone.getDisplayMessageCooldown());
+           	 	
+           	 	int colour = clone.getDisplayMessageColour();
+
+           	 	float red = Math.min((255-((colour >> 16) & 0xFF))/255.0f+0.3f, 1);
+           	 	float green = Math.min((255-((colour >> 8) & 0xFF))/255.0f+0.3f, 1);
+           	 	float blue = Math.min((255-((colour) & 0xFF))/255.0f+0.3f, 1);
+           	 	
+                tessellator.setColorRGBA_F(red, green, blue, 0.2F * remain / 20.0f);
+            	
+            	tessellator.addVertex((double)(-stringHalfWidth-3), (double)(-2), 0.01D);
+                tessellator.addVertex((double)(-stringHalfWidth-3), (double)(9), 0.01D);
+                tessellator.addVertex((double)(stringHalfWidth+3), (double)(9), 0.01D);
+                tessellator.addVertex((double)(stringHalfWidth+3), (double)(-2), 0.01D);
+                tessellator.draw();
+                
+                
+                GL11.glEnable(GL11.GL_TEXTURE_2D);
+               
+                
+                int alpha = (colour >> 24) & 0xFF;
+                
+                alpha =  alpha * remain / 20;
+                
+                colour &= 0x00ffffff;
+                colour |= alpha << 24;
+                
+                fontrenderer.drawString(clone.getDisplayMessage(), -stringHalfWidth, 0, colour);
+                
+                if(pass == 0)
+                {
+                	GL11.glEnable(GL11.GL_DEPTH_TEST);
+                	GL11.glDepthMask(true);
+                }
+            }
+            
+            
+            
+            GL11.glEnable(GL11.GL_DEPTH_TEST);
+            GL11.glDepthMask(true);
+            
+            GL11.glDisable(GL11.GL_BLEND);
+            
+            GL11.glEnable(GL11.GL_LIGHTING);
+            GL11.glColor4f(1.0F, 1.0F, 1.0F, 1.0F);
+            GL11.glPopMatrix();
         }
     }
     
@@ -374,16 +425,20 @@ public class RenderClone extends RendererLivingEntity {
     	double maxDistanceSqr = 400;
     	
     	
-    	boolean flag = done>0;
-    	if(done <= 0.4f && done > 0){
+    	boolean flag = done > 0;
+    	
+    	if(done <= 0.4f && done > 0)
+    	{
     		int speed = (int)(done * 100.0f);
-    		if(speed == 0 || clone.ticksExisted%speed < (speed/2)){
+    		
+    		if(speed == 0 || clone.ticksExisted % speed < (speed/2))
+    		{
     			flag = false;
     		}
     	}
     	
     	
-        if (d3 <= (double)(maxDistanceSqr))
+        if (d3 <= (double)(maxDistanceSqr) && flag)
         {
             FontRenderer fontrenderer = this.getFontRendererFromRenderManager();
             float f1 = 0.009F;
@@ -403,53 +458,112 @@ public class RenderClone extends RendererLivingEntity {
 
             int j = 50;
             
-            if(true){
-            	GL11.glDisable(GL11.GL_TEXTURE_2D);
-            	 tessellator.startDrawingQuads();
-                 //fontrenderer.getStringWidth(s) / 2;
-                 tessellator.setColorRGBA_F(1-done, done, 0.0F, 0.75F);
-                 tessellator.addVertex((double)(-j), (double)(-1), 0.0D);
-                 tessellator.addVertex((double)(-j), (double)(8), 0.0D);
-                 tessellator.addVertex((double)(j-(1-done)*(j*2)), (double)(8), 0.0D);
-                 tessellator.addVertex((double)(j-(1-done)*(j*2)), (double)(-1), 0.0D);
-                 tessellator.draw();
-                 GL11.glEnable(GL11.GL_TEXTURE_2D);
-            }
            
-            fontrenderer.drawString(s, -fontrenderer.getStringWidth(s) / 2, 0, 553648127);
             
-            fontrenderer.drawString(s, -fontrenderer.getStringWidth(s) / 2, 0, -1);
             //Render Icon
             if(flag){
-            	this.bindTexture(GuiScreen.icons);
-                GL11.glTranslatef(-j-5, 3, 0);
-                GL11.glScalef(6, 6, 6);
-                
-                GL11.glBegin(GL11.GL_QUADS);
-                if(type == 0){
-                	 GL11.glTexCoord2f(52.0f*f, 9.0f*f);
-                     GL11.glVertex3f(-1, 1, 0);
-                     GL11.glTexCoord2f(61.0f*f, 9.0f*f);
-                     GL11.glVertex3f(1, 1, 0);
-                     GL11.glTexCoord2f(61.0f*f, 0f);
-                     GL11.glVertex3f(1, -1, 0);
-                     GL11.glTexCoord2f(52.0f*f, 0f);
-                     GL11.glVertex3f(-1, -1, 0);
-                }else{
-                	 GL11.glTexCoord2f(61.0f*f, 36.0f*f);
-                     GL11.glVertex3f(-1, 1, 0);
-                     GL11.glTexCoord2f(52.0f*f, 36.0f*f);
-                     GL11.glVertex3f(1, 1, 0);
-                     GL11.glTexCoord2f(52.0f*f, 27.0f*f);
-                     GL11.glVertex3f(1, -1, 0);
-                     GL11.glTexCoord2f(61.0f*f, 27.0f*f);
-                     GL11.glVertex3f(-1, -1, 0);
-                }
-               
-                GL11.glEnd();
+            	
+            	for(int pass = 0; pass < 3; pass++)
+            	{
+            		
+            		if(pass == 2)
+            		{
+            			GL11.glEnable(GL11.GL_DEPTH_TEST);
+            			GL11.glDepthMask(true);
+                        GL11.glColor4f(1, 1, 1, 0.55F);
+            		}
+            		else if(pass == 1)
+            		{
+                        GL11.glColor4f(1, 1, 1, 0.25F);
+            		}
+            		
+            		GL11.glDisable(GL11.GL_TEXTURE_2D);
+               	 	tessellator.startDrawingQuads();
+               	 	
+               	 	if(pass == 2)
+               	 	{
+               	 		GL11.glEnable(GL11.GL_DEPTH_TEST);
+               	 		GL11.glDepthMask(true);
+               	 		tessellator.setColorRGBA_F(1-done, done, 0.0F, 0.35F);
+               	 	}
+               	 	else if(pass == 1)
+               	 	{
+               	 		tessellator.setColorRGBA_F(1-done, done, 0.0F, 0.4F);
+               	 	}
+               	 	
+                    if(pass == 0)
+                	{
+                    	tessellator.setColorRGBA_F(1-done, done, 0.0F, 0.2F);
+                    	
+                    	tessellator.addVertex((double)(-j), (double)(-1), 0.0D);
+                        tessellator.addVertex((double)(-j), (double)(8), 0.0D);
+                        tessellator.addVertex((double)(j), (double)(8), 0.0D);
+                        tessellator.addVertex((double)(j), (double)(-1), 0.0D);
+                        tessellator.draw();
+                    	
+                		continue;
+                	}
+                    
+                    tessellator.addVertex((double)(-j), (double)(-1), 0.0D);
+                    tessellator.addVertex((double)(-j), (double)(8), 0.0D);
+                    tessellator.addVertex((double)(j-(1-done)*(j*2)), (double)(8), 0.0D);
+                    tessellator.addVertex((double)(j-(1-done)*(j*2)), (double)(-1), 0.0D);
+                    tessellator.draw();
+                    
+                    GL11.glEnable(GL11.GL_TEXTURE_2D);
+                	
+                	//Render icon
+                	
+                	this.bindTexture(GuiScreen.icons);
+                	GL11.glTranslatef(-j-5, 3, 0);
+                    GL11.glScalef(6, 6, 6);
+                    
+                    GL11.glBegin(GL11.GL_QUADS);
+                    if(type == 0){
+                    	 GL11.glTexCoord2f(52.0f*f, 9.0f*f);
+                         GL11.glVertex3f(-1, 1, 0);
+                         GL11.glTexCoord2f(61.0f*f, 9.0f*f);
+                         GL11.glVertex3f(1, 1, 0);
+                         GL11.glTexCoord2f(61.0f*f, 0f);
+                         GL11.glVertex3f(1, -1, 0);
+                         GL11.glTexCoord2f(52.0f*f, 0f);
+                         GL11.glVertex3f(-1, -1, 0);
+                    }else{
+                    	 GL11.glTexCoord2f(61.0f*f, 36.0f*f);
+                         GL11.glVertex3f(-1, 1, 0);
+                         GL11.glTexCoord2f(52.0f*f, 36.0f*f);
+                         GL11.glVertex3f(1, 1, 0);
+                         GL11.glTexCoord2f(52.0f*f, 27.0f*f);
+                         GL11.glVertex3f(1, -1, 0);
+                         GL11.glTexCoord2f(61.0f*f, 27.0f*f);
+                         GL11.glVertex3f(-1, -1, 0);
+                    }
+                   
+                    GL11.glEnd();
+                    
+                    GL11.glScalef(1/6.0f, 1/6.0f, 1/6.0f);
+                    GL11.glTranslatef(j+5, -3, 0);
+                    	
+                    GL11.glTranslatef(0, 0, -0.001f);
+                    
+                    if(pass == 1)
+                    {
+                        fontrenderer.drawString(s, -fontrenderer.getStringWidth(s) / 2, 0, 0x44ffffff);
+                    }
+                    else if(pass == 2)
+                    {
+                        fontrenderer.drawString(s, -fontrenderer.getStringWidth(s) / 2, 0, 0xffffffff);
+                    }
+            	}
+            	
+            	
             }
+
+            
+            
             GL11.glEnable(GL11.GL_DEPTH_TEST);
             GL11.glDepthMask(true);
+            
             GL11.glDisable(GL11.GL_BLEND);
             
             GL11.glEnable(GL11.GL_LIGHTING);
@@ -460,11 +574,11 @@ public class RenderClone extends RendererLivingEntity {
 
     protected void passSpecialRender(EntityLivingBase entity, double posX, double posY, double posZ)
     {
-        float red = 0, green = 0, blue = 0;
+        /*float red = 0, green = 0, blue = 0;
         EntityClone clone = (EntityClone)entity;
         red = ((float)((clone.getCTeam().teamColour >> 16) & 0xff))/255.0f;
         green = ((float)((clone.getCTeam().teamColour >> 8) & 0xff))/255.0f;
-        blue = ((float)((clone.getCTeam().teamColour) & 0xff))/255.0f;
+        blue = ((float)((clone.getCTeam().teamColour) & 0xff))/255.0f;*/
     	
     	
         GL11.glAlphaFunc(GL11.GL_GREATER, 0.1F);
@@ -857,12 +971,21 @@ public class RenderClone extends RendererLivingEntity {
     {
     	
     	float red = 0, green = 0, blue = 0;
-        if(p_147906_1_ instanceof EntityClone){
+    	
+    	float transVert = 0.35f;
+        
+    	if(p_147906_1_ instanceof EntityClone)
+        {
         	EntityClone clone = (EntityClone)p_147906_1_;
         	red = ((float)((clone.getCTeam().teamColour >> 16) & 0xff))/255.0f;
         	green = ((float)((clone.getCTeam().teamColour >> 8) & 0xff))/255.0f;
         	blue = ((float)((clone.getCTeam().teamColour) & 0xff))/255.0f;
+        	if(clone.getOptions().stats.get())
+        	{
+        		transVert = 0.5f;
+        	}
         }
+    	
         double d3 = p_147906_1_.getDistanceSqToEntity(this.renderManager.livingPlayer);
 
         if (d3 <= (double)(p_147906_9_ * p_147906_9_))
@@ -871,7 +994,7 @@ public class RenderClone extends RendererLivingEntity {
             float f = 1.6F;
             float f1 = 0.016666668F * f;
             GL11.glPushMatrix();
-            GL11.glTranslatef((float)p_147906_3_ + 0.0F, (float)p_147906_5_ + p_147906_1_.height + 0.5F, (float)p_147906_7_);
+            GL11.glTranslatef((float)p_147906_3_ + 0.0F, (float)p_147906_5_ + p_147906_1_.height + transVert, (float)p_147906_7_);
             GL11.glNormal3f(0.0F, 1.0F, 0.0F);
             GL11.glRotatef(-this.renderManager.playerViewY, 0.0F, 1.0F, 0.0F);
             GL11.glRotatef(this.renderManager.playerViewX, 1.0F, 0.0F, 0.0F);
@@ -892,7 +1015,7 @@ public class RenderClone extends RendererLivingEntity {
             GL11.glDisable(GL11.GL_TEXTURE_2D);
             tessellator.startDrawingQuads();
             int j = fontrenderer.getStringWidth(p_147906_2_) / 2;
-            tessellator.setColorRGBA_F(red, green, blue, 0.50F);
+            tessellator.setColorRGBA_F(red, green, blue, 0.40F);
             tessellator.addVertex((double)(-j - 1), (double)(-1 + b0), 0.0D);
             tessellator.addVertex((double)(-j - 1), (double)(8 + b0), 0.0D);
             tessellator.addVertex((double)(j + 1), (double)(8 + b0), 0.0D);

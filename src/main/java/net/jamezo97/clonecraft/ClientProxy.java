@@ -24,9 +24,7 @@ public class ClientProxy extends CommonProxy{
 
 	public static CentrifugeRenderHandler rh;
 	
-	public static KeyBinding kb_select;
-	
-	public static KeyBinding moveUp, moveDown, moveLeft, moveRight, moveForward, moveBackward,
+	public static KeyBinding moveUp, moveDown, moveLeft, moveRight, moveForward, moveBackward, rotate,
 	selectModifier;
 	
 	@Override
@@ -58,9 +56,11 @@ public class ClientProxy extends CommonProxy{
 		CloneCraft.INSTANCE.blockLifeInducer.setRenderID(nextRenderID);
 		TileEntityRendererDispatcher.instance.mapSpecialRenderers.put(TileEntityLifeInducer.class, lh);
 		
-		kb_select = new KeyBinding("key.ccSelectClone", Keyboard.KEY_R, "key.categories.clonecraft");
+//		kb_select = new KeyBinding("key.ccSelectClone", Keyboard.KEY_R, "key.categories.clonecraft");
 		selectModifier = new KeyBinding("key.ccModify", Keyboard.KEY_LMENU, "key.categories.clonecraft");
-
+		
+		rotate = new KeyBinding("key.ccRotate", Keyboard.KEY_R, "key.categories.clonecraft");
+		
 		moveForward = new KeyBinding("key.ccForward", Keyboard.KEY_UP, "key.categories.clonecraft");
 		moveBackward = new KeyBinding("key.ccBackward", Keyboard.KEY_DOWN, "key.categories.clonecraft");
 		moveLeft = new KeyBinding("key.ccLeft", Keyboard.KEY_LEFT, "key.categories.clonecraft");
@@ -68,7 +68,7 @@ public class ClientProxy extends CommonProxy{
 		moveUp = new KeyBinding("key.ccUp", Keyboard.KEY_PRIOR, "key.categories.clonecraft");
 		moveDown = new KeyBinding("key.ccDown", Keyboard.KEY_NEXT, "key.categories.clonecraft");
 		
-		ClientRegistry.registerKeyBinding(kb_select);
+		ClientRegistry.registerKeyBinding(rotate);
 		ClientRegistry.registerKeyBinding(selectModifier);
 		
 		ClientRegistry.registerKeyBinding(moveUp);

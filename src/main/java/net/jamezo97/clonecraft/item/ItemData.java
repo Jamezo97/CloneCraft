@@ -173,6 +173,9 @@ public class ItemData {
 			}
 
 			//TODO That may have been important.
+			
+			
+			
 			return spawnEntity(x, y/*+0.001*/, z, egg.worldObj);
 		}
 		return null;

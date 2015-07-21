@@ -45,6 +45,11 @@ public class SchematicBuilder {
 			this.buildOnceDone = handler.buildData;
 		}
 		
+		if(handler.tileEntities != null)
+		{
+			schematic.loadTileEntities(handler.tileEntities);
+		}
+		
 		System.out.println(String.format("%d/%d Received", dataReceived, dataShouldReceive));
 		
 		if(dataReceived < dataShouldReceive)

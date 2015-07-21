@@ -17,17 +17,18 @@ public class EntityAIFollowCloneOwner extends EntityAIBase
 	
 	boolean followingPlayer = false;
 	
-//	boolean setoffsetPath = false;
-	
-    public EntityAIFollowCloneOwner(EntityClone entityMyPerson) {
+    public EntityAIFollowCloneOwner(EntityClone entityMyPerson)
+    {
 		clone = entityMyPerson;
 		this.setMutexBits(1);
 	}
     
 
 	@Override
-	public boolean shouldExecute() {
-		if(clone.getOptions().follow.get() && clone.getOwner() != null && !clone.getOptions().guard.get()){
+	public boolean shouldExecute()
+	{
+		if(clone.getOptions().follow.get() && clone.getOwner() != null && !clone.getOptions().guard.get() && !clone.getBuildAI().isRunning())
+		{
 			EntityPlayer owner = clone.getOwner();
 			
 			double distance = clone.getDistanceSqToEntity(owner);

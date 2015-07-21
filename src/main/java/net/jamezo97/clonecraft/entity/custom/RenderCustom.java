@@ -16,7 +16,6 @@ public class RenderCustom extends Render{
 
 	@Override
 	protected ResourceLocation getEntityTexture(Entity p_110775_1_) {
-		// TODO Auto-generated method stub
 		return null;
 	}
 	

@@ -9,20 +9,20 @@ public class Handler13CloneSay extends Handler{
 	
 
 	@Override
-	public void handle(Side side, EntityPlayer player) {
-		// TODO Auto-generated method stub
+	public void handle(Side side, EntityPlayer player) 
+	{
 		
 	}
 
 	@Override
-	public void read(ByteBuf buf) {
-		// TODO Auto-generated method stub
+	public void read(ByteBuf buf) 
+	{
 		
 	}
 
 	@Override
-	public void write(ByteBuf buf) {
-		// TODO Auto-generated method stub
+	public void write(ByteBuf buf) 
+	{
 		
 	}
 

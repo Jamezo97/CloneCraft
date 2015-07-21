@@ -1,30 +1,32 @@
 package net.jamezo97.clonecraft;
 
+import java.io.Closeable;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 
 import net.jamezo97.clonecraft.clone.EntityClone;
-import net.jamezo97.clonecraft.clone.mine.RayTrace;
 import net.jamezo97.clonecraft.command.word.WordSet;
 import net.jamezo97.clonecraft.recipe.CloneCraftCraftingHandler;
-import net.jamezo97.physics.Vector;
 import net.minecraft.client.Minecraft;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLivingBase;
-import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.init.Blocks;
+import net.minecraft.nbt.CompressedStreamTools;
+import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.integrated.IntegratedServer;
 import net.minecraft.util.AxisAlignedBB;
-import net.minecraft.util.ChunkCoordinates;
 import net.minecraft.util.MovingObjectPosition;
 import net.minecraft.util.Vec3;
-import net.minecraft.world.World;
 import net.minecraftforge.client.event.RenderWorldLastEvent;
 import net.minecraftforge.event.ServerChatEvent;
-import net.minecraftforge.event.world.BlockEvent;
+import net.minecraftforge.event.world.WorldEvent;
 
 import org.lwjgl.opengl.GL11;
 
@@ -37,6 +39,99 @@ import cpw.mods.fml.relauncher.SideOnly;
 
 
 public class CCEventListener {
+	
+	@SubscribeEvent
+	public void onWorldLoad(WorldEvent.Load param)
+	{
+		if(!param.world.isRemote)
+		{
+			if(param.world.provider.dimensionId == 0)
+			{
+				File loadFrom = new File(param.world.getSaveHandler().getWorldDirectory(), "CloneCraft.dat");
+				
+				if(loadFrom.exists())
+				{
+					Closeable stream = null;
+					NBTTagCompound nbt = null;
+					
+					try
+					{
+						nbt = CompressedStreamTools.readCompressed((FileInputStream)(stream = new FileInputStream(loadFrom)));
+					}
+					catch (FileNotFoundException e)
+					{
+						e.printStackTrace();
+					}
+					catch (IOException e)
+					{
+						e.printStackTrace();
+					}
+					finally
+					{
+						if(stream != null)
+						{
+							try {
+								stream.close();
+							} catch (Exception e2) {}
+						}
+					}
+					
+					if(nbt != null)
+					{
+						CloneCraft.INSTANCE.loadWorldData(nbt);
+					}
+				}
+			}
+		}
+	}
+	
+	
+
+	@SubscribeEvent
+	public void onWorldSave(WorldEvent.Save param)
+	{
+		if(!param.world.isRemote)
+		{
+			if(param.world.provider.dimensionId == 0)
+			{
+				File saveTo = new File(param.world.getSaveHandler().getWorldDirectory(), "CloneCraft.dat");
+				Closeable stream = null;
+				
+				NBTTagCompound nbt = CloneCraft.INSTANCE.saveWorldData(new NBTTagCompound());
+				
+				if(nbt != null)
+				{
+					try
+					{
+						CompressedStreamTools.writeCompressed(nbt, (FileOutputStream)(stream = new FileOutputStream(saveTo)));
+					}
+					catch (FileNotFoundException e)
+					{
+						e.printStackTrace();
+					}
+					catch (IOException e)
+					{
+						e.printStackTrace();
+					}
+					finally
+					{
+						if(stream != null)
+						{
+							try {
+								stream.close();
+							} catch (Exception e2) {}
+						}
+					}
+
+				}
+			}
+		}
+	}
+	
+	
+	
+	
+	
 	
 	@SubscribeEvent
 	public void ItemCraftedEvent(ItemCraftedEvent param){
@@ -116,7 +211,11 @@ public class CCEventListener {
 	@SubscribeEvent
 	public void onKeyInput(InputEvent.KeyInputEvent event)
 	{
-		if(ClientProxy.kb_select.isPressed())
+		if(ClientProxy.rotate.isPressed())
+		{
+			rotate++;
+		}
+		/*if(ClientProxy.kb_select.isPressed())
 		{
 			if(Minecraft.getMinecraft().thePlayer != null)
 			{
@@ -132,7 +231,9 @@ public class CCEventListener {
 					selectedClone = null;
 				}
 			}
-		}
+		}*/
+		
+		
 		
 	}
 	
@@ -157,6 +258,8 @@ public class CCEventListener {
 	public static int moveY = 0;
 	public static int moveZ = 0;
 	
+	public static int rotate = 0;
+	
 	//Displacements
 	private static float disX = 0;
 	private static float disY = 0;
@@ -180,6 +283,7 @@ public class CCEventListener {
 			onClientWorldTick(null);
 		}
 		
+		rotate = 0;
 	}
 	
 	@SubscribeEvent
