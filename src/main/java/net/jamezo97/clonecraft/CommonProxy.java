@@ -99,7 +99,7 @@ public class CommonProxy {
 		    }
         });
 		
-		/*EntityRegistry.*/addSpawn(EntityClone.class, 1, 1, 10, EnumCreatureType.creature, new BiomeGenBase[]{
+		/*EntityRegistry.*//*addSpawn(EntityClone.class, 1, 1, 10, EnumCreatureType.creature, new BiomeGenBase[]{
 			BiomeGenBase.beach,
 			BiomeGenBase.birchForest,
 			BiomeGenBase.birchForestHills,
@@ -125,7 +125,7 @@ public class CommonProxy {
 			BiomeGenBase.swampland,
 			BiomeGenBase.taiga,
 			BiomeGenBase.taigaHills
-		});
+		});*/
 	}
 	
 	

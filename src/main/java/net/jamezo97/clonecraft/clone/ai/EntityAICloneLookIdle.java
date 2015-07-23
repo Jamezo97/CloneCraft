@@ -1,11 +1,18 @@
 package net.jamezo97.clonecraft.clone.ai;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import net.jamezo97.clonecraft.clone.EntityClone;
+import net.jamezo97.clonecraft.util.RelativeCoord;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.ai.EntityAIBase;
 import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.init.Blocks;
+import net.minecraft.inventory.IInventory;
+import net.minecraft.tileentity.TileEntity;
+import net.minecraft.tileentity.TileEntityChest;
 
 public class EntityAICloneLookIdle extends EntityAIBase
 {
@@ -35,7 +42,7 @@ public class EntityAICloneLookIdle extends EntityAIBase
      */
     public boolean shouldExecute()
     {
-        return this.idleEntity.getOptions().curious.get() && this.idleEntity.getRNG().nextFloat() < 0.1F;
+        return this.idleEntity.getOptions().curious.get() && !this.idleEntity.getBuildAI().isRunning() && this.idleEntity.getRNG().nextFloat() < 0.1F;
     }
 
     /**
@@ -51,7 +58,7 @@ public class EntityAICloneLookIdle extends EntityAIBase
      */
     public void startExecuting()
     {
-    	if(this.idleEntity.getRNG().nextFloat() > 0.2f)
+    	if(this.idleEntity.getRNG().nextFloat() > 0.3f)
     	{
     		List list = this.idleEntity.worldObj.getEntitiesWithinAABB(EntityLivingBase.class, this.idleEntity.boundingBox.expand(8, 3, 8));
     		
@@ -111,7 +118,25 @@ public class EntityAICloneLookIdle extends EntityAIBase
 
    	     	
     	}
-    	if(this.idleEntity.getRNG().nextFloat() > 0.6f)
+    	
+    	if(idleTime <= 0 && this.idleEntity.getRNG().nextFloat() < 0.05f)
+    	{
+    		ArrayList<RelativeCoord> coords = this.idleEntity.getIBlockReg().getNearbyBlocks(Blocks.chest, 8);
+    		if(coords != null && !coords.isEmpty())
+    		{
+    			System.out.println("Looking at chests");
+    			Collections.sort(coords);
+    			blockCoord = coords.get(0);
+    			this.idleTime = 40;
+
+    			if(this.idleEntity.getDistanceSq(blockCoord.xPos+0.5f, blockCoord.yPos+0.5f, blockCoord.zPos+0.5f) < 8)
+    			{
+    				this.idleEntity.openCloseChest(blockCoord.xPos, blockCoord.yPos, blockCoord.zPos, true);
+    			}			
+    		}
+    	}
+    	
+    	if(idleTime <= 0)
     	{
     		 double d0 = (Math.PI * 2D) * this.idleEntity.getRNG().nextDouble();
     		 this.lookX = Math.cos(d0);
@@ -123,11 +148,19 @@ public class EntityAICloneLookIdle extends EntityAIBase
        
     }
     
-    
+    RelativeCoord blockCoord = null;
 
     @Override
 	public void resetTask() {
     	watchEntity = null;
+    	
+    	if(blockCoord != null)
+    	{
+    		this.idleEntity.openCloseChest(blockCoord.xPos, blockCoord.yPos, blockCoord.zPos, false);
+        	
+        	blockCoord = null;
+    	}
+    	
 	}
 
 	/**
@@ -139,6 +172,10 @@ public class EntityAICloneLookIdle extends EntityAIBase
         if(watchEntity != null)
         {
         	this.idleEntity.getLookHelper().setLookPositionWithEntity(watchEntity, 10.0F, (float)this.idleEntity.getVerticalFaceSpeed());
+        }
+        else if(blockCoord != null)
+        {
+        	this.idleEntity.getLookHelper().setLookPosition(blockCoord.xPos+0.5, blockCoord.yPos+0.5, blockCoord.zPos+0.5, 10.0F, (float)this.idleEntity.getVerticalFaceSpeed());
         }
         else
         {

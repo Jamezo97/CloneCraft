@@ -47,7 +47,7 @@ public class ImportantBlockRegistry implements BlockHandler
 		//world.getBlock can be rather expensive when thousands of blocks are checked. (32^3)
 		
 		
-		if(clone.ticksExisted % 1 == 0)
+//		if(clone.ticksExisted % 1 == 0)
 		{
 			searcher.search();
 			/*int posX = (int)Math.floor(clone.posX);

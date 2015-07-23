@@ -2,14 +2,16 @@ package net.jamezo97.clonecraft.gui;
 
 import java.util.ArrayList;
 
-import org.lwjgl.opengl.GL11;
-
 import net.jamezo97.clonecraft.CloneCraft;
+import net.jamezo97.clonecraft.build.EntityAIBuild;
+import net.jamezo97.clonecraft.clone.EntityClone;
 import net.jamezo97.clonecraft.schematic.Schematic;
 import net.jamezo97.clonecraft.schematic.SchematicEntry;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.audio.PositionedSoundRecord;
 import net.minecraft.util.ResourceLocation;
+
+import org.lwjgl.opengl.GL11;
 
 public class GuiScrollableSchematic extends GuiScrollable{
 	
@@ -77,6 +79,11 @@ public class GuiScrollableSchematic extends GuiScrollable{
 		SchematicEntry schem = visibleList.get(i);
 		gui.clone.getBuildAI().setSchematic(schem.schem);
 		deleteSchem = null;
+		
+		if(this.gui.clone.worldObj.isRemote)
+		{
+			EntityClone.renderFocusedClone = this.gui.clone;
+		}
 	}
 	
 	Schematic deleteSchem = null;
@@ -130,9 +137,9 @@ public class GuiScrollableSchematic extends GuiScrollable{
 			{
 				if(gui.clone.getBuildAI().getSchematic() == null)
 				{
-					gui.clone.getBuildAI().posX = (int)Math.floor(this.gui.clone.posX);
+					gui.clone.getBuildAI().posX = (int)Math.floor(this.gui.clone.posX) + EntityAIBuild.xzMultipliers[gui.clone.getBuildAI().getRotate()][0];
 					gui.clone.getBuildAI().posY = (int)Math.floor(this.gui.clone.posY);
-					gui.clone.getBuildAI().posZ = (int)Math.floor(this.gui.clone.posZ);
+					gui.clone.getBuildAI().posZ = (int)Math.floor(this.gui.clone.posZ) + EntityAIBuild.xzMultipliers[gui.clone.getBuildAI().getRotate()][1];;
 				}
 				setSelected(entryIndex);
 			}
@@ -193,7 +200,7 @@ public class GuiScrollableSchematic extends GuiScrollable{
 		
 		if(mX >= width-13 && mX < width-2 && mY >= 2 && mY < 13)
 		{
-			this.drawTexturedModalRect(width-13, 2, 0, 11, 11, 11);
+			this.drawTexturedModalRect(width-13, 2, 11, 0, 11, 11);
 		}
 		else
 		{

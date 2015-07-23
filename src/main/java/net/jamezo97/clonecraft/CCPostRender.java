@@ -15,6 +15,7 @@ public class CCPostRender {
 	{
 		for(int a = 0; a < renderers.size(); a++)
 		{
+			
 			GL11.glPushMatrix();
 			renderers.get(a).renderer.render(partial);
 			GL11.glPopMatrix();
@@ -51,7 +52,8 @@ public class CCPostRender {
 		renderers.add(new RenderEntry(manager, render));
 	}
 
-	public static boolean removeRenderable(RenderableManager manager) {
+	public static boolean removeRenderable(RenderableManager manager)
+	{
 		for(int a = 0; a < renderers.size(); a++)
 		{
 			if(renderers.get(a).manager == manager)

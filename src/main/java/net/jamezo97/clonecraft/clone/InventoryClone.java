@@ -82,27 +82,37 @@ public class InventoryClone extends InventoryPlayer{//implements IInventory{
 	 * @param stack The ItemStack to try and fit
 	 * @return The amount removed from the input stack
 	 */
-	public int tryFitInInventory(ItemStack toFit){
+	public int tryFitInInventory(ItemStack toFit)
+	{
 		if(toFit == null){return 0;}
+		
 		int removed = 0;
 		
 		ItemStack slot;
 		int emptySlotIndex = -1;
+		
 		for(int a = 0; a < mainInventory.length; a++)
 		{
-			if(toFit.stackSize == 0){
+			if(toFit.stackSize == 0)
+			{
 				break;
 			}
+			
 			slot = mainInventory[a];
+			
 			if(slot != null)
 			{
 				if(areStacksSame(toFit, slot))
 				{
 					int remove = slot.getMaxStackSize() - slot.stackSize;
+					
 					slot.animationsToGo = 5;
-					if(remove > toFit.stackSize){
+					
+					if(remove > toFit.stackSize)
+					{
 						remove = toFit.stackSize;
 					}
+					
 					slot.stackSize += remove;
 					toFit.stackSize -= remove;
 					removed += remove;
@@ -113,6 +123,7 @@ public class InventoryClone extends InventoryPlayer{//implements IInventory{
 				emptySlotIndex = a;
 			}
 		}
+		
 		if(toFit.stackSize > 0 && emptySlotIndex != -1)
 		{
 			mainInventory[emptySlotIndex] = toFit.copy();
@@ -808,7 +819,56 @@ public class InventoryClone extends InventoryPlayer{//implements IInventory{
 		return count;
 	}
 	
+	public int containsCount(ItemStack find)
+	{
+		if(find == null){return 0;}
+		
+		int found = 0;
+		
+		for(int a = 0; a < mainInventory.length; a++)
+		{
+			ItemStack stack = mainInventory[a];
+			
+			if(stack != null)
+			{
+//				System.out.println("Check " + find + ", " + stack);
+				
+			}
+			
+			if(this.areStacksSame(find, stack))
+			{
+				found += stack.stackSize;
+			}
+		}
+		return found;
+	}
 	
+	public boolean consume(ItemStack toConsume)
+	{
+		if(toConsume == null){return false;}
+		
+		int count = toConsume.stackSize;
+		
+		for(int a = 0; a < mainInventory.length; a++)
+		{
+			ItemStack stack = mainInventory[a];
+			
+			if(this.areStacksSame(toConsume, stack))
+			{
+				int remove = Math.min(count, stack.stackSize);
+				
+				stack.stackSize -= remove;
+				
+				if(stack.stackSize == 0)
+				{
+					mainInventory[a] = null;
+				}
+				
+				count -= remove;
+			}
+		}
+		return count == 0;
+	}
 	
 	
 	
@@ -888,6 +948,8 @@ public class InventoryClone extends InventoryPlayer{//implements IInventory{
 	};
 
 	
+
+
 
 	
 }

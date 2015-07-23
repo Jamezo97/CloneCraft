@@ -3,9 +3,12 @@ package net.jamezo97.clonecraft.clone.ai.block;
 import java.util.ArrayList;
 import java.util.Collections;
 
+import net.jamezo97.clonecraft.build.CustomBuilder;
+import net.jamezo97.clonecraft.build.CustomBuilders;
+import net.jamezo97.clonecraft.build.PlantCustomBuilder;
 import net.jamezo97.clonecraft.clone.EntityClone;
 import net.minecraft.block.Block;
-import net.minecraft.init.Blocks;
+import net.minecraft.block.BlockCocoa;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.ChunkCoordinates;
@@ -115,7 +118,35 @@ public class DefaultBlockFinder implements BlockFinder{
 	}
 
 	@Override
-	public void onFinished(EntityAIMine entityAI, ChunkCoordinates coordinates, ItemStack stack, Block block, int meta) {}
+	public void onFinished(EntityAIMine entityAI, ChunkCoordinates coordinates, ItemStack stack, Block block, int meta)
+	{
+		CustomBuilder builder = CustomBuilders.customBuilderMap.get(block);
+		
+		if(builder instanceof PlantCustomBuilder)
+		{
+			ItemStack need = ((PlantCustomBuilder)builder).getRequiredItem();
+			
+			if(need != null)
+			{
+				if(entityAI.clone.inventory.consume(need))
+				{
+					if(block instanceof BlockCocoa)
+					{
+						meta = meta & 3;
+					}
+					else
+					{
+						meta = 0;
+					}
+					
+					entityAI.clone.worldObj.setBlock(coordinates.posX, coordinates.posY, coordinates.posZ, block, meta, 3);
+				
+					entityAI.clone.swingItem();
+				}
+			}
+			
+		}
+	}
 
 	@Override
 	public boolean mustBeCloseToBreak() {

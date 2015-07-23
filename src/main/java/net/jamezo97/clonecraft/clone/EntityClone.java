@@ -20,6 +20,7 @@ import net.jamezo97.clonecraft.clone.ai.EntityAICloneWander;
 import net.jamezo97.clonecraft.clone.ai.EntityAICommand;
 import net.jamezo97.clonecraft.clone.ai.EntityAIFetchItemStack;
 import net.jamezo97.clonecraft.clone.ai.EntityAIFollowCloneOwner;
+import net.jamezo97.clonecraft.clone.ai.EntityAIOpenDoorClone;
 import net.jamezo97.clonecraft.clone.ai.EntityAIReturnGuard;
 import net.jamezo97.clonecraft.clone.ai.EntityAIShare;
 import net.jamezo97.clonecraft.clone.ai.ImportantBlockRegistry;
@@ -36,7 +37,6 @@ import net.jamezo97.clonecraft.entity.EntityExplodeCollapseFX;
 import net.jamezo97.clonecraft.musics.MusicBase;
 import net.jamezo97.clonecraft.render.Renderable;
 import net.jamezo97.clonecraft.render.RenderableManager;
-import net.jamezo97.clonecraft.util.RelativeCoord;
 import net.jamezo97.physics.Particle;
 import net.jamezo97.physics.Spring;
 import net.jamezo97.physics.Vector;
@@ -64,6 +64,7 @@ import net.minecraft.entity.ai.EntityAIAttackOnCollide;
 import net.minecraft.entity.ai.EntityAINearestAttackableTarget;
 import net.minecraft.entity.ai.EntityAISwimming;
 import net.minecraft.entity.ai.EntityAITasks;
+import net.minecraft.entity.ai.EntityLookHelper;
 import net.minecraft.entity.ai.attributes.AttributeModifier;
 import net.minecraft.entity.boss.EntityDragonPart;
 import net.minecraft.entity.item.EntityItem;
@@ -92,6 +93,8 @@ import net.minecraft.network.Packet;
 import net.minecraft.pathfinding.PathEntity;
 import net.minecraft.potion.Potion;
 import net.minecraft.potion.PotionEffect;
+import net.minecraft.tileentity.TileEntity;
+import net.minecraft.tileentity.TileEntityChest;
 import net.minecraft.util.ChatComponentText;
 import net.minecraft.util.ChatStyle;
 import net.minecraft.util.ChunkCoordinates;
@@ -146,7 +149,7 @@ public class EntityClone extends EntityLiving implements RenderableManager{
 	float growthFactor = defaultGrowthFactor;
 	float maxGrowthSpeed;
 	
-	
+	long lastAccesed = 0;
 
 	ImportantBlockRegistry iBlockReg;
 	
@@ -195,8 +198,13 @@ public class EntityClone extends EntityLiving implements RenderableManager{
 		
 		if(this.boundingBox != null)
 		{
-			this.boundingBox.maxX = this.boundingBox.minX + this.height;
+			this.boundingBox.maxY = this.boundingBox.minY + this.height;
 		}
+		
+		this.getNavigator().setAvoidsWater(true);
+		this.getNavigator().setBreakDoors(true);
+		this.getNavigator().setCanSwim(true);
+		this.getNavigator().setEnterDoors(true);
 	}
 	
 	
@@ -244,16 +252,17 @@ public class EntityClone extends EntityLiving implements RenderableManager{
 		
 		this.tasks.addTask(0, new EntityAISwimming(this));
 		this.tasks.addTask(1, new EntityAIAttackEnemies(this));
-		this.tasks.addTask(2, new EntityAIFollowCloneOwner(this));
+		this.tasks.addTask(2, new EntityAIOpenDoorClone(this, true));
+		this.tasks.addTask(3, new EntityAIFollowCloneOwner(this));
 		
-		this.tasks.addTask(3, aiCommand = new EntityAICommand(this));
+		this.tasks.addTask(4, aiCommand = new EntityAICommand(this));
 		
-		this.tasks.addTask(4, aiFetch = new EntityAIFetchItemStack(this));
+		this.tasks.addTask(5, aiFetch = new EntityAIFetchItemStack(this));
 		
-		this.tasks.addTask(4, aiBreakBlocks = new EntityAIMine(this));
-		this.tasks.addTask(5, aiBuild = new EntityAIBuild(this));
-		this.tasks.addTask(6, new EntityAICloneWalkToItems(this));
-		this.tasks.addTask(7, new EntityAIReturnGuard(this));
+		this.tasks.addTask(6, aiBreakBlocks = new EntityAIMine(this));
+		this.tasks.addTask(7, aiBuild = new EntityAIBuild(this));
+		this.tasks.addTask(8, new EntityAICloneWalkToItems(this));
+		this.tasks.addTask(9, new EntityAIReturnGuard(this));
 		
 		this.tasks.addTask(18, aiShareItems = new EntityAIShare(this));
 		this.tasks.addTask(19, new EntityAICloneLookIdle(this));
@@ -319,12 +328,15 @@ public class EntityClone extends EntityLiving implements RenderableManager{
 	}
 	
 	@Override
-	protected void entityInit() {
+	protected void entityInit()
+	{
 		super.entityInit();
 	}
-
 	
-
+	public boolean isIndependent()
+	{
+		return this.getCTeam() == PlayerTeam.Rampant || this.getCTeam() == PlayerTeam.Evil;
+	}
 
 	@Override
 	protected void updateAITasks() {
@@ -366,6 +378,8 @@ public class EntityClone extends EntityLiving implements RenderableManager{
 		}
 	}
 	
+	public static EntityClone renderFocusedClone = null;
+	
 	@Override
 	protected boolean interact(EntityPlayer player)
 	{
@@ -379,8 +393,6 @@ public class EntityClone extends EntityLiving implements RenderableManager{
 					player.addChatComponentMessage(new ChatComponentText("You now own " + this.getName()).setChatStyle(new ChatStyle().setColor(EnumChatFormatting.GOLD)));
 				}
 			}
-			
-			
 			player.openGui(CloneCraft.INSTANCE, GuiHandler.CLONE, worldObj, this.getEntityId(), 0, 0);
 			return true;
 		}
@@ -407,7 +419,8 @@ public class EntityClone extends EntityLiving implements RenderableManager{
 	{
 		super.onUpdate();
 		
-		if(!worldObj.isRemote){
+		if(!worldObj.isRemote)
+		{
 
 			pickupNearbyItems();
 			this.foodStats.onUpdate(this);
@@ -439,7 +452,8 @@ public class EntityClone extends EntityLiving implements RenderableManager{
 				this.guardPosition.posY = Integer.MAX_VALUE;
 				this.guardPosition.posZ = Integer.MAX_VALUE;
 			}
-			if(this.getAttackTarget() != null){
+			if(this.getAttackTarget() != null)
+			{
 				this.getLookHelper().setLookPositionWithEntity(this.getAttackTarget(), 10, this.getVerticalFaceSpeed());
 			}
 			
@@ -462,9 +476,27 @@ public class EntityClone extends EntityLiving implements RenderableManager{
 				iBlockReg.onUpdate();
 			}
 			
+			if(this.isIndependent())
+			{
+				if(this.getAttackTarget() != null)
+				{
+					this.options.sprint.set(true);
+					this.setSprinting(true);
+				}
+				else
+				{
+					this.options.sprint.set(false);
+				}
+			}
 		}
 		else
 		{
+			
+			if(stemCellInjectTime > 0)
+			{
+				stemCellInjectTime--;
+			}
+			
 			updateBPhysics();
 		}
 		
@@ -508,6 +540,15 @@ public class EntityClone extends EntityLiving implements RenderableManager{
 			this.boundingBox.maxY = this.boundingBox.minY + this.height;
 		}
 		
+		if(this.preciseScale == this.maxScale)
+		{
+			this.stepHeight = 1.0f;
+		}
+		else
+		{
+			this.stepHeight = 0.5f;
+		}
+		
 		this.updateScale();
 		this.updateExperience();
 		this.updateUsingItem();
@@ -518,10 +559,39 @@ public class EntityClone extends EntityLiving implements RenderableManager{
 	}
 	
 	
+	public void openCloseChest(int x, int y, int z, boolean open)
+	{
+		TileEntity te = this.worldObj.getTileEntity(x, y, z);
+		
+		if(te instanceof TileEntityChest)
+		{
+			TileEntityChest tec = (TileEntityChest)te;
+			if(tec.adjacentChestZNeg != null)
+			{
+				tec = tec.adjacentChestZNeg;
+			}
+			else if(tec.adjacentChestXNeg != null)
+			{
+				tec = tec.adjacentChestXNeg;
+			}
+			if(open)
+			{
+				tec.openInventory();
+			}
+			else
+			{
+				tec.closeInventory();
+			}
+		}
+	}
 	
 	
-	
-	
+	@Override
+	public EntityLookHelper getLookHelper()
+	{
+		return super.getLookHelper();
+	}
+
 	@Override
 	public void moveEntity(double toX, double toY, double toZ) 
 	{
@@ -535,36 +605,11 @@ public class EntityClone extends EntityLiving implements RenderableManager{
 			
 			this.height = height;
 			this.boundingBox.maxY = this.boundingBox.minY + height;
-			
-			
-			
-			
-/*			double posX = this.posX;
-			double posY = this.posY;
-			double posZ = this.posZ;
-			
-			super.moveEntity(toX, toY, toZ);
-			
-			if((posX + toX != this.posX) || (posY + toY != this.posY) || (posZ + toZ != this.posZ))
-			{
-				float height = this.height;
-				this.height = 1.8f;
-				this.boundingBox.maxY = this.boundingBox.minY + this.height;
-				
-				super.moveEntity(toX - (this.posX - posX), toY - (this.posY - posY), toZ - (this.posZ - posZ));
-				
-				this.boundingBox.maxY = this.boundingBox.minY + height;
-				
-				System.out.println("Try");
-			}*/
 		}
 		else
 		{
 			super.moveEntity(toX, toY, toZ);
 		}
-		
-		
-		
 	}
 
 	@Override
@@ -611,6 +656,12 @@ public class EntityClone extends EntityLiving implements RenderableManager{
 		if(!worldObj.isRemote)
 		{
 			this.inventory.dropAllItems();
+			
+			if(this.isIndependent())
+			{
+				this.experienceTotal += (this.preciseScale+0.5) * 10000;
+			}
+			
 			dropAllXP();
 		}
 	}
@@ -919,6 +970,13 @@ public class EntityClone extends EntityLiving implements RenderableManager{
 		return shrinkCooldown;
 	}
 	
+	int stemCellInjectTime;
+	
+	public int getStemCellCooldown()
+	{
+		return stemCellInjectTime;
+	}
+	
 	public void injectStemcells(boolean increaseHeight)
 	{
 		if(this.aimForScale < this.maxScale)
@@ -945,6 +1003,12 @@ public class EntityClone extends EntityLiving implements RenderableManager{
 		else
 		{
 			this.shrinkCooldown += 1200;
+		}
+		
+		if(worldObj.isRemote)
+		{
+			stemCellInjectTime += 120;
+			stemCellInjectTime /= 2;
 		}
 	}
 	
@@ -1040,9 +1104,11 @@ public class EntityClone extends EntityLiving implements RenderableManager{
 		
 		double lastMaxHealth = Math.round(this.getEntityAttribute(SharedMonsterAttributes.maxHealth).getAttributeValue());
 
-		this.setSize(0.6f*scale, 1.8f*scale);
+		this.setSize(Math.min(0.6f, 0.6f*scale), 1.8f*scale);
 		
-		stepHeight = Math.max(0.5f, preciseScale * 0.5f);
+		stepHeight = Math.max(0.5f, preciseScale>1?((preciseScale-1)*2 + 0.5f):preciseScale * 0.5f);
+		
+//		this.jumpMovementFactor = Math.max(0.5f, preciseScale>1?((preciseScale-1)*2 + 0.5f):preciseScale * 0.5f);
 		
 		this.preciseScale = scale;
 		
@@ -1630,12 +1696,14 @@ public class EntityClone extends EntityLiving implements RenderableManager{
                     
                     f *= Math.sqrt(preciseScale);
                     
-                    i += Math.round((preciseScale-1));
+                    i += Math.round((preciseScale-1)*4);
                     
                     if(i < 0)
                     {
                     	i = 0;
                     }
+                    
+                    f += i;
                     
 //                    System.out.println(f);
 
@@ -1754,27 +1822,11 @@ public class EntityClone extends EntityLiving implements RenderableManager{
 	public boolean attackEntityFrom(DamageSource damageSource, float damageAmount) 
     {
     
-    	if(!worldObj.isRemote)
-    	{
-    		ArrayList<RelativeCoord> coords = this.iBlockReg.getNearbyBlocks(Blocks.chest, 128);
-        	
-    		System.out.println("LOAD" + coords);
-    		
-        	if(coords !=  null && !coords.isEmpty())
-        	{
-        		for(int a = 0; a < coords.size(); a++)
-        		{
-        			RelativeCoord rec = coords.get(a);
-        			worldObj.setBlock(rec.xPos, rec.yPos, rec.zPos, Blocks.diamond_block);
-        		}
-        	}
-    	}
+
     	
-    	
+
     	{
     		Entity e = damageSource.getEntity();
-    		
-    		
     		
     		if(e instanceof EntityPlayer)
     		{
@@ -1785,7 +1837,16 @@ public class EntityClone extends EntityLiving implements RenderableManager{
     				this.hurtTime = 3;
     				return true;
     			}
-				
+    		}
+    		
+    		if(e != null && !e.worldObj.isRemote)
+    		{
+    			double dx = this.posX - e.posX;
+    			double dz = e.posZ - this.posZ;
+    			
+    			double angle = Math.atan2(dx, dz);
+    			
+    			this.rotationYawHead = this.rotationYaw = (float)(angle * 180.0 / Math.PI);
     		}
     	}
 
@@ -1844,10 +1905,10 @@ public class EntityClone extends EntityLiving implements RenderableManager{
 				}
 			}
 		}
-		if(damageSource.getDamageType().equals("fall") && this.getHealth() - damageAmount <= 0)
+		/*if(damageSource.getDamageType().equals("fall") && this.getHealth() - damageAmount <= 0)
 		{
 			return false;
-		}
+		}*/
 		
 		return super.attackEntityFrom(damageSource, damageAmount);
 	}
@@ -3346,8 +3407,8 @@ public class EntityClone extends EntityLiving implements RenderableManager{
 	
 	@SideOnly(value = Side.CLIENT)
 	@Override
-	public boolean canRenderContinue(Renderable r) {
-//		System.out.println(this.isEntityAlive() && this.worldObj == Minecraft.getMinecraft().theWorld);
+	public boolean canRenderContinue(Renderable r)
+	{
 		return this.isEntityAlive() && this.worldObj == Minecraft.getMinecraft().theWorld;
 	}
 	
@@ -3474,6 +3535,8 @@ public class EntityClone extends EntityLiving implements RenderableManager{
     	}
     	return false;
     }
+
+	
 
 
 	

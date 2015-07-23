@@ -2,19 +2,17 @@ package net.jamezo97.clonecraft.item;
 
 import net.jamezo97.clonecraft.ClientProxy;
 import net.jamezo97.clonecraft.CloneCraft;
-import net.jamezo97.clonecraft.Colour;
 import net.jamezo97.clonecraft.gui.GuiSaveSchematic;
-import net.minecraft.block.Block;
 import net.minecraft.client.Minecraft;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
-import net.minecraft.item.ItemSword;
 import net.minecraft.util.ChatComponentText;
 import net.minecraft.util.ChatStyle;
 import net.minecraft.util.ChunkCoordinates;
 import net.minecraft.util.EnumChatFormatting;
+import net.minecraft.util.MovingObjectPosition.MovingObjectType;
 import net.minecraft.world.World;
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
@@ -31,38 +29,47 @@ public class ItemWoodStaff extends Item{
 	
 	public ChunkCoordinates pos1, pos2;
 	
-
+	long useTimeLast = 0;
 
 	@Override
-	public boolean onEntitySwing(EntityLivingBase entityLiving, ItemStack stack) {
-		if(entityLiving instanceof EntityPlayer && entityLiving.worldObj.isRemote)
+	public boolean onEntitySwing(EntityLivingBase entityLiving, ItemStack stack)
+	{
+		if(entityLiving instanceof EntityPlayer && entityLiving.worldObj.isRemote && entityLiving.worldObj.getTotalWorldTime() != useTimeLast)
 		{
-//			Minecraft.getMinecraft().objectMouseOver.typeOfHit
-			
+			clientSwing(entityLiving);
+		}
+		return super.onEntitySwing(entityLiving, stack);
+	}
+	
+	@SideOnly(value = Side.CLIENT)
+	public void clientSwing(EntityLivingBase entityLiving)
+	{
+		if(Minecraft.getMinecraft().objectMouseOver.typeOfHit == MovingObjectType.MISS)
+		{
+//			System.out.println("SWING");
 			int posX = (int) Math.floor(entityLiving.posX);
 			int posY = (int) Math.floor(entityLiving.posY/* + entityLiving.getEyeHeight()*/);
 			int posZ = (int) Math.floor(entityLiving.posZ);
-//			clientClickBlock(posX, posY, posZ, (EntityPlayer)entityLiving);
+			clientClickBlock(posX, posY, posZ, (EntityPlayer)entityLiving);
 		}
-		//clientClickBlock
-		return super.onEntitySwing(entityLiving, stack);
 	}
 
 	@Override
 	public boolean onItemUse(ItemStack stack, EntityPlayer player, World world, int posX, int posY, int posZ, int side, float f1, float f2, float f3)
 	{
-		if(true && world.isRemote)
+		/*if(true && world.isRemote)
 		{
 			Block block = world.getBlock(posX, posY, posZ);
 			int meta = world.getBlockMetadata(posX, posY, posZ);
 			
 			System.out.println(block + ", " + meta + ", " + Integer.toBinaryString(meta));
-		}
+		}*/
 		
 		
 		
 		if(world.isRemote)
 		{
+			useTimeLast = world.getTotalWorldTime();
 			clientClickBlock(posX, posY, posZ, player);
 			return true;
 		}

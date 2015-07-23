@@ -32,7 +32,8 @@ public class RecipeStemCells  implements IRecipe, IOnCrafted{
 				stack.setItemDamage(0);
 				ItemData data = new ItemData(stack);
 				data.empty();
-				data.save();
+
+				data.save(stack);
 				
 				if(!player.inventory.addItemStackToInventory(stack))
 				{

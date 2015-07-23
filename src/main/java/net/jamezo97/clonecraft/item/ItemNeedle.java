@@ -127,7 +127,7 @@ public class ItemNeedle extends Item{
     				
     				if(!hit.worldObj.isRemote)
     				{
-    					if(par1ItemStack.stackSize == 1)
+    					if(par1ItemStack.stackSize == 1 && !player.capabilities.isCreativeMode)
         				{
         					new ItemData(par1ItemStack).empty().save(par1ItemStack);
         					par1ItemStack.setItemDamage(0);

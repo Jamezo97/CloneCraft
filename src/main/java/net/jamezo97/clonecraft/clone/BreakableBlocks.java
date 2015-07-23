@@ -3,8 +3,11 @@ package net.jamezo97.clonecraft.clone;
 
 import java.util.ArrayList;
 
+import net.jamezo97.clonecraft.build.CustomBuilders;
+import net.jamezo97.clonecraft.build.PlantCustomBuilder;
 import net.jamezo97.clonecraft.network.Handler9UpdateBreakBlocks;
 import net.minecraft.block.Block;
+import net.minecraft.block.IGrowable;
 import net.minecraft.creativetab.CreativeTabs;
 import net.minecraft.init.Blocks;
 import net.minecraft.item.Item;
@@ -97,6 +100,18 @@ public class BreakableBlocks {
 		
 		int id = Block.getIdFromBlock(block);
 		int meta = clone.worldObj.getBlockMetadata(x, y, z);
+		
+		if(clone.getOptions().farming.get())
+		{
+			//If it's a fully grown growable block, and it's not a bush
+			if(CustomBuilders.customBuilderMap.get(block) instanceof PlantCustomBuilder)
+			{
+				if(!((IGrowable)block).func_149851_a(clone.worldObj, x, y, z, true))
+				{
+					return true;
+				}
+			}
+		}
 		
 		return canBreak(this.conjoin(id, meta));
 	}

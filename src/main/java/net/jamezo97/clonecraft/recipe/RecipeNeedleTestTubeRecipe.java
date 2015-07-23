@@ -68,16 +68,21 @@ public class RecipeNeedleTestTubeRecipe implements IRecipe, IOnCrafted{
 
 	@Override
 	public void onCrafted(EntityPlayer player, ItemStack result, IInventory ic) {
-		for(int a = 0; a < ic.getSizeInventory(); a++){
+		for(int a = 0; a < ic.getSizeInventory(); a++)
+		{
 			ItemStack stackOld = ic.getStackInSlot(a);
-			if(stackOld != null && stackOld.getItem() == CloneCraft.INSTANCE.itemNeedle){
+			
+			if(stackOld != null && stackOld.getItem() == CloneCraft.INSTANCE.itemNeedle)
+			{
 				ItemStack stack = stackOld.copy();
 				stack.stackSize = 1;
 				stack.setItemDamage(0);
 				ItemData data = new ItemData(stack);
 				data.empty();
-				data.save();
-				if(!player.inventory.addItemStackToInventory(stack)){
+				data.save(stack);
+				
+				if(!player.inventory.addItemStackToInventory(stack))
+				{
 					player.dropPlayerItemWithRandomChoice(stack, false);
 				}
 				return;

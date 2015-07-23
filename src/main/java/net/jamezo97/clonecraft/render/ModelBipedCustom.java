@@ -120,19 +120,15 @@ public class ModelBipedCustom extends ModelBiped{
 					this.modelBreastLeft.offsetY = 0f;
 				}
 				
-				//Helps see the spring physics behind it all.
-/*				if(CloneCraft.INSTANCE.config.DEBUG_ENABLED)
 				{
-					float scale = (float)Math.max(0f, 1-clone.getScale());
+					float scale = (float)Math.max(-0.25f, 1-clone.getScale());
 					
-					this.modelBreastLeft.offsetZ =  -0.09f + scale * (0.3f);
-					this.modelBreastRight.offsetZ = -0.09f + scale * (0.3f);
-				}
-				else*/
-				{
-					float scale = (float)Math.max(0f, 1-clone.getScale());
+					if(scale < 0)
+					{
+						scale *= 2.0;
+					}
 					
-					this.modelBreastLeft.offsetZ =  scale * (0.09f);
+					this.modelBreastLeft.offsetZ =  scale * (0.09f);//0.09
 					this.modelBreastRight.offsetZ = scale * (0.09f);
 				}
 				

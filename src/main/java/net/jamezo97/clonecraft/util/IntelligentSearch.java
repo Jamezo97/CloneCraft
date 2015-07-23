@@ -172,6 +172,7 @@ public class IntelligentSearch {
 			
 			if(System.currentTimeMillis() > this.nextSearch)
 			{
+//				System.out.println("Search Radius " + offsets[stationaryRadius].length);
 				movingTicks = 0;
 				
 				int MAX = Math.min(150, offsets[stationaryRadius].length - currentIndex);
@@ -208,6 +209,9 @@ public class IntelligentSearch {
 		if(offsets[radius] == null)
 		{
 			ArrayList<Coord> coords = new ArrayList<Coord>();
+			
+			int radiusSq = radius * radius;
+			
 			for(int y = -radius; y <= radius; y++)
 			{
 				for(int z = -radius; z <= radius; z++)
@@ -215,7 +219,7 @@ public class IntelligentSearch {
 					for(int x = -radius; x <= radius; x++)
 					{
 						Coord coord = new Coord(x, y, z);
-						if(coord.distSq <= radius)
+						if(coord.distSq <= radiusSq)
 						{
 							coords.add(new Coord(x, y, z));
 						}

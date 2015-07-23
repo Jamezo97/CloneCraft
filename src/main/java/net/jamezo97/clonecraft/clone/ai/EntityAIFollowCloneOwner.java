@@ -27,7 +27,7 @@ public class EntityAIFollowCloneOwner extends EntityAIBase
 	@Override
 	public boolean shouldExecute()
 	{
-		if(clone.getOptions().follow.get() && clone.getOwner() != null && !clone.getOptions().guard.get() && !clone.getBuildAI().isRunning())
+		if(clone.getOptions().follow.get() && clone.getOwner() != null && !clone.getOptions().guard.get() && !clone.getBuildAI().isRunning() && !clone.isIndependent())
 		{
 			EntityPlayer owner = clone.getOwner();
 			

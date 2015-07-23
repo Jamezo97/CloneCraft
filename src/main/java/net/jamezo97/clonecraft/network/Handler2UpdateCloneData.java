@@ -62,46 +62,74 @@ public class Handler2UpdateCloneData extends Handler{
 	}
 	
 	public void handleServer(EntityPlayer player){
-		if(data != null && data.length != 0){
+		if(data != null && data.length != 0)
+		{
 			Entity entity = player.worldObj.getEntityByID(entityId);
-			if(entity instanceof EntityClone){
+			
+			if(entity instanceof EntityClone)
+			{
 				EntityClone clone = (EntityClone)entity;
-				if(clone.canUseThisEntity(player)){
+				
+				if(clone.canUseThisEntity(player))
+				{
+					
 					ByteIn in = new ByteIn(data);
 					ArrayList<Sync> toUpdate = new ArrayList<Sync>();
-					if(in.isOpen()){
+					
+					if(in.isOpen())
+					{	
 						DataInputStream d = in.getDataStream();
-						try {
+						
+						try
+						{
 							Sync sync;
 							int id;
-							while(d.available()>3){
+							
+							while(d.available()>3)
+							{
 								id = d.readInt();
-								if(d.available() > 0){
+								if(d.available() > 0)
+								{
 									sync = clone.getWatcher().getSync(id);
-									if(sync != null){
-										if(sync.canBeEditedByClient()){
-											sync.read(d, clone);
+									
+									if(sync != null)
+									{
+										
+										if(sync.canBeEditedByClient())
+										{
+											sync.read(d, clone, player);
 											toUpdate.add(sync);
-										}else{
+										}
+										else
+										{
 											System.out.println(player.getCommandSenderName() + " attempted to edit a Sync value(" + id + ") which cannot be edited by the client!");
 											break;
 										}
 									}
-								}else{
+								}
+								else
+								{
 									System.out.println("No data to be read by syncer (" + id + ")?");
 								}
 							}
-							if(d.available() > 0 && d.available() < 4){
+							
+							if(d.available() > 0 && d.available() < 4)
+							{
 								System.out.println("Avail Bytes: " + d.available() + ", Not enough for integer ID");
 							}
-						} catch (IOException e) {
+						}
+						catch (IOException e)
+						{
 							e.printStackTrace();
-						}finally{
+						}
+						finally
+						{
 							in.close();
 						}
 					}
 					
-					if(toUpdate.size() > 0){
+					if(toUpdate.size() > 0)
+					{
 						data = null;
 						open();
 						for(int a = 0; a < toUpdate.size(); a++){
@@ -116,33 +144,54 @@ public class Handler2UpdateCloneData extends Handler{
 	}
 	
 	public void handleClient(EntityPlayer player){
-		if(data != null && data.length != 0){
+		if(data != null && data.length != 0)
+		{
 			Entity entity = player.worldObj.getEntityByID(entityId);
-			if(entity instanceof EntityClone){
+			
+			if(entity instanceof EntityClone)
+			{
 				EntityClone clone = (EntityClone)entity;
 				ByteIn in = new ByteIn(data);
-				if(in.isOpen()){
+				
+				if(in.isOpen())
+				{
 					DataInputStream d = in.getDataStream();
-					try {
+					
+					try
+					{
 						Sync sync;
 						int id;
-						while(d.available() > 3){
+						
+						while(d.available() > 3)
+						{
 							id = d.readInt();
-							if(d.available() > 0){
+							
+							if(d.available() > 0)
+							{
 								sync = clone.getWatcher().getSync(id);
-								if(sync != null){
-									sync.read(d, clone);
+								
+								if(sync != null)
+								{
+									sync.read(d, clone, player);
 								}
-							}else{
+							}
+							else
+							{
 								System.out.println("No data to be read by syncer (" + id + ")?");
 							}
 						}
-						if(d.available() > 0 && d.available() < 4){
+						
+						if(d.available() > 0 && d.available() < 4)
+						{
 							System.out.println("Avail Bytes: " + d.available() + ", Not enough for integer ID");
 						}
-					} catch (IOException e) {
+					}
+					catch (IOException e)
+					{
 						e.printStackTrace();
-					}finally{
+					}
+					finally
+					{
 						in.close();
 					}
 				}

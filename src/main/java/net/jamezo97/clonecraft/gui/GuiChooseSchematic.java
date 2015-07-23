@@ -2,6 +2,7 @@ package net.jamezo97.clonecraft.gui;
 
 import net.jamezo97.clonecraft.CloneCraft;
 import net.jamezo97.clonecraft.clone.EntityClone;
+import net.jamezo97.clonecraft.clone.sync.Syncer;
 import net.jamezo97.clonecraft.network.Handler12BuildSchematic;
 import net.jamezo97.clonecraft.schematic.Schematic;
 import net.minecraft.client.Minecraft;
@@ -35,9 +36,10 @@ public class GuiChooseSchematic extends GuiScreen{
 		this.drawString(Minecraft.getMinecraft().fontRenderer, "Show:", 5, 11, 0xffffffff);
 		
 		{
-			this.drawRect(200+10, 30, width-5, height-5, 0x66ffffff);
-			this.drawRect(200+12, 32, width-7, height-7, 0x66ffffff);
-			this.drawRect(200+14, 34, width-9, height-9, 0x66ffffff);
+			int maxY = height-(itemsRequired==null?0:12);
+			this.drawRect(200+10, 30, width-5, maxY-5, 0x66ffffff);
+			this.drawRect(200+12, 32, width-7, maxY-7, 0x66ffffff);
+			this.drawRect(200+14, 34, width-9, maxY-9, 0x66ffffff);
 		}
 		
 		this.drawString(Minecraft.getMinecraft().fontRenderer, "Search:", 5, 37, 0xffffffff);
@@ -84,7 +86,8 @@ public class GuiChooseSchematic extends GuiScreen{
 
 	
 	@Override
-	protected void mouseClicked(int mX, int mY, int btn) {
+	protected void mouseClicked(int mX, int mY, int btn)
+	{
 		super.mouseClicked(mX, mY, btn);
 		this.schematicList.mousePress(mX, mY, btn);
 		this.guiRender.mouseClicked(mX, mY, btn);
@@ -117,20 +120,40 @@ public class GuiChooseSchematic extends GuiScreen{
 			btnSelected.enabled = true;
 			btnAll.enabled = false;
 		}
-		else if(btn.id == 4 && this.schematicList.getSelectedSchematic() != null)
+		else if(btn.id == 4)
 		{
-			Schematic schem = this.schematicList.getSelectedSchematic();
+			if(clone.getBuildAI().isRunning())
+			{
+				clone.getBuildAI().setBuilding(false);
+				clone.getWatcher().sendValueToServer(Syncer.ID_BILD);
+			}
+			else if(this.schematicList.getSelectedSchematic() != null)
+			{
+				Schematic schem = this.schematicList.getSelectedSchematic();
+				
+				Handler12BuildSchematic handler = new Handler12BuildSchematic(schem, clone, clone.getBuildAI().shouldIgnoreItems());
+				
+				handler.sendToServer();
+				
+				clone.getBuildAI().setSchematic(null);
+				
+				this.mc.displayGuiScreen(null);
+				
+				this.mc.setIngameFocus();
+			}
 			
-			Handler12BuildSchematic handler = new Handler12BuildSchematic(schem, clone);
 			
-			handler.sendToServer();
+		}
+		else if(btn.id == 10)
+		{
+//			System.out.println("Set to: " + itemsRequired.getState());
 			
-			clone.getBuildAI().setSchematic(null);
+			clone.getBuildAI().ignoreItems(itemsRequired.getState());
 			
-			this.mc.displayGuiScreen(null);
-			
-			this.mc.setIngameFocus();
-			
+			if(clone.getBuildAI().isRunning())
+			{
+				clone.getWatcher().sendValueToServer(Syncer.ID_IGNORE);
+			}
 		}
 	}
 	
@@ -139,6 +162,9 @@ public class GuiChooseSchematic extends GuiScreen{
 	GuiButton btnBuildIt;
 	
 	GuiTextField searchField;
+	
+	GuiCheckBox itemsRequired;
+	
 
 	@Override
 	public void initGui()
@@ -148,6 +174,12 @@ public class GuiChooseSchematic extends GuiScreen{
 		this.buttonList.add(btnNone = 		new GuiButton(0, 35, 5, 40, 20, "None"));
 		this.buttonList.add(btnSelected = 	new GuiButton(1, 75, 5, 60, 20, "Selected"));
 		this.buttonList.add(btnAll = 		new GuiButton(2, 135, 5, 40, 20, "All"));
+		
+		if(this.mc.thePlayer != null && this.mc.thePlayer.capabilities.isCreativeMode)
+		{
+			this.buttonList.add(itemsRequired = 	new GuiCheckBox(10, 210, height-15, "Unlimited Items"));
+			itemsRequired.setState(clone.getBuildAI().shouldIgnoreItems());
+		}
 
 		this.searchField = new GuiTextField(mc.fontRenderer, 50, 30, 150, 20);
 		
@@ -164,7 +196,7 @@ public class GuiChooseSchematic extends GuiScreen{
 		
 		this.buttonList.add(btnBuildIt =	new GuiButton(4, 220 + (width - 220 - 15 - buildWidth)/2, 5, buildWidth, 20, "Build It!"));
 		
-		this.buttonList.add(guiRender = new GuiRenderSchematic(214, 34, ((width-9) - 214), ((height-9)-34) ) );
+		this.buttonList.add(guiRender = new GuiRenderSchematic(214, 34, ((width-9) - 214), ((height-9)-34-(itemsRequired==null?0:12)) ) );
 		
 	}
 	
@@ -183,9 +215,22 @@ public class GuiChooseSchematic extends GuiScreen{
 		this.guiRender.toRender = this.schematicList.getSelectedSchematic();
 		this.guiRender.doRender = this.displayMode != 0;
 		
-		btnBuildIt.enabled = this.guiRender.toRender != null;
+		
 		
 		searchField.updateCursorCounter();
+		
+		if(clone.getBuildAI().isRunning())
+		{
+			
+			btnBuildIt.displayString = "Stop Building";
+			btnBuildIt.enabled = true;
+		}
+		else
+		{
+			btnBuildIt.enabled = this.guiRender.toRender != null;
+			btnBuildIt.displayString = "Build It!";
+			
+		}
 		
 	}
 
@@ -193,6 +238,7 @@ public class GuiChooseSchematic extends GuiScreen{
 	public void onGuiClosed()
 	{
 		CloneCraft.INSTANCE.schematicList.cleanSchematics();
+
 	}
 
 	@Override

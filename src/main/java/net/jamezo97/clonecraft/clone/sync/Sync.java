@@ -6,6 +6,7 @@ import java.io.IOException;
 
 import net.jamezo97.clonecraft.clone.EntityClone;
 import net.jamezo97.clonecraft.clone.PlayerTeam;
+import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.world.WorldServer;
 
 public abstract class Sync {
@@ -49,6 +50,11 @@ public abstract class Sync {
 	public void setDirty()
 	{
 		isDirty = true;
+	}
+
+	public void read(DataInputStream in, EntityClone clone, EntityPlayer player)throws IOException
+	{
+		this.read(in, clone);
 	}
 	
 }

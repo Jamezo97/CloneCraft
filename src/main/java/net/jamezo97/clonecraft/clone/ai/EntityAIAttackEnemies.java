@@ -158,8 +158,9 @@ public class EntityAIAttackEnemies extends EntityAIBase {
 		}
 	}
 
-	public EntityLivingBase getClosestEntityToAttackExcluding(EntityLivingBase entity){
-		List list = clone.worldObj.getEntitiesWithinAABBExcludingEntity(clone, clone.boundingBox.expand(32D, 16D, 32D));
+	public EntityLivingBase getClosestEntityToAttackExcluding(EntityLivingBase entity)
+	{
+		List list = clone.worldObj.getEntitiesWithinAABBExcludingEntity(clone, clone.boundingBox.expand(32D, 32D, 32D));
 		
 		if(entity != null)
 		{

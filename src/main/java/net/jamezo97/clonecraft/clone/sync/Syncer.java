@@ -211,6 +211,8 @@ public class Syncer {
 		syncs.add(new SyncShrinkCooldown(ID_SHRINKCOOL));
 		syncs.add(new SyncDisplayMessage(ID_MESG));
 		syncs.add(new SyncBlockHighlight(ID_HIGH));
+		syncs.add(new SyncBuildData(ID_BILD));
+		syncs.add(new SyncIgnoreItems(ID_IGNORE));
 	}
 	public static final int ID_TEAM = 	0;
 	public static final int ID_EXPE = 	1;
@@ -226,12 +228,17 @@ public class Syncer {
 	public static final int ID_SHRINKCOOL =	11;
 	public static final int ID_MESG =	12;
 	public static final int ID_HIGH =	13;
+	public static final int ID_BILD =	14;
+	public static final int ID_IGNORE =	15;
+	
 	
 
 
 	public void sendValueToServer(int idName) {
 		Sync sync = this.getSync(idName);
-		if(sync != null){
+		
+		if(sync != null)
+		{
 			Handler2UpdateCloneData handler = new Handler2UpdateCloneData(clone);
 			handler.add(this.clone, sync);
 			handler.close();

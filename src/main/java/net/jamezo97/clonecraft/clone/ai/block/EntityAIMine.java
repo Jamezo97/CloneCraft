@@ -309,6 +309,8 @@ public class EntityAIMine extends EntityAIBase{
                     
                     this.clone.worldObj.destroyBlockInWorldPartially(this.clone.getEntityId(), breakCoord.posX, breakCoord.posY, breakCoord.posZ, (int)(this.curBlockDamageMP * 10.0F) - 1);
 
+                    this.currentFinder.onFinished(this, breakCoord, breakItem, breakBlock, breakMeta);
+                    
                     this.stopBreakingBlock();
                     
                     this.stepSoundTickCounter = 0.0F;
@@ -316,7 +318,6 @@ public class EntityAIMine extends EntityAIBase{
                     
                     clone.inventory.currentItem = 0;
                     lastTickTime = -1;
-                    this.currentFinder.onFinished(this, breakCoord, breakItem, breakBlock, breakMeta);
                 }
                 else
                 {
@@ -465,7 +466,8 @@ public class EntityAIMine extends EntityAIBase{
 
         if (flag && block.getPlayerRelativeBlockHardness(this.clone.getPlayerInterface(), this.clone.worldObj, blockX, blockY, blockZ) >= 1.0F)
         {
-            this.destroyBlock(blockX, blockY, blockZ);
+            this.harvestBlock(blockX, blockY, blockZ);
+            this.currentFinder.onFinished(this, breakCoord, breakItem, breakBlock, breakMeta);
         }
         else
         {
@@ -488,6 +490,7 @@ public class EntityAIMine extends EntityAIBase{
     *//** PosZ of the current block being destroyed *//*
     private int currentblockZ = -1;*/
     
+	@Deprecated
 	public boolean destroyBlock(int posX, int posY, int posZ)
     {
         ItemStack stack = this.clone.getCurrentEquippedItem();
@@ -513,6 +516,8 @@ public class EntityAIMine extends EntityAIBase{
             {
                 block.onBlockDestroyedByPlayer(world, posX, posY, posZ, i1);
             }
+
+            this.currentFinder.onFinished(this, breakCoord, breakItem, breakBlock, breakMeta);
 
 //            this.blockToBreak.posY = -1;
 

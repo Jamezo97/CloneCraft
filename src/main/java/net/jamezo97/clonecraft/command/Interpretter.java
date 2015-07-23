@@ -41,6 +41,11 @@ public class Interpretter {
 	 */
 	public boolean parseInput(String input, EntityPlayer sender, boolean displayMessageIfNoCommand)
 	{
+		if(!sender.capabilities.isCreativeMode && (!clone.canUseThisEntity(sender) || clone.isIndependent()))
+		{
+			clone.say("I'm not taking orders from you!", sender);
+			return false;
+		}
 //		if(currentCommand == null){
 		
 		if(System.currentTimeMillis() > timeout)

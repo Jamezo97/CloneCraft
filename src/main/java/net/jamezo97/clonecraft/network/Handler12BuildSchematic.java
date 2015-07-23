@@ -35,12 +35,14 @@ public class Handler12BuildSchematic extends Handler{
 	
 	int cloneEntityID;
 	
+	boolean ignoreItems = false;
+	
 	public Handler12BuildSchematic()
 	{
 		
 	}
 	
-	public Handler12BuildSchematic(Schematic schematic, EntityClone builder)
+	public Handler12BuildSchematic(Schematic schematic, EntityClone builder, boolean ignoreItems)
 	{
 		schematicHash = schematic.myHashCode();
 		
@@ -55,6 +57,8 @@ public class Handler12BuildSchematic extends Handler{
 		this.rotate = builder.getBuildAI().getRotate();
 		
 		this.cloneEntityID = builder.getEntityId();
+		
+		this.ignoreItems = ignoreItems;
 	}
 
 	@Override
@@ -128,6 +132,15 @@ public class Handler12BuildSchematic extends Handler{
 				clone.getBuildAI().setRotate(this.rotate);
 				
 				clone.getBuildAI().setSchematic(entry.schem);
+				
+				if(player.capabilities.isCreativeMode && ignoreItems)
+				{
+					clone.getBuildAI().ignoreItems(true);
+				}
+				else
+				{
+					clone.getBuildAI().ignoreItems(false);
+				}
 
 				clone.getBuildAI().setBuilding(true);
 				
@@ -156,14 +169,6 @@ public class Handler12BuildSchematic extends Handler{
 	@Override
 	public void read(ByteBuf buf) 
 	{
-/*		int len = buf.readShort();
-		
-		schematicName = "";
-		
-		for(int a = 0; a < len; a++)
-		{
-			schematicName += buf.readChar();
-		}*/
 		
 		syncStage = buf.readInt();
 		schematicHash = buf.readLong();
@@ -179,19 +184,13 @@ public class Handler12BuildSchematic extends Handler{
 		posX = buf.readInt();
 		posY = buf.readInt();
 		posZ = buf.readInt();
+		
+		ignoreItems = buf.readBoolean();
 	}
 
 	@Override
 	public void write(ByteBuf buf) 
 	{
-/*		char[] chars = schematicName.toCharArray();
-		
-		buf.writeShort(chars.length);
-		
-		for(int a = 0; a < chars.length; a++)
-		{
-			buf.writeChar(chars[a]);
-		}*/
 		
 		buf.writeInt(syncStage);
 		buf.writeLong(schematicHash);
@@ -207,6 +206,8 @@ public class Handler12BuildSchematic extends Handler{
 		buf.writeInt(posX);
 		buf.writeInt(posY);
 		buf.writeInt(posZ);
+		
+		buf.writeBoolean(ignoreItems);
 	}
 
 

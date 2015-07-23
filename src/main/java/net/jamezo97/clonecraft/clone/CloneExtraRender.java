@@ -23,7 +23,7 @@ public class CloneExtraRender implements Renderable{
 	public void render(float partialTicks)
 	{
 		EntityAIBuild buildAi = clone.getBuildAI();
-		
+
 		if(buildAi.renderOverlay())
 		{
 			int x = buildAi.posX;
@@ -109,93 +109,101 @@ public class CloneExtraRender implements Renderable{
 	}
 
 	@Override
-	public void onTick() {
+	public void onTick()
+	{
 		EntityAIBuild buildAI = clone.getBuildAI();
 		
 		if(buildAI.renderOverlay())
 		{
-			
-			buildAI.posX += CCEventListener.moveX;
-			buildAI.posY += CCEventListener.moveY;
-			buildAI.posZ += CCEventListener.moveZ;
-			
-			if(CCEventListener.rotate != 0)
+			if(EntityClone.renderFocusedClone == null)
 			{
-				int oldRotate = buildAI.getRotate();
-				buildAI.incrementRotate();
-				int newRotate = buildAI.getRotate();
-				
-				
-				int posXNew = buildAI.posX;
-				int posZNew = buildAI.posZ;
-				
-				int posXOld = posXNew;
-				int posZOld = posZNew;
-				
-				switch(oldRotate)
-				{
-				case 1: posXOld++; break;
-				case 2: posXOld++; posZOld++; break;
-				case 3: posZOld++; break;
-				}
-				
-				switch(newRotate)
-				{
-				case 1: posXNew++; break;
-				case 2: posXNew++; posZNew++; break;
-				case 3: posZNew++; break;
-				}
-				
-				
-				int[] offsets = new int[]{buildAI.getSchematic().xSize, 0, buildAI.getSchematic().zSize};
-
-				double midXOld = posXOld + (offsets[EntityAIBuild.offsetIndexes[oldRotate][0]]/2.0d) * (double)EntityAIBuild.xzMultipliers[oldRotate][0];
-				double midZOld = posZOld + (offsets[EntityAIBuild.offsetIndexes[oldRotate][1]]/2.0d) * (double)EntityAIBuild.xzMultipliers[oldRotate][1];
-
-				double midX = posXNew + (offsets[EntityAIBuild.offsetIndexes[newRotate][0]]/2.0d) * (double)EntityAIBuild.xzMultipliers[newRotate][0];
-				double midZ = posZNew + (offsets[EntityAIBuild.offsetIndexes[newRotate][1]]/2.0d) * (double)EntityAIBuild.xzMultipliers[newRotate][1];
-
-				/*System.out.println(midXOld - midX);
-				System.out.println(midZOld - midZ);
-				System.out.println(midXOld);
-				System.out.println(midZOld);
-				System.out.println(midX);
-				System.out.println(midZ);
-				System.out.println("----" + newRotate);*/
-
-				double diffX = midXOld - midX;
-				double diffZ = midZOld - midZ;
-				
-				if(diffX != Math.round(diffX))
-				{
-					if(newRotate == 0 || newRotate == 1)
-					{
-						diffX += 0.1;
-					}
-					else
-					{
-						diffX -= 0.1;
-					}
-				}
-				
-				if(diffZ != Math.round(diffZ))
-				{
-					if(newRotate == 0 || newRotate == 1)
-					{
-						diffZ += 0.1;
-					}
-					else
-					{
-						diffZ -= 0.1;
-					}
-				}
-
-				System.out.println(newRotate);
-				
-				buildAI.posX += Math.round(diffX);
-				buildAI.posZ += Math.round(diffZ);
-				
+				EntityClone.renderFocusedClone = this.clone;
 			}
+			else if(EntityClone.renderFocusedClone != this.clone)
+			{
+				if(!EntityClone.renderFocusedClone.getBuildAI().renderOverlay())
+				{
+					EntityClone.renderFocusedClone = this.clone;
+				}
+			}
+			
+			if(EntityClone.renderFocusedClone == null || EntityClone.renderFocusedClone == this.clone)
+			{
+				buildAI.posX += CCEventListener.moveX;
+				buildAI.posY += CCEventListener.moveY;
+				buildAI.posZ += CCEventListener.moveZ;
+				
+				if(CCEventListener.rotate != 0)
+				{
+					int oldRotate = buildAI.getRotate();
+					buildAI.incrementRotate();
+					int newRotate = buildAI.getRotate();
+					
+					
+					int posXNew = buildAI.posX;
+					int posZNew = buildAI.posZ;
+					
+					int posXOld = posXNew;
+					int posZOld = posZNew;
+					
+					switch(oldRotate)
+					{
+					case 1: posXOld++; break;
+					case 2: posXOld++; posZOld++; break;
+					case 3: posZOld++; break;
+					}
+					
+					switch(newRotate)
+					{
+					case 1: posXNew++; break;
+					case 2: posXNew++; posZNew++; break;
+					case 3: posZNew++; break;
+					}
+					
+					
+					int[] offsets = new int[]{buildAI.getSchematic().xSize, 0, buildAI.getSchematic().zSize};
+
+					double midXOld = posXOld + (offsets[EntityAIBuild.offsetIndexes[oldRotate][0]]/2.0d) * (double)EntityAIBuild.xzMultipliers[oldRotate][0];
+					double midZOld = posZOld + (offsets[EntityAIBuild.offsetIndexes[oldRotate][1]]/2.0d) * (double)EntityAIBuild.xzMultipliers[oldRotate][1];
+
+					double midX = posXNew + (offsets[EntityAIBuild.offsetIndexes[newRotate][0]]/2.0d) * (double)EntityAIBuild.xzMultipliers[newRotate][0];
+					double midZ = posZNew + (offsets[EntityAIBuild.offsetIndexes[newRotate][1]]/2.0d) * (double)EntityAIBuild.xzMultipliers[newRotate][1];
+
+
+					double diffX = midXOld - midX;
+					double diffZ = midZOld - midZ;
+					
+					if(diffX != Math.round(diffX))
+					{
+						if(newRotate == 0 || newRotate == 1)
+						{
+							diffX += 0.1;
+						}
+						else
+						{
+							diffX -= 0.1;
+						}
+					}
+					
+					if(diffZ != Math.round(diffZ))
+					{
+						if(newRotate == 0 || newRotate == 1)
+						{
+							diffZ += 0.1;
+						}
+						else
+						{
+							diffZ -= 0.1;
+						}
+					}
+					
+					buildAI.posX += Math.round(diffX);
+					buildAI.posZ += Math.round(diffZ);
+					
+				}
+			}
+			
+			
 		}
 		
 	}

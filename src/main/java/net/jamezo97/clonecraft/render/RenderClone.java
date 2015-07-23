@@ -203,7 +203,7 @@ public class RenderClone extends RendererLivingEntity {
        
         //Render glint effect maybe.   From 'ItemRenderer'
         
-        if(clone.getGrowthFactor() != 0){
+        if(clone.getGrowthFactor() != 0 || clone.getStemCellCooldown() > 0 || clone.getScale() > 1){
         	this.textureForPass = RES_ITEM_GLINT;
         	
         	//Max shrinking factor:
@@ -211,9 +211,25 @@ public class RenderClone extends RendererLivingEntity {
         	//Max growing factor:
         	//0.03005
         	
-        	float growFactor01 = Math.abs(clone.getGrowthFactor()) / 0.03f*20;
+        	float intensity = 0.0f;
         	
-        	float intensity = Math.min(0.1f + 0.9f * growFactor01, 0.9f);
+        	if(clone.getStemCellCooldown() > 0)
+        	{
+        		intensity = Math.max(intensity, Math.min(0.9f, clone.getStemCellCooldown() / 60.0F));
+        	}
+        	
+        	if(clone.getGrowthFactor() != 0)
+        	{
+        		float growFactor01 = Math.abs(clone.getGrowthFactor()) / 0.03f*20;
+            	
+            	intensity = Math.max(intensity, Math.min(0.1f + 0.9f * growFactor01, 0.9f));
+        	}
+        	
+        	if(clone.getScale() > 1)
+        	{
+        		intensity = Math.max(intensity, 0.2f);
+        	}
+        	
         	
         	float f8 = (float)clone.ticksExisted + p_76986_9_;
             this.bindTexture(RES_ITEM_GLINT);

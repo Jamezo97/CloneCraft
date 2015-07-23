@@ -40,6 +40,11 @@ public class GuiTransferPlayerItems extends GuiContainer{
 		xSize = 176;
 		ySize = 212;
 		isGuiForDefault = b;
+		
+		if(this.clone.worldObj.isRemote)
+		{
+			EntityClone.renderFocusedClone = this.clone;
+		}
 	}
 
 

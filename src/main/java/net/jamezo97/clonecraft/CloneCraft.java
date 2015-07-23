@@ -198,7 +198,8 @@ public class CloneCraft {
 	}
 	
 	
-	public void loadRecipes(){
+	public void loadRecipes()
+	{
 		GameRegistry.addRecipe(new ItemStack(itemNeedle), new Object[]{
 			"XXX", "X X", " Y ", Character.valueOf('X'), Items.iron_ingot, Character.valueOf('Y'), Items.gold_ingot
 		});

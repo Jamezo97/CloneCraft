@@ -25,6 +25,8 @@ public class ItemRotateMapper extends Item{
 	{
 		if(world.isRemote)
 		{
+//			System.out.println(side);
+			
 			Block clicked = world.getBlock(posX, posY, posZ);
 			if(currentBlock == null || currentBlock != clicked)
 			{
@@ -78,6 +80,7 @@ public class ItemRotateMapper extends Item{
 								setChatStyle(new ChatStyle().setColor(EnumChatFormatting.DARK_RED)));
 						player.addChatMessage(new ChatComponentText("Mapped rotations!").
 								setChatStyle(new ChatStyle().setColor(EnumChatFormatting.DARK_PURPLE)));
+						RotationMapping.save();
 					}
 					index = 0;
 					currentBlock = null;
