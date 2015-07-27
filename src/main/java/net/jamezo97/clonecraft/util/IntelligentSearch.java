@@ -39,6 +39,7 @@ public class IntelligentSearch {
 	}
 	
 	long nextSearch = 0;
+	long nextImmediateSearch = 0;
 	
 	int lastX = 0, lastY = 0, lastZ = 0;
 	
@@ -83,7 +84,7 @@ public class IntelligentSearch {
 				if(dXU + dYU + dZU > MAXSEARCH)
 				{
 					//Do something else
-					System.out.println("Entity moved too fast. Skipping inbetween block search.");
+//					System.out.println("Entity moved too fast. Skipping inbetween block search.");
 				}
 				else
 				{
@@ -170,16 +171,34 @@ public class IntelligentSearch {
 		else
 		{
 			
-			if(System.currentTimeMillis() > this.nextSearch)
+			
+			
+			if(System.currentTimeMillis() > this.nextImmediateSearch)
 			{
-//				System.out.println("Search Radius " + offsets[stationaryRadius].length);
+				movingTicks = 0;
+				
+				int MAX = 512;
+				
+				for(int a = 0; a < MAX; a++, a++)
+				{
+					handler.handleBlock(posX + offsets[stationaryRadius][a][0], 
+										posY + offsets[stationaryRadius][a][1], 
+										posZ + offsets[stationaryRadius][a][2]);
+				}
+				
+				this.nextImmediateSearch = System.currentTimeMillis() + 2000;
+			}
+			else if(System.currentTimeMillis() > this.nextSearch)
+			{
 				movingTicks = 0;
 				
 				int MAX = Math.min(150, offsets[stationaryRadius].length - currentIndex);
 
 				for(int a = 0; a < MAX; a++, currentIndex++)
 				{
-					handler.handleBlock(posX + offsets[stationaryRadius][currentIndex][0], posY + offsets[stationaryRadius][currentIndex][1], posZ + offsets[stationaryRadius][currentIndex][2]);
+					handler.handleBlock(posX + offsets[stationaryRadius][currentIndex][0], 
+										posY + offsets[stationaryRadius][currentIndex][1], 
+										posZ + offsets[stationaryRadius][currentIndex][2]);
 				}
 				
 				if(currentIndex >= offsets[stationaryRadius].length)
@@ -195,6 +214,7 @@ public class IntelligentSearch {
 		lastZ = posZ;
 	}
 	
+
 
 	static int[][][] offsets = new int[512][][];
 	

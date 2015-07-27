@@ -201,7 +201,7 @@ public class EntityClone extends EntityLiving implements RenderableManager{
 			this.boundingBox.maxY = this.boundingBox.minY + this.height;
 		}
 		
-		this.getNavigator().setAvoidsWater(true);
+		this.getNavigator().setAvoidsWater(false);
 		this.getNavigator().setBreakDoors(true);
 		this.getNavigator().setCanSwim(true);
 		this.getNavigator().setEnterDoors(true);
@@ -446,12 +446,12 @@ public class EntityClone extends EntityLiving implements RenderableManager{
 					this.guardPosition.posZ = (int)Math.floor(posZ);
 				}
 			}
-			else
+			/*else
 			{
 				this.guardPosition.posX = Integer.MAX_VALUE;
 				this.guardPosition.posY = Integer.MAX_VALUE;
 				this.guardPosition.posZ = Integer.MAX_VALUE;
-			}
+			}*/
 			if(this.getAttackTarget() != null)
 			{
 				this.getLookHelper().setLookPositionWithEntity(this.getAttackTarget(), 10, this.getVerticalFaceSpeed());
@@ -721,6 +721,39 @@ public class EntityClone extends EntityLiving implements RenderableManager{
 		this.displayMessageCooldown = cooldown;
 	}
 	
+	
+	
+	
+	
+	public ChunkCoordinates blockHighlight = new ChunkCoordinates(0, -1, 0);
+	
+	public void setBlockHighlightIfEmpty(int x, int y, int z)
+	{
+		if(this.blockHighlight.posY < 0)
+		{
+			this.blockHighlight.posX = x;
+			this.blockHighlight.posY = y;
+			this.blockHighlight.posZ = z;
+		}
+	}
+	
+	public void setBlockHighlight(int x, int y, int z)
+	{
+		this.blockHighlight.posX = x;
+		this.blockHighlight.posY = y;
+		this.blockHighlight.posZ = z;
+	}
+	
+	public void resetBlockHighlight()
+	{
+		this.blockHighlight.posY = -100;
+	}
+	
+	public boolean isBlockHighlightEmpty()
+	{
+		return this.blockHighlight.posY == -100;
+	}
+	
 	//==================================================================================================================
 	//TODO B Physics. B Coz Why not
 	//==================================================================================================================
@@ -750,6 +783,8 @@ public class EntityClone extends EntityLiving implements RenderableManager{
 		{
 			
 			double len = maxBDisp = 4;
+			
+//			meParticle = null;
 			
 			if(meParticle == null)
 			{
@@ -819,22 +854,20 @@ public class EntityClone extends EntityLiving implements RenderableManager{
 			springs[3].length = len;
 			
 
-			leftBParticle.mass = 0.95 + this.getScale()/(20);
-			rightBParticle.mass = 0.95 + this.getScale()/(20);
+			leftBParticle.mass = 0.95 + this.getScale()/20.0;
+			rightBParticle.mass = 0.95 + this.getScale()/20.0;
 			
 			meParticle.setPosition(posX, posY, posZ);
 			meParticle.tickBackward(physicsTimeStep);//50 ms, 20 ticks per second
 			
 			Vector impulse = meParticle.theImpulse;
 			
-			impulse = impulse.multiply((-1) * (this.getRNG().nextFloat() * 0.6f + 0.7f));
-			
-			impulse.y = impulse.y * impulse.y;
-			
 			impulse.x = 0;
 			impulse.z = 0;
 			
+			impulse = impulse.multiply((-1) * (this.getRNG().nextFloat() * 0.6f + 0.7f));
 			
+			impulse.y = Math.signum(impulse.y) * impulse.y * impulse.y;
 		
 			this.leftBParticle.addVelocity(impulse);
 			this.rightBParticle.addVelocity(impulse);
@@ -857,9 +890,9 @@ public class EntityClone extends EntityLiving implements RenderableManager{
             
             if(rotate != 0)
             {
-            	this.leftBParticle.velX -= rotate * (this.getRNG().nextFloat() * 0.1f + 0.95f)  * 0.2;
+            	this.leftBParticle.velX -= rotate * (this.getRNG().nextFloat() * 0.1f + 0.95f)  * 2;
                 
-                this.rightBParticle.velX -= rotate * (this.getRNG().nextFloat() * 0.1f + 0.95f) * 0.2;
+                this.rightBParticle.velX -= rotate * (this.getRNG().nextFloat() * 0.1f + 0.95f) * 2;
             }
             
 			for(int a = 0; a < 4; a++)
@@ -940,6 +973,13 @@ public class EntityClone extends EntityLiving implements RenderableManager{
 	public void setGuardPosition(ChunkCoordinates cc)
 	{
 		this.guardPosition = cc;
+	}
+	
+	public void resetGuardPosition()
+	{
+		this.guardPosition.posX = Integer.MAX_VALUE;
+		this.guardPosition.posY = Integer.MAX_VALUE;
+		this.guardPosition.posZ = Integer.MAX_VALUE; 
 	}
 	
 	//==================================================================================================================
@@ -1057,8 +1097,6 @@ public class EntityClone extends EntityLiving implements RenderableManager{
 		{
 			this.aimForScale = this.maxScale;
 		}
-		
-		this.maxScale = 1.25f;
 
 		if(this.preciseScale < this.defaultScale)
 		{
@@ -2056,7 +2094,8 @@ public class EntityClone extends EntityLiving implements RenderableManager{
      * @param block The block you wish to break
      * @return True if the clone can currently break the block.
      */
-    public boolean selectBestItemForBlock(ChunkCoordinates theCoords, Block block, int meta){
+    public boolean selectBestItemForBlock(ChunkCoordinates theCoords, Block block, int meta, boolean actuallySelectIt)
+    {
     	if(block == Blocks.air)
     	{
     		return false;
@@ -2118,8 +2157,11 @@ public class EntityClone extends EntityLiving implements RenderableManager{
     	{
     		
     		Collections.sort(itemList);
-    		int slot = inventory.putStackOnHotbar(itemList.get(itemList.size()-1).inventoryIndex);
-    		this.inventory.currentItem = slot;
+    		if(actuallySelectIt)
+    		{
+        		int slot = inventory.putStackOnHotbar(itemList.get(itemList.size()-1).inventoryIndex);
+        		this.inventory.currentItem = slot;
+    		}
     		return true;
     	}
     	
@@ -2129,7 +2171,11 @@ public class EntityClone extends EntityLiving implements RenderableManager{
     		//So just fists will do.
     		//To avoid damaging good items that don't need to be used,
     		//try to select an empty slot, or at least make one.
-    		this.inventory.trySelectEmptySlot();
+
+    		if(actuallySelectIt)
+    		{
+        		this.inventory.trySelectEmptySlot();
+    		}
     		return true;
     	}
     	
@@ -2633,7 +2679,7 @@ public class EntityClone extends EntityLiving implements RenderableManager{
 				if(picked != null)
 				{
 					this.getFetchAI().pickedUpItem(picked);
-					
+					this.getDefaultBlockFinder().clonePickedUp(this, picked);
 					if((picked.getItem() == Items.milk_bucket && picked.stackSize > 0) && 
 							(this.getShrinkCooldown() > 0 || this.aimForScale > this.defaultScale))
 					{
@@ -3452,7 +3498,11 @@ public class EntityClone extends EntityLiving implements RenderableManager{
 		{
 			for(int a = 0; a < sender.length; a++)
 			{
-				sender[a].addChatComponentMessage(chat);
+				if(sender[a] != null)
+				{
+					sender[a].addChatComponentMessage(chat);
+					
+				}
 			}
 		}
 		else

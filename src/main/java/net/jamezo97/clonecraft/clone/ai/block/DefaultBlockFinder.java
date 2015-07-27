@@ -20,21 +20,31 @@ public class DefaultBlockFinder implements BlockFinder{
 	
 	int searchWidthRadius = 16;
 	int searchHeightRadius = 16;
-	
+
 	long lastSearch = System.currentTimeMillis();
+	long lastUpdate = System.currentTimeMillis();
 	
 	@Override
-	public ChunkCoordinates getNextBlock(EntityAIMine ai) {
+	public ChunkCoordinates getNextBlock(EntityAIMine ai)
+	{
 		
 		if(System.currentTimeMillis() - lastSearch < 200)
 		{
-			//Don't search more than twice a second, as this is a pretty heavy function.
+			//Don't search more than 5 times a second, as this is a pretty heavy function.
 			return null;
 		}
+		
 		lastSearch = System.currentTimeMillis();
 		
-		
 		EntityClone clone = ai.clone;
+		
+		if(System.currentTimeMillis() - lastUpdate > 2000)
+		{
+			unbreakables.checkUnbreakables(clone, clone.posX, clone.posY, clone.posZ);
+			lastUpdate = System.currentTimeMillis();
+		}
+		
+		
 		World world = clone.worldObj;
 		
 		int beginX = (int)Math.floor(clone.posX);
@@ -149,7 +159,8 @@ public class DefaultBlockFinder implements BlockFinder{
 	}
 
 	@Override
-	public boolean mustBeCloseToBreak() {
+	public boolean mustBeCloseToBreak()
+	{
 		return true;
 	}
 
@@ -160,7 +171,8 @@ public class DefaultBlockFinder implements BlockFinder{
 	public void loadState(NBTTagCompound nbt) {}
 
 	@Override
-	public void cantBreakBlock(ChunkCoordinates cc, Block theBlock, int theMeta) {
+	public void cantBreakBlock(ChunkCoordinates cc, Block theBlock, int theMeta)
+	{
 		unbreakables.addUnbreakable(cc, theBlock, theMeta);
 	}
 

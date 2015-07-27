@@ -14,7 +14,7 @@ public class ItemEmptyEgg extends Item{
 	public IIcon inside;
 	
 	public ItemEmptyEgg() {
-		setMaxStackSize(16);
+		setMaxStackSize(64);
 		this.setCreativeTab(CloneCraft.creativeTab);
 	}
 

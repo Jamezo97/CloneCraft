@@ -57,28 +57,30 @@ public class CloneExtraRender implements Renderable{
 		{
 //			System.out.println("A");
 			
-			ChunkCoordinates cc = buildAi.blockHighlight;
+			ChunkCoordinates cc = clone.blockHighlight;
 			
-			if(cc.posX != 0 && cc.posY != -1 && cc.posZ != 0)
+			if(cc.posY != -100)
 			{
 //				System.out.println("Render");
 				
 				renderHighlightBlock.setBlockBounds(cc.posX, cc.posY, cc.posZ);
 				renderHighlightBlock.render(partialTicks);
 				
+				if(clone.getBuildAI().isRunning())
+				{
+					GL11.glDisable(GL11.GL_TEXTURE_2D);
+					
+					GL11.glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
+					
 				
-				GL11.glDisable(GL11.GL_TEXTURE_2D);
-				
-				GL11.glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
-				
-			
-				GL11.glLineWidth(4.0f);
-				GL11.glBegin(GL11.GL_LINES);
-				GL11.glVertex3d(clone.posX, clone.posY + clone.getEyeHeight(), clone.posZ);
-				GL11.glVertex3d(cc.posX+0.5f, cc.posY+0.5f, cc.posZ+0.5f);
-				GL11.glEnd();
+					GL11.glLineWidth(4.0f);
+					GL11.glBegin(GL11.GL_LINES);
+					GL11.glVertex3d(clone.posX, clone.posY + clone.getEyeHeight(), clone.posZ);
+					GL11.glVertex3d(cc.posX+0.5f, cc.posY+0.5f, cc.posZ+0.5f);
+					GL11.glEnd();
 
-				GL11.glEnable(GL11.GL_TEXTURE_2D);
+					GL11.glEnable(GL11.GL_TEXTURE_2D);
+				}
 			}
 			
 

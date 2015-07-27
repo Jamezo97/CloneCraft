@@ -40,6 +40,8 @@ import cpw.mods.fml.common.event.FMLInitializationEvent;
 import cpw.mods.fml.common.event.FMLPostInitializationEvent;
 import cpw.mods.fml.common.event.FMLPreInitializationEvent;
 import cpw.mods.fml.common.registry.GameRegistry;
+import cpw.mods.fml.relauncher.Side;
+import cpw.mods.fml.relauncher.SideOnly;
 
 @Mod(modid = CloneCraft.MODID, version = CloneCraft.VERSION, name = CloneCraft.NAME)
 public class CloneCraft {
@@ -195,6 +197,7 @@ public class CloneCraft {
 		BlockItemRegistry.init();
 		
 		RotationMapping.init();
+
 	}
 	
 	

@@ -25,7 +25,6 @@ public class ItemRotateMapper extends Item{
 	{
 		if(world.isRemote)
 		{
-//			System.out.println(side);
 			
 			Block clicked = world.getBlock(posX, posY, posZ);
 			if(currentBlock == null || currentBlock != clicked)

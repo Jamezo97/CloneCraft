@@ -17,8 +17,10 @@ public class ParamGuess <E> implements Comparable<ParamGuess>{
 	//Confidence level values of 0 should be confirmed by the command before execution.
 	public float confidence = 0.5f;
 	
-	public ParamGuess(E value, float confidence){
-		if(confidence < 0){
+	public ParamGuess(E value, float confidence)
+	{
+		if(confidence < 0)
+		{
 			throw new InvalidParameterException("Confidence level must be non-negative");
 		}
 		this.value = value;
@@ -26,7 +28,8 @@ public class ParamGuess <E> implements Comparable<ParamGuess>{
 	}
 
 	@Override
-	public int compareTo(ParamGuess p) {
+	public int compareTo(ParamGuess p)
+	{
 		if(this.confidence > p.confidence)
 		{
 			return 1;

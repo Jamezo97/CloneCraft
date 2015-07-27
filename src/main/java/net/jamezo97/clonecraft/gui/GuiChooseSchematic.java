@@ -1,6 +1,7 @@
 package net.jamezo97.clonecraft.gui;
 
 import net.jamezo97.clonecraft.CloneCraft;
+import net.jamezo97.clonecraft.build.EntityAIBuild;
 import net.jamezo97.clonecraft.clone.EntityClone;
 import net.jamezo97.clonecraft.clone.sync.Syncer;
 import net.jamezo97.clonecraft.network.Handler12BuildSchematic;
@@ -30,17 +31,45 @@ public class GuiChooseSchematic extends GuiScreen{
 	{
 		this.drawDefaultBackground();
 		this.drawDefaultBackground();
+		
+
+		int maxY = height-(itemsRequired==null?0:12) - 5;
+		
+		int minX = 210;
+		int minY = 30;
+		int width = (this.width-5) - minX;
+		int height = (maxY) - minY;
+		
+		this.drawRect(minX    , minY     , minX + width    , maxY  , 0x66ffffff);
+		this.drawRect(minX + 2, minY + 2, minX + width - 2, maxY-2, 0x66ffffff);
+		this.drawRect(minX + 4, minY + 4 , minX + width - 4, maxY-4, 0x66ffffff);
+		
 		super.drawScreen(mX, mY, partial);
+		
+		EntityAIBuild buildAi = clone.getBuildAI();
+		
+		if(buildAi.isRunning() && buildAi.getSchematic() == null)
+		{
+
+			this.drawRect(minX + 4, minY + 4 , minX + width - 4, maxY-4, 0x66000000);
+			
+			this.drawCenteredString(mc.fontRenderer, "Currently Building", minX + width/2, minY + 10, 0xff77ee77);
+			
+			this.drawString(Minecraft.getMinecraft().fontRenderer, "Index: " + buildAi.getIndex(), minX+15, minY+40, 0xffffffff);
+			
+			
+			
+			
+			
+		}
+		
 		this.schematicList.draw(mX, mY);
 		
 		this.drawString(Minecraft.getMinecraft().fontRenderer, "Show:", 5, 11, 0xffffffff);
 		
-		{
-			int maxY = height-(itemsRequired==null?0:12);
-			this.drawRect(200+10, 30, width-5, maxY-5, 0x66ffffff);
-			this.drawRect(200+12, 32, width-7, maxY-7, 0x66ffffff);
-			this.drawRect(200+14, 34, width-9, maxY-9, 0x66ffffff);
-		}
+		
+		
+		
 		
 		this.drawString(Minecraft.getMinecraft().fontRenderer, "Search:", 5, 37, 0xffffffff);
 		

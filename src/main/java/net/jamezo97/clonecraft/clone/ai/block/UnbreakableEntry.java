@@ -24,5 +24,14 @@ public class UnbreakableEntry {
 		return world.getBlock(coordinates.posX, coordinates.posY, coordinates.posZ) == block
 				&& world.getBlockMetadata(coordinates.posX, coordinates.posY, coordinates.posZ) == meta;
 	}
+
+	public double getDistSq(double posX, double posY, double posZ)
+	{
+		double dx = posX - coordinates.posX;
+		double dy = posY - coordinates.posY;
+		double dz = posZ - coordinates.posZ;
+	
+		return dx*dx + dy*dy + dz*dz;
+	}
 	
 }

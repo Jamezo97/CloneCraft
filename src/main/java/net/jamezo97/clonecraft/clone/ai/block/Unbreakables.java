@@ -55,10 +55,36 @@ public class Unbreakables {
 		for(int a = 0; a < entries.size(); a++)
 		{
 			UnbreakableEntry entry = entries.get(a);
+			
 			if(clone.canItemHarvestBlock(stack, entry.coordinates, entry.block, entry.meta))
 			{
 				entries.remove(a);
 				a--;
+			}
+		}
+	}
+
+	public void checkUnbreakables(EntityClone clone, double posX, double posY, double posZ)
+	{
+		for(int a = 0; a < entries.size(); a++)
+		{
+			UnbreakableEntry entry = entries.get(a);
+			
+			if(entry.getDistSq(posX, posY, posZ) < 1024)
+			{
+				if(!entry.isSameBlock(clone.worldObj))
+				{
+					entries.remove(a--);
+					continue;
+				}
+				else
+				{
+					if(clone.selectBestItemForBlock(entry.coordinates, entry.block, entry.meta, false))
+					{
+						entries.remove(a--);
+						continue;
+					}
+				}
 			}
 		}
 	}

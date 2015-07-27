@@ -203,7 +203,7 @@ public class RayTrace {
 		
 		if(maxIterations <= 0)
 		{
-			System.err.println("RAY TRACE BLOCKS RAN OVERTIME");
+//			System.err.println("RAY TRACE BLOCKS RAN OVERTIME");
 		}
 
 		AxisAlignedBB bb = null;

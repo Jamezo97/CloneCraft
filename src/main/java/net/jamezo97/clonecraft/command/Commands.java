@@ -36,6 +36,7 @@ public class Commands {
 		registerCommand(new CommandKill(), 2);
 		registerCommand(new CommandStop(), 3);
 		registerCommand(new CommandStay(), 4);
+		registerCommand(new CommandCome(), 5);
 	}
 
 	

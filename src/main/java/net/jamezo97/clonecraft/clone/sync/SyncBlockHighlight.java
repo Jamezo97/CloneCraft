@@ -18,33 +18,33 @@ public class SyncBlockHighlight extends Sync{
 	@Override
 	public boolean checkNeedsUpdating(EntityClone clone) 
 	{
-		return isDirty || lastX != clone.getBuildAI().blockHighlight.posX || 
-				lastY != clone.getBuildAI().blockHighlight.posY || lastZ != clone.getBuildAI().blockHighlight.posZ;
+		return isDirty || lastX != clone.blockHighlight.posX || 
+				lastY != clone.blockHighlight.posY || lastZ != clone.blockHighlight.posZ;
 	}
 
 	@Override
 	public void updateValues(EntityClone clone) 
 	{
 		isDirty = false;
-		lastX = clone.getBuildAI().blockHighlight.posX;
-		lastY = clone.getBuildAI().blockHighlight.posY;
-		lastZ = clone.getBuildAI().blockHighlight.posZ;
+		lastX = clone.blockHighlight.posX;
+		lastY = clone.blockHighlight.posY;
+		lastZ = clone.blockHighlight.posZ;
 	}
 
 	@Override
 	public void write(DataOutputStream out, EntityClone clone) throws IOException 
 	{
-		out.writeInt(clone.getBuildAI().blockHighlight.posX);
-		out.writeInt(clone.getBuildAI().blockHighlight.posY);
-		out.writeInt(clone.getBuildAI().blockHighlight.posZ);
+		out.writeInt(clone.blockHighlight.posX);
+		out.writeInt(clone.blockHighlight.posY);
+		out.writeInt(clone.blockHighlight.posZ);
 	}
 
 	@Override
 	public void read(DataInputStream in, EntityClone clone) throws IOException 
 	{
-		clone.getBuildAI().blockHighlight.posX = in.readInt();
-		clone.getBuildAI().blockHighlight.posY = in.readInt();
-		clone.getBuildAI().blockHighlight.posZ = in.readInt();
+		clone.blockHighlight.posX = in.readInt();
+		clone.blockHighlight.posY = in.readInt();
+		clone.blockHighlight.posZ = in.readInt();
 	}
 	
 	

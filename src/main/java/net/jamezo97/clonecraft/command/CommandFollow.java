@@ -18,7 +18,7 @@ public class CommandFollow extends Command{
 	
 
 	public CommandFollow() {
-		super(new Parameter[]{}, new Parameter[]{Parameters.p_player}, new Parameter[]{});
+		super(new Parameter[]{}, new Parameter[]{Parameters.p_player}, new Parameter[]{Parameters.p_stop});
 	}
 
 	@Override
@@ -27,23 +27,44 @@ public class CommandFollow extends Command{
 	}
 
 	@Override
-	public CommandTask getCommandExecutionDelegate() {
-		return new CommandTaskOnce(){
+	public CommandTask getCommandExecutionDelegate()
+	{
+		return new CommandTaskOnce()
+		{
 
 			@Override
 			public void execute() {
 				PGuess playerParam = this.paramSet.getParamValue(Parameters.p_player);
 				Object player = playerParam.getBestGuess().value;
 
+				boolean stop = false;
+				
+				PGuess paramStop = this.paramSet.getParamValue(Parameters.p_stop);
+				if(paramStop != null && paramStop.getBestGuess() != null && paramStop.getBestGuess().value == Boolean.valueOf(true))
+				{
+					stop = true;
+				}
 				
 				
-				if(player instanceof EntityPlayer){
-					this.clone.setOwner(((EntityPlayer)player).getCommandSenderName());
-					this.clone.getOptions().follow.set(true);
-					this.clone.getOptions().guard.set(false);
-					this.clone.getOptions().setDirty();
+				if(player instanceof EntityPlayer)
+				{
+					if(stop)
+					{
+						this.clone.getOptions().follow.set(false);
+						this.clone.getOptions().setDirty();
+						
+						this.clone.say("Okay", this.commander);
+					}
+					else
+					{
+						this.clone.setOwner(((EntityPlayer)player).getCommandSenderName());
+						this.clone.getOptions().follow.set(true);
+						this.clone.getOptions().guard.set(false);
+						this.clone.getOptions().setDirty();
+						
+						this.clone.say(confirmation.getRandom().replace("@PLAYER", this.commanderName), this.commander);
+					}
 					
-					this.clone.say(confirmation.getRandom().replace("@PLAYER", this.commanderName), this.commander);
 			
 				}
 			}

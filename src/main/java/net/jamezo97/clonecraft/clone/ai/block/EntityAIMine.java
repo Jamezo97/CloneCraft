@@ -26,15 +26,15 @@ public class EntityAIMine extends EntityAIBase{
 	
 	EntityClone clone = null;
 	
-//	Minecraft mc = Minecraft.getMinecraft();
-	
-	public EntityAIMine(EntityClone clone) {
+	public EntityAIMine(EntityClone clone)
+	{
 		this.clone = clone;
-		//00000101
+		// 00000101
 		this.setMutexBits(5);
 	}
 	
-	public EntityClone getClone(){
+	public EntityClone getClone()
+	{
 		return this.clone;
 	}
 	
@@ -70,7 +70,7 @@ public class EntityAIMine extends EntityAIBase{
 			
 			int theMeta = this.clone.worldObj.getBlockMetadata(theCoords.posX, theCoords.posY, theCoords.posZ);
 			
-			boolean canBreak = this.clone.selectBestItemForBlock(theCoords, theBlock, theMeta);
+			boolean canBreak = this.clone.selectBestItemForBlock(theCoords, theBlock, theMeta, true);
 			
 			if(canBreak)
 			{
@@ -255,74 +255,81 @@ public class EntityAIMine extends EntityAIBase{
 			}
 			else
 			{
-				EntityPlayer thePlayer = clone.getPlayerInterface();
-				
-				Block block = clone.worldObj.getBlock(breakCoord.posX, breakCoord.posY, breakCoord.posZ);
-				
-				//Must be modified to take into account the tick rate of the ai class
-				
-				double amplifier = 1.0;
-				
-				if(this.lastTickTime != -1)
+				try
 				{
-					long tickTime = System.currentTimeMillis();
-					double tickDiff = tickTime - this.lastTickTime;
+					EntityPlayer thePlayer = clone.getPlayerInterface();
 					
-					lastTickTime = tickTime;
+					Block block = clone.worldObj.getBlock(breakCoord.posX, breakCoord.posY, breakCoord.posZ);
 					
-					amplifier = Math.round(tickDiff / 50.0d);
-					//Each time, it should be called 50 milliseconds after the last
-					//If it's called, for example, 100 milliseconds later, then the block should
-					//be twice as much broken. Thus 100/50 = 2 = the amplification factor.
-					//This should roughly equal the 'EntityAITasks.tickRate' value
-					if(amplifier > 5)
+					//Must be modified to take into account the tick rate of the ai class
+					
+					double amplifier = 1.0;
+					
+					if(this.lastTickTime != -1)
 					{
-						amplifier = 5;
+						long tickTime = System.currentTimeMillis();
+						double tickDiff = tickTime - this.lastTickTime;
+						
+						lastTickTime = tickTime;
+						
+						amplifier = Math.round(tickDiff / 50.0d);
+						//Each time, it should be called 50 milliseconds after the last
+						//If it's called, for example, 100 milliseconds later, then the block should
+						//be twice as much broken. Thus 100/50 = 2 = the amplification factor.
+						//This should roughly equal the 'EntityAITasks.tickRate' value
+						if(amplifier > 5)
+						{
+							amplifier = 5;
+						}
+						else if(amplifier < 1)
+						{
+							amplifier = 1;
+						}
 					}
-					else if(amplifier < 1)
+					else
 					{
-						amplifier = 1;
+						lastTickTime = System.currentTimeMillis();
 					}
+					
+					this.curBlockDamageMP += amplifier * (block.getPlayerRelativeBlockHardness(thePlayer, thePlayer.worldObj, breakCoord.posX, breakCoord.posY, breakCoord.posZ));
+					
+					this.clone.swingItem();
+					
+	                if (this.stepSoundTickCounter % 4.0F == 0.0F)
+	                {
+	                	this.clone.worldObj.playSoundEffect(breakCoord.posX, breakCoord.posY, breakCoord.posZ, block.stepSound.getStepResourcePath(), block.stepSound.getPitch(), 0.3f);
+	                }
+
+	                this.lookAtBlock();
+	                
+	                ++this.stepSoundTickCounter;
+
+	                if (this.curBlockDamageMP >= 1.0F)
+	                {
+	                    
+	                    this.harvestBlock(breakCoord.posX, breakCoord.posY, breakCoord.posZ);
+	                    
+	                    this.clone.worldObj.destroyBlockInWorldPartially(this.clone.getEntityId(), breakCoord.posX, breakCoord.posY, breakCoord.posZ, (int)(this.curBlockDamageMP * 10.0F) - 1);
+
+	                    this.currentFinder.onFinished(this, breakCoord, breakItem, breakBlock, breakMeta);
+	                    
+	                    this.stopBreakingBlock();
+	                    
+	                    this.stepSoundTickCounter = 0.0F;
+	                    this.blockHitDelay = 5;
+	                    
+	                    clone.inventory.currentItem = 0;
+	                    lastTickTime = -1;
+	                }
+	                else
+	                {
+	                	this.clone.worldObj.destroyBlockInWorldPartially(this.clone.getEntityId(), breakCoord.posX, breakCoord.posY, breakCoord.posZ, (int)(this.curBlockDamageMP * 10.0F) - 1);
+	                }
 				}
-				else
+				catch(Throwable t)
 				{
-					lastTickTime = System.currentTimeMillis();
+					this.breakFailedError(t);
 				}
-				
-				this.curBlockDamageMP += amplifier * (block.getPlayerRelativeBlockHardness(thePlayer, thePlayer.worldObj, breakCoord.posX, breakCoord.posY, breakCoord.posZ));
-				
-				this.clone.swingItem();
-				
-                if (this.stepSoundTickCounter % 4.0F == 0.0F)
-                {
-                	this.clone.worldObj.playSoundEffect(breakCoord.posX, breakCoord.posY, breakCoord.posZ, block.stepSound.getStepResourcePath(), block.stepSound.getPitch(), 0.3f);
-                }
-
-                this.lookAtBlock();
-                
-                ++this.stepSoundTickCounter;
-
-                if (this.curBlockDamageMP >= 1.0F)
-                {
-                    
-                    this.harvestBlock(breakCoord.posX, breakCoord.posY, breakCoord.posZ);
-                    
-                    this.clone.worldObj.destroyBlockInWorldPartially(this.clone.getEntityId(), breakCoord.posX, breakCoord.posY, breakCoord.posZ, (int)(this.curBlockDamageMP * 10.0F) - 1);
-
-                    this.currentFinder.onFinished(this, breakCoord, breakItem, breakBlock, breakMeta);
-                    
-                    this.stopBreakingBlock();
-                    
-                    this.stepSoundTickCounter = 0.0F;
-                    this.blockHitDelay = 5;
-                    
-                    clone.inventory.currentItem = 0;
-                    lastTickTime = -1;
-                }
-                else
-                {
-                	this.clone.worldObj.destroyBlockInWorldPartially(this.clone.getEntityId(), breakCoord.posX, breakCoord.posY, breakCoord.posZ, (int)(this.curBlockDamageMP * 10.0F) - 1);
-                }
 			}
 		}
 		else
@@ -362,180 +369,159 @@ public class EntityAIMine extends EntityAIBase{
 	//From ItemInWorldManager
 	public boolean harvestBlock(int blockX, int blockY, int blockZ)
 	{
-		EntityPlayer thisPlayerMP = this.clone.getPlayerInterface();
-		World theWorld = this.clone.worldObj;
-		
-		ItemStack stack = thisPlayerMP.getCurrentEquippedItem();
-        
-		if (stack != null && stack.getItem().onBlockStartBreak(stack, blockX, blockY, blockZ, thisPlayerMP))
-        {
-            return false;
-        }
-        
-        Block block = theWorld.getBlock(blockX, blockY, blockZ);
-        int l = theWorld.getBlockMetadata(blockX, blockY, blockZ);
-        theWorld.playAuxSFXAtEntity(thisPlayerMP, 2001, blockX, blockY, blockZ, Block.getIdFromBlock(block) + (theWorld.getBlockMetadata(blockX, blockY, blockZ) << 12));
-        boolean flag = false;
+		try
+		{
+			EntityPlayer thisPlayerMP = this.clone.getPlayerInterface();
+			World theWorld = this.clone.worldObj;
+			
+			ItemStack stack = thisPlayerMP.getCurrentEquippedItem();
+	        
+			if (stack != null && stack.getItem().onBlockStartBreak(stack, blockX, blockY, blockZ, thisPlayerMP))
+	        {
+	            return false;
+	        }
+	        
+	        Block block = theWorld.getBlock(blockX, blockY, blockZ);
+	        int l = theWorld.getBlockMetadata(blockX, blockY, blockZ);
+	        theWorld.playAuxSFXAtEntity(thisPlayerMP, 2001, blockX, blockY, blockZ, Block.getIdFromBlock(block) + (theWorld.getBlockMetadata(blockX, blockY, blockZ) << 12));
+	        boolean flag = false;
 
-        ItemStack itemstack = thisPlayerMP.getCurrentEquippedItem();
-        boolean flag1 = block.canHarvestBlock(thisPlayerMP, l);
+	        ItemStack itemstack = thisPlayerMP.getCurrentEquippedItem();
+	        boolean flag1 = block.canHarvestBlock(thisPlayerMP, l);
 
-        if (itemstack != null)
-        {
-            itemstack.func_150999_a(theWorld, block, blockX, blockY, blockZ, thisPlayerMP);
+	        if (itemstack != null)
+	        {
+	            itemstack.func_150999_a(theWorld, block, blockX, blockY, blockZ, thisPlayerMP);
 
-            if (itemstack.stackSize == 0)
-            {
-                thisPlayerMP.destroyCurrentEquippedItem();
-            }
-        }
+	            if (itemstack.stackSize == 0)
+	            {
+	                thisPlayerMP.destroyCurrentEquippedItem();
+	            }
+	        }
 
-        flag = removeBlock(blockX, blockY, blockZ, flag1);
-        
-        if (flag && flag1)
-        {
-            block.harvestBlock(theWorld, thisPlayerMP, blockX, blockY, blockZ, l);
-        }
+	        flag = removeBlock(blockX, blockY, blockZ, flag1);
+	        
+	        if (flag && flag1)
+	        {
+	            block.harvestBlock(theWorld, thisPlayerMP, blockX, blockY, blockZ, l);
+	        }
 
-        // Drop experience
-        if (flag)
-        {
-            block.dropXpOnBlockBreak(theWorld, blockX, blockY, blockZ, getEXPDrop());
-        }
-        return flag;
+	        // Drop experience
+	        if (flag)
+	        {
+	            block.dropXpOnBlockBreak(theWorld, blockX, blockY, blockZ, getEXPDrop());
+	        }
+	        return flag;
+		}
+		catch(Throwable t)
+		{
+			this.breakFailedError(t);
+		}
+		return false;
 	}
 	
 	private int getEXPDrop()
 	{
-		if (	breakBlock == null || 
-				!ForgeHooks.canHarvestBlock(breakBlock, clone.getPlayerInterface(), breakMeta) || 
-				breakBlock.canSilkHarvest(clone.worldObj, clone.getPlayerInterface(), this.breakCoord.posX, this.breakCoord.posY, this.breakCoord.posZ, breakMeta) && 
-				EnchantmentHelper.getSilkTouchModifier(clone)
-			)
+		try
 		{
-			return 0;
+			if (	breakBlock == null || 
+					!ForgeHooks.canHarvestBlock(breakBlock, clone.getPlayerInterface(), breakMeta) || 
+					breakBlock.canSilkHarvest(clone.worldObj, clone.getPlayerInterface(), this.breakCoord.posX, this.breakCoord.posY, this.breakCoord.posZ, breakMeta) && 
+					EnchantmentHelper.getSilkTouchModifier(clone)
+				)
+			{
+				return 0;
+			}
+			else
+	        {
+				int meta = breakBlock.getDamageValue(clone.worldObj, this.breakCoord.posX, this.breakCoord.posY, this.breakCoord.posZ);
+	            int bonusLevel = EnchantmentHelper.getFortuneModifier(clone);
+	            return breakBlock.getExpDrop(clone.worldObj, meta, bonusLevel);
+	        }
 		}
-		else
-        {
-			int meta = breakBlock.getDamageValue(clone.worldObj, this.breakCoord.posX, this.breakCoord.posY, this.breakCoord.posZ);
-            int bonusLevel = EnchantmentHelper.getFortuneModifier(clone);
-            return breakBlock.getExpDrop(clone.worldObj, meta, bonusLevel);
-        }
+		catch(Throwable t)
+		{
+			this.breakFailedError(t);
+		}
+		return 0;
 	}
 	
 	
 	private boolean removeBlock(int blockX, int blockY, int blockZ, boolean canHarvest)
     {
-		EntityPlayer thisPlayerMP = this.clone.getPlayerInterface();
-		World theWorld = this.clone.worldObj;
-		
-        Block block = theWorld.getBlock(blockX, blockY, blockZ);
-        int l = theWorld.getBlockMetadata(blockX, blockY, blockZ);
-        block.onBlockHarvested(theWorld, blockX, blockY, blockZ, l, thisPlayerMP);
-        boolean flag = block.removedByPlayer(theWorld, thisPlayerMP, blockX, blockY, blockZ, canHarvest);
+		try
+		{
+			EntityPlayer thisPlayerMP = this.clone.getPlayerInterface();
+			World theWorld = this.clone.worldObj;
+			
+	        Block block = theWorld.getBlock(blockX, blockY, blockZ);
+	        int l = theWorld.getBlockMetadata(blockX, blockY, blockZ);
+	        block.onBlockHarvested(theWorld, blockX, blockY, blockZ, l, thisPlayerMP);
+	        boolean flag = block.removedByPlayer(theWorld, thisPlayerMP, blockX, blockY, blockZ, canHarvest);
 
-        if (flag)
-        {
-            block.onBlockDestroyedByPlayer(theWorld, blockX, blockY, blockZ, l);
-        }
+	        if (flag)
+	        {
+	            block.onBlockDestroyedByPlayer(theWorld, blockX, blockY, blockZ, l);
+	        }
 
-        return flag;
+	        return flag;
+		}
+		catch(Throwable t)
+		{
+			breakFailedError(t);
+		}
+		return false;
     }
 	
+	public void breakFailedError(Throwable t)
+	{
+		if(currentFinder != null)
+		{
+			this.currentFinder.onFinished(this, breakCoord, breakItem, breakBlock, breakMeta);
+		}
+		this.stopBreakingBlock();
+	}
 	
-	public void startBreakingBlock(){
-		
-		int blockX = this.breakCoord.posX;
-		int blockY = this.breakCoord.posY;
-		int blockZ = this.breakCoord.posZ;
-		
-		
-		if (this.isHittingBlock)
-        {
-//            this.clone.sendToAllWatching(new C07PacketPlayerDigging(1, this.blockToBreak.posX, this.blockToBreak.posY, this.blockToBreak.posZ, side));
-        }
+	public void startBreakingBlock()
+	{
+		try
+		{
+			int blockX = this.breakCoord.posX;
+			int blockY = this.breakCoord.posY;
+			int blockZ = this.breakCoord.posZ;
+			
 
-//        this.clone.sendToAllWatching(new C07PacketPlayerDigging(0, blockX, blockY, blockZ, side));
-        Block block = this.clone.worldObj.getBlock(blockX, blockY, blockZ);
-        boolean flag = block.getMaterial() != Material.air;
+			Block block = this.clone.worldObj.getBlock(blockX, blockY, blockZ);
+	        boolean flag = block.getMaterial() != Material.air;
 
-        if (flag && this.curBlockDamageMP == 0.0F)
-        {
-            block.onBlockClicked(this.clone.worldObj, blockX, blockY, blockZ, this.clone.getPlayerInterface());
-        }
+	        if (flag && this.curBlockDamageMP == 0.0F)
+	        {
+	            block.onBlockClicked(this.clone.worldObj, blockX, blockY, blockZ, this.clone.getPlayerInterface());
+	        }
 
-        if (flag && block.getPlayerRelativeBlockHardness(this.clone.getPlayerInterface(), this.clone.worldObj, blockX, blockY, blockZ) >= 1.0F)
-        {
-            this.harvestBlock(blockX, blockY, blockZ);
-            this.currentFinder.onFinished(this, breakCoord, breakItem, breakBlock, breakMeta);
-        }
-        else
-        {
-            this.isHittingBlock = true;
-            /*this.blockToBreak.posX = blockX;
-            this.blockToBreak.posY = blockY;
-            this.blockToBreak.posZ = blockZ;*/
-            this.breakItem = this.clone.getHeldItem();
-            this.curBlockDamageMP = 0.0F;
-            this.stepSoundTickCounter = 0.0F;
-            this.clone.worldObj.destroyBlockInWorldPartially(this.clone.getPlayerInterface().getEntityId(), this.breakCoord.posX, this.breakCoord.posY, this.breakCoord.posZ, (int)(this.curBlockDamageMP * 10.0F) - 1);
-        }
+	        if (flag && block.getPlayerRelativeBlockHardness(this.clone.getPlayerInterface(), this.clone.worldObj, blockX, blockY, blockZ) >= 1.0F)
+	        {
+	            this.harvestBlock(blockX, blockY, blockZ);
+	            this.currentFinder.onFinished(this, breakCoord, breakItem, breakBlock, breakMeta);
+	        }
+	        else
+	        {
+	            this.isHittingBlock = true;
+	            
+	            this.breakItem = this.clone.getHeldItem();
+	            this.curBlockDamageMP = 0.0F;
+	            this.stepSoundTickCounter = 0.0F;
+	            this.clone.worldObj.destroyBlockInWorldPartially(this.clone.getPlayerInterface().getEntityId(), this.breakCoord.posX, this.breakCoord.posY, this.breakCoord.posZ, (int)(this.curBlockDamageMP * 10.0F) - 1);
+	        }
+		}
+		catch(Throwable t)
+		{
+			this.breakFailedError(t);
+		}
+		
 	}
 	
 	
-	/** PosX of the current block being destroyed *//*
-    private int currentBlockX = -1;
-    *//** PosY of the current block being destroyed *//*
-    private int currentBlockY = -1;
-    *//** PosZ of the current block being destroyed *//*
-    private int currentblockZ = -1;*/
-    
-	@Deprecated
-	public boolean destroyBlock(int posX, int posY, int posZ)
-    {
-        ItemStack stack = this.clone.getCurrentEquippedItem();
-        if (stack != null && stack.getItem() != null && stack.getItem().onBlockStartBreak(stack, posX, posY, posZ, this.clone.getPlayerInterface()))
-        {
-            return false;
-        }
-        
-        World world = this.clone.worldObj;
-        Block block = world.getBlock(posX, posY, posZ);
-
-        if (block.getMaterial() == Material.air)
-        {
-            return false;
-        }
-        else
-        {
-            world.playAuxSFX(2001, posX, posY, posZ, Block.getIdFromBlock(block) + (world.getBlockMetadata(posX, posY, posZ) << 12));
-            int i1 = world.getBlockMetadata(posX, posY, posZ);
-            boolean flag = block.removedByPlayer(world, this.clone.getPlayerInterface(), posX, posY, posZ);
-
-            if (flag)
-            {
-                block.onBlockDestroyedByPlayer(world, posX, posY, posZ, i1);
-            }
-
-            this.currentFinder.onFinished(this, breakCoord, breakItem, breakBlock, breakMeta);
-
-//            this.blockToBreak.posY = -1;
-
-            ItemStack itemstack = this.clone.getCurrentEquippedItem();
-
-            if (itemstack != null)
-            {
-                itemstack.func_150999_a(world, block, posX, posY, posZ, this.clone.getPlayerInterface());
-
-                if (itemstack.stackSize == 0)
-                {
-                    this.clone.destroyCurrentEquippedItem();
-               }
-            }
-
-            return flag;
-        }
-    }
 
 	/** Current block damage (MP) */
     private float curBlockDamageMP;

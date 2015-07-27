@@ -46,9 +46,8 @@ public class ItemWoodStaff extends Item{
 	{
 		if(Minecraft.getMinecraft().objectMouseOver.typeOfHit == MovingObjectType.MISS)
 		{
-//			System.out.println("SWING");
 			int posX = (int) Math.floor(entityLiving.posX);
-			int posY = (int) Math.floor(entityLiving.posY/* + entityLiving.getEyeHeight()*/);
+			int posY = (int) Math.floor(entityLiving.posY-1);
 			int posZ = (int) Math.floor(entityLiving.posZ);
 			clientClickBlock(posX, posY, posZ, (EntityPlayer)entityLiving);
 		}

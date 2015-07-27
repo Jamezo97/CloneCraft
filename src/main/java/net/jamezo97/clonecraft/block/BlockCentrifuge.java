@@ -136,7 +136,7 @@ public class BlockCentrifuge extends BlockContainer{
 		byte b0 = 0;
         int l = MathHelper.floor_double((double)(entity.rotationYaw * 4.0F / 360.0F) + 0.5D) & 3;
 
-        System.out.println(l);
+//        System.out.println(l);
         
         world.setBlockMetadataWithNotify(x, y, z, l, 3);
 	}

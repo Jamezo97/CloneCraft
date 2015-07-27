@@ -14,13 +14,14 @@ public class ParamPosition extends Parameter{
 	
 	WordSet ws_point = new WordSet("over there");
 	WordSet ws_you = new WordSet("there", "that position", "your position");
-	WordSet ws_me = new WordSet("my position", "this sport", "this position");
+	WordSet ws_me = new WordSet("my position", "this spot", "this position");
 //	WordSet ws_this = new WordSet("this position", "this spot", "my position");
 	
 	@Override
-	public PGuess findParameters(EntityClone clone, EntityPlayer sender, String[] words) {
+	public PGuess findParameters(EntityClone clone, EntityPlayer sender, String[] words)
+	{
 		PGuess pguess = new PGuess(this);
-		System.out.println(ws_me.containsWord(words));
+//		System.out.println(ws_me.containsWord(words));
 		if(ws_point.containsWord(words) != -1)
 		{
 			
@@ -37,7 +38,6 @@ public class ParamPosition extends Parameter{
 			{
 				if(mop.entityHit != null)
 				{
-					
 					pguess.add(new ParamGuess(new ChunkCoordinates((int)Math.floor(mop.entityHit.posX), (int)Math.floor(mop.entityHit.posY), (int)Math.floor(mop.entityHit.posZ)), 0.5f));
 				}
 				else
@@ -55,20 +55,25 @@ public class ParamPosition extends Parameter{
 //					Bottom = 0, Top = 1, East = 2, West = 3, North = 4, South = 5.
 					switch(mop.sideHit){
 					case 0:  y-=2; break;
-					case 1:  y++; break;
+//					case 1:  y++; break;
 					case 2:  x++; break;
 					case 3:  x--; break;
 					case 4:  z--; break;
 					case 5:  z++; break;
 					}
 					
+//					System.out.println(mop.sideHit + ", " + y);
+					
 
-					if(World.doesBlockHaveSolidTopSurface(clone.worldObj, x, y-1, z)){
-						Block b1 = clone.worldObj.getBlock(x, y, z);
-						Block b2 = clone.worldObj.getBlock(x, y+1, z);
-						if(b1 == Blocks.air && b2 == Blocks.air)
+//					System.out.println("ray Traced " + x + ", " + y + ", " + z);
+					if(World.doesBlockHaveSolidTopSurface(clone.worldObj, x, y, z))
+					{
+						Block b1 = clone.worldObj.getBlock(x, y+1, z);
+						Block b2 = clone.worldObj.getBlock(x, y+2, z);
+						
+						if((b1 == Blocks.air || b1.getCollisionBoundingBoxFromPool(clone.worldObj, x, y+1, z) == null) && 
+								(b2 == Blocks.air || b2.getCollisionBoundingBoxFromPool(clone.worldObj, x, y+2, z) == null))
 						{
-							System.out.println("ray Traced " + x + ", " + y + ", " + z);
 							pguess.add(new ParamGuess(new ChunkCoordinates(x, y, z), 0.9f));
 						}
 						else
@@ -88,12 +93,12 @@ public class ParamPosition extends Parameter{
 		
 		if(ws_you.containsWord(words) != -1)
 		{
-			pguess.add(new ParamGuess(new ChunkCoordinates((int)Math.floor(clone.posX), (int)Math.floor(clone.posY), (int)Math.floor(clone.posZ)), 0.5f));
+			pguess.add(new ParamGuess(new ChunkCoordinates((int)Math.floor(clone.posX), (int)Math.floor(clone.posY-1), (int)Math.floor(clone.posZ)), 0.5f));
 		}
 		
 		if(ws_me.containsWord(words) != -1)
 		{
-			pguess.add(new ParamGuess(new ChunkCoordinates((int)Math.floor(sender.posX), (int)Math.floor(sender.posY), (int)Math.floor(sender.posZ)), 0.5f));
+			pguess.add(new ParamGuess(new ChunkCoordinates((int)Math.floor(sender.posX), (int)Math.floor(sender.posY-1), (int)Math.floor(sender.posZ)), 0.5f));
 		}
 		
 		return pguess;

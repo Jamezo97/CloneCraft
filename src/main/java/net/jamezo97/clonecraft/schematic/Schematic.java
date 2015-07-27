@@ -692,10 +692,8 @@ public class Schematic {
 		return this.getTileEntity(index, world);
 	}
 	
-	@SideOnly(value = Side.CLIENT)
 	public TileEntity getTileEntity(int index, World world)
 	{
-//		System.out.println("GIMME");
 		try
 		{
 			Block block = this.blockAt(index);
@@ -722,7 +720,6 @@ public class Schematic {
 					
 					te.setWorldObj(world);
 					
-//					System.out.println("TILE ENTITY:: " + te);
 					return te;
 				}
 			}

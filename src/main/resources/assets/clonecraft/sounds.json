@@ -80,6 +80,14 @@
 		 	"elec/ChargeExplode3.1s"
 		]
 	},
+	"elec.discharge":
+	{
+		"category": "block",
+		"sounds":
+		[
+		 	"elec/discharge"
+		]
+	},
 	"man.idle":
 	{
 		"category": "player",

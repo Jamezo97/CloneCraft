@@ -640,6 +640,13 @@ public class TileEntityLifeInducer extends TileEntityBase{
 
 	public void discharge() 
 	{
+		if(!this.worldObj.isRemote && power > 0)
+		{
+			for(int a = 0; a < 10; a++)
+			{
+				this.worldObj.playSoundEffect(this.xCoord, this.yCoord, this.zCoord, "clonecraft:elec.discharge", 1.0f, 0.8f - a * 0.05f);
+			}
+		}
 		power = 0;
 		this.sendPowerToClient();
 	}

@@ -3,6 +3,7 @@ package net.jamezo97.clonecraft.clone.ai;
 import java.util.Random;
 
 import net.jamezo97.clonecraft.clone.EntityClone;
+import net.minecraft.block.material.Material;
 import net.minecraft.entity.ai.EntityAIBase;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.pathfinding.PathEntity;
@@ -83,7 +84,11 @@ public class EntityAIFollowCloneOwner extends EntityAIBase
                 {
                     for (int var5 = 0; var5 <= 4; ++var5)
                     {
-                        if ((var4 < 1 || var5 < 1 || var4 > 3 || var5 > 3) && clone.worldObj.doesBlockHaveSolidTopSurface(clone.worldObj, var1 + var4, var3 - 1, var2 + var5) && !clone.worldObj.isBlockNormalCubeDefault(var1 + var4, var3, var2 + var5, false) && !clone.worldObj.isBlockNormalCubeDefault(var1 + var4, var3 + 1, var2 + var5, false))
+                        if ((var4 < 1 || var5 < 1 || var4 > 3 || var5 > 3) && 
+                        		(clone.worldObj.doesBlockHaveSolidTopSurface(clone.worldObj, var1 + var4, var3 - 1, var2 + var5) && 
+                        		!clone.worldObj.isBlockNormalCubeDefault(var1 + var4, var3, var2 + var5, false) && 
+                        		!clone.worldObj.isBlockNormalCubeDefault(var1 + var4, var3 + 1, var2 + var5, false)) || 
+                        		clone.worldObj.getBlock(var1+var4, var3-1, var2+var5).getMaterial() == Material.water)
                         {
                             clone.setLocationAndAngles((double)((float)(var1 + var4) + 0.5F), (double)var3, (double)((float)(var2 + var5) + 0.5F), clone.rotationYaw, clone.rotationPitch);
                             clone.getNavigator().clearPathEntity();
@@ -108,12 +113,14 @@ public class EntityAIFollowCloneOwner extends EntityAIBase
 				
 				for(int a = 0; a < 5; a++)
 				{
-					if(World.doesBlockHaveSolidTopSurface(clone.worldObj, blockX, blockY+a, blockZ))
+					if(World.doesBlockHaveSolidTopSurface(clone.worldObj, blockX, blockY+a, blockZ) ||
+							clone.worldObj.getBlock(blockX, blockY+a, blockZ).getMaterial() == Material.water)
 					{
 						y = blockY + a + 1;
 						break;
 					}
-					if(World.doesBlockHaveSolidTopSurface(clone.worldObj, blockX, blockY-a, blockZ))
+					if(World.doesBlockHaveSolidTopSurface(clone.worldObj, blockX, blockY-a, blockZ) || 
+							clone.worldObj.getBlock(blockX, blockY-a, blockZ).getMaterial() == Material.water)
 					{
 						y = blockY - a + 1;
 						break;
