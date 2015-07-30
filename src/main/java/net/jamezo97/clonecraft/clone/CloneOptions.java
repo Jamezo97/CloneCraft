@@ -20,10 +20,10 @@ public class CloneOptions {
 	public CloneOption jump;
 	public CloneOption curious;
 	public CloneOption smartMemory;
-//	public CloneOption breakExtraBlocks;
 	public CloneOption stats;
 	public CloneOption female;
 	public CloneOption breakBlocks;
+	public CloneOption skipAirBlocks;
 	public CloneOption farming;
 	public CloneOption share;
 	public CloneOption command;
@@ -65,6 +65,7 @@ public class CloneOptions {
 		addOption(farming = new CloneOption(14, "farm", false, this));
 		addOption(share = new CloneOption(15, "share", false, this));
 		addOption(command = new CloneOption(16, "command", true, this));
+		addOption(skipAirBlocks = new CloneOption(17, "skipAirBlocks", false, this));
 		lastOptionData = this.toInteger();
 
 	}

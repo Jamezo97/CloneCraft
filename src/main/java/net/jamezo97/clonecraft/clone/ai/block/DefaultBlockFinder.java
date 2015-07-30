@@ -254,6 +254,12 @@ public class DefaultBlockFinder implements BlockFinder{
 		
 		
 	}
+
+	@Override
+	public boolean isCreativeMode()
+	{
+		return false;
+	}
 	
 	
 	

@@ -46,4 +46,10 @@ public interface BlockFinder{
 	 */
 	public void clonePickedUp(EntityClone clone, ItemStack stack);
 	
+	/**
+	 * Blocks are harvested instantly
+	 * @return 
+	 */
+	public boolean isCreativeMode();
+	
 }

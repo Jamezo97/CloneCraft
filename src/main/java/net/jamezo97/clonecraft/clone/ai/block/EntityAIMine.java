@@ -3,16 +3,14 @@ package net.jamezo97.clonecraft.clone.ai.block;
 import net.jamezo97.clonecraft.clone.EntityClone;
 import net.minecraft.block.Block;
 import net.minecraft.block.material.Material;
-import net.minecraft.client.Minecraft;
-import net.minecraft.client.audio.PositionedSoundRecord;
+import net.minecraft.enchantment.Enchantment;
 import net.minecraft.enchantment.EnchantmentHelper;
 import net.minecraft.entity.ai.EntityAIBase;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.init.Blocks;
+import net.minecraft.init.Items;
 import net.minecraft.item.ItemStack;
-import net.minecraft.network.play.server.S23PacketBlockChange;
 import net.minecraft.util.ChunkCoordinates;
-import net.minecraft.util.ResourceLocation;
 import net.minecraft.world.World;
 import net.minecraftforge.common.ForgeHooks;
 
@@ -31,6 +29,9 @@ public class EntityAIMine extends EntityAIBase{
 		this.clone = clone;
 		// 00000101
 		this.setMutexBits(5);
+		
+		silkTouchStick = new ItemStack(Items.stick, 1, 0);
+		silkTouchStick.addEnchantment(Enchantment.silkTouch, 1);
 	}
 	
 	public EntityClone getClone()
@@ -70,6 +71,16 @@ public class EntityAIMine extends EntityAIBase{
 			
 			int theMeta = this.clone.worldObj.getBlockMetadata(theCoords.posX, theCoords.posY, theCoords.posZ);
 			
+			if(currentFinder.isCreativeMode())
+			{
+				this.breakCoord = theCoords;
+				this.breakItem = this.clone.getCurrentEquippedItem();
+				this.breakBlock = theBlock;
+				this.breakMeta = theMeta;
+				
+				return true;
+			}
+			
 			boolean canBreak = this.clone.selectBestItemForBlock(theCoords, theBlock, theMeta, true);
 			
 			if(canBreak)
@@ -91,12 +102,14 @@ public class EntityAIMine extends EntityAIBase{
 	/**/
 
 	@Override
-	public boolean continueExecuting() {
+	public boolean continueExecuting()
+	{
 		return breakCoord != null && breakBlock != null && breakMeta != -1;
 	}
 
 	@Override
-	public void startExecuting() {
+	public void startExecuting()
+	{
 		if(this.currentFinder.mustBeCloseToBreak())
 		{
 			clone.setPath(clone.getNavigator().getPathToXYZ(breakCoord.posX, breakCoord.posY, breakCoord.posZ));
@@ -366,6 +379,8 @@ public class EntityAIMine extends EntityAIBase{
         this.blockHitDelay = 0;
     }
 	
+	ItemStack silkTouchStick = null;
+	
 	//From ItemInWorldManager
 	public boolean harvestBlock(int blockX, int blockY, int blockZ)
 	{
@@ -374,19 +389,20 @@ public class EntityAIMine extends EntityAIBase{
 			EntityPlayer thisPlayerMP = this.clone.getPlayerInterface();
 			World theWorld = this.clone.worldObj;
 			
-			ItemStack stack = thisPlayerMP.getCurrentEquippedItem();
+			ItemStack itemstack = thisPlayerMP.getCurrentEquippedItem();
 	        
-			if (stack != null && stack.getItem().onBlockStartBreak(stack, blockX, blockY, blockZ, thisPlayerMP))
+			//Prevents harvesting for items like Sword in creative mode I assume. Don't need this, as I always want to harvest the block
+			/*if (stack != null && stack.getItem().onBlockStartBreak(stack, blockX, blockY, blockZ, thisPlayerMP))
 	        {
 	            return false;
-	        }
+	        }*/
 	        
 	        Block block = theWorld.getBlock(blockX, blockY, blockZ);
 	        int l = theWorld.getBlockMetadata(blockX, blockY, blockZ);
 	        theWorld.playAuxSFXAtEntity(thisPlayerMP, 2001, blockX, blockY, blockZ, Block.getIdFromBlock(block) + (theWorld.getBlockMetadata(blockX, blockY, blockZ) << 12));
 	        boolean flag = false;
 
-	        ItemStack itemstack = thisPlayerMP.getCurrentEquippedItem();
+//	        ItemStack itemstack = thisPlayerMP.getCurrentEquippedItem();
 	        boolean flag1 = block.canHarvestBlock(thisPlayerMP, l);
 
 	        if (itemstack != null)
@@ -401,6 +417,14 @@ public class EntityAIMine extends EntityAIBase{
 
 	        flag = removeBlock(blockX, blockY, blockZ, flag1);
 	        
+	        ItemStack replaced = null;
+	        
+	        if(this.currentFinder.isCreativeMode())
+	        {
+	        	replaced = thisPlayerMP.getCurrentEquippedItem();
+	        	thisPlayerMP.setCurrentItemOrArmor(0, silkTouchStick);
+	        }
+	        
 	        if (flag && flag1)
 	        {
 	            block.harvestBlock(theWorld, thisPlayerMP, blockX, blockY, blockZ, l);
@@ -411,6 +435,12 @@ public class EntityAIMine extends EntityAIBase{
 	        {
 	            block.dropXpOnBlockBreak(theWorld, blockX, blockY, blockZ, getEXPDrop());
 	        }
+	        
+	        if(this.currentFinder.isCreativeMode())
+	        {
+	        	thisPlayerMP.setCurrentItemOrArmor(0, replaced);
+	        }
+	        
 	        return flag;
 		}
 		catch(Throwable t)
@@ -447,7 +477,7 @@ public class EntityAIMine extends EntityAIBase{
 	}
 	
 	
-	private boolean removeBlock(int blockX, int blockY, int blockZ, boolean canHarvest)
+	public boolean removeBlock(int blockX, int blockY, int blockZ, boolean canHarvest)
     {
 		try
 		{
@@ -499,7 +529,7 @@ public class EntityAIMine extends EntityAIBase{
 	            block.onBlockClicked(this.clone.worldObj, blockX, blockY, blockZ, this.clone.getPlayerInterface());
 	        }
 
-	        if (flag && block.getPlayerRelativeBlockHardness(this.clone.getPlayerInterface(), this.clone.worldObj, blockX, blockY, blockZ) >= 1.0F)
+	        if (flag && (block.getPlayerRelativeBlockHardness(this.clone.getPlayerInterface(), this.clone.worldObj, blockX, blockY, blockZ) >= 1.0F) || currentFinder.isCreativeMode())
 	        {
 	            this.harvestBlock(blockX, blockY, blockZ);
 	            this.currentFinder.onFinished(this, breakCoord, breakItem, breakBlock, breakMeta);

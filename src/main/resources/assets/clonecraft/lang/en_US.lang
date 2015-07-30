@@ -70,6 +70,10 @@ clonecraft.coption.share=Share Items
 clonecraft.coption.desc.share=Clones on the same team with the same owner will share items with eachother.
 clonecraft.coption.command=Commandable
 clonecraft.coption.desc.command=Enables clones to be commanded via in game text. Just talk to them, but begin with a \ (backslash)
+clonecraft.coption.skipAirBlocks=Skip Air Blocks
+clonecraft.coption.desc.skipAirBlocks=When building, clones will skip over air blocks in the schematic
+
+
 
 key.ccRotate=Rotate Schematic
 key.categories.clonecraft=Clone Craft

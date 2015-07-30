@@ -3065,19 +3065,19 @@ public class EntityClone extends EntityLiving implements RenderableManager{
 	/**
      * returns the ItemStack containing the itemInUse
      */
-    @SideOnly(Side.CLIENT)
     public ItemStack getItemInUse()
     {
         return this.itemInUse;
     }
+    
     /**
      * Returns the item in use count
      */
-    @SideOnly(Side.CLIENT)
     public int getItemInUseCount()
     {
         return this.itemInUseCount;
     }
+    
     /**
      * Checks if the entity is currently using an item (e.g., bow, food, sword) by holding down the useItemButton
      */
@@ -3085,10 +3085,10 @@ public class EntityClone extends EntityLiving implements RenderableManager{
     {
         return this.itemInUse != null;
     }
+    
     /**
      * gets the duration for how long the current itemInUse has been in use
      */
-    @SideOnly(Side.CLIENT)
     public int getItemInUseDuration()
     {
         return this.isUsingItem() ? this.itemInUse.getMaxItemUseDuration() - this.itemInUseCount : 0;
