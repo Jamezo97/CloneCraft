@@ -67,6 +67,7 @@ public class CloneCraft {
 	 * If stuck, and the 'Mine' and 'Pickup items' options are turned on, teleport out of the hole. Or maybe dig the surrounding blocks
 	 * to escape, if they are stone.
 	 * 
+	 * 
 	 * */
 	
 	
