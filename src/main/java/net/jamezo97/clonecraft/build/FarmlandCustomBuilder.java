@@ -19,7 +19,6 @@ public class FarmlandCustomBuilder implements CustomBuilder
 		return null;
 	}
 
-
 	@Override
 	public boolean isCorrectBuildstate(int buildState)
 	{
@@ -31,6 +30,7 @@ public class FarmlandCustomBuilder implements CustomBuilder
 	{
 		return false;
 	}
+	
 	@Override
 	public boolean isBlockNormalizable()
 	{

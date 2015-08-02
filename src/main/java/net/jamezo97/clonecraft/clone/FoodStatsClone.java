@@ -26,12 +26,14 @@ public class FoodStatsClone extends FoodStats
     /**
      * Args: int foodLevel, float foodSaturationModifier
      */
+	@Override
     public void addStats(int p_75122_1_, float p_75122_2_)
     {
         this.foodLevel = Math.min(p_75122_1_ + this.foodLevel, 20);
         this.foodSaturationLevel = Math.min(this.foodSaturationLevel + (float)p_75122_1_ * p_75122_2_ * 2.0F, (float)this.foodLevel);
     }
 
+	@Override
     public void func_151686_a(ItemFood p_151686_1_, ItemStack p_151686_2_)
     {
         this.addStats(p_151686_1_.func_150905_g(p_151686_2_), p_151686_1_.func_150906_h(p_151686_2_));
@@ -93,6 +95,7 @@ public class FoodStatsClone extends FoodStats
     /**
      * Reads food stats from an NBT object.
      */
+	@Override
     public void readNBT(NBTTagCompound p_75112_1_)
     {
         if (p_75112_1_.hasKey("foodLevel", 99))
@@ -107,6 +110,7 @@ public class FoodStatsClone extends FoodStats
     /**
      * Writes food stats to an NBT object.
      */
+	@Override
     public void writeNBT(NBTTagCompound p_75117_1_)
     {
         p_75117_1_.setInteger("foodLevel", this.foodLevel);
@@ -118,12 +122,14 @@ public class FoodStatsClone extends FoodStats
     /**
      * Get the player's food level.
      */
+	@Override
     public int getFoodLevel()
     {
         return this.foodLevel;
     }
 
     @SideOnly(Side.CLIENT)
+	@Override
     public int getPrevFoodLevel()
     {
         return this.prevFoodLevel;
@@ -132,6 +138,7 @@ public class FoodStatsClone extends FoodStats
     /**
      * If foodLevel is not max.
      */
+	@Override
     public boolean needFood()
     {
         return this.foodLevel < 20;
@@ -140,6 +147,7 @@ public class FoodStatsClone extends FoodStats
     /**
      * adds input to foodExhaustionLevel to a max of 40
      */
+	@Override
     public void addExhaustion(float p_75113_1_)
     {
         this.foodExhaustionLevel = Math.min(this.foodExhaustionLevel + p_75113_1_, 40.0F);
@@ -148,16 +156,19 @@ public class FoodStatsClone extends FoodStats
     /**
      * Get the player's food saturation level.
      */
+	@Override
     public float getSaturationLevel()
     {
         return this.foodSaturationLevel;
     }
 
+	@Override
     public void setFoodLevel(int p_75114_1_)
     {
         this.foodLevel = p_75114_1_;
     }
 
+	@Override
     public void setFoodSaturationLevel(float p_75119_1_)
     {
         this.foodSaturationLevel = p_75119_1_;

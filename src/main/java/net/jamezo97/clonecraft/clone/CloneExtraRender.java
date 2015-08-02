@@ -51,62 +51,28 @@ public class CloneExtraRender implements Renderable{
 			GL11.glTranslatef(-x, -y, -z);
 		}
 		
+		ChunkCoordinates cc = clone.blockHighlight;
 		
-		
-//		if(buildAi.isRunning())
+		if(cc.posY != -100)
 		{
-//			System.out.println("A");
+			renderHighlightBlock.setBlockBounds(cc.posX, cc.posY, cc.posZ);
+			renderHighlightBlock.render(partialTicks);
 			
-			ChunkCoordinates cc = clone.blockHighlight;
-			
-			if(cc.posY != -100)
+			if(clone.getBuildAI().isRunning())
 			{
-//				System.out.println("Render");
+				GL11.glDisable(GL11.GL_TEXTURE_2D);
 				
-				renderHighlightBlock.setBlockBounds(cc.posX, cc.posY, cc.posZ);
-				renderHighlightBlock.render(partialTicks);
+				GL11.glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
 				
-				if(clone.getBuildAI().isRunning())
-				{
-					GL11.glDisable(GL11.GL_TEXTURE_2D);
-					
-					GL11.glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
-					
-				
-					GL11.glLineWidth(4.0f);
-					GL11.glBegin(GL11.GL_LINES);
-					GL11.glVertex3d(clone.posX, clone.posY + clone.getEyeHeight(), clone.posZ);
-					GL11.glVertex3d(cc.posX+0.5f, cc.posY+0.5f, cc.posZ+0.5f);
-					GL11.glEnd();
+			
+				GL11.glLineWidth(4.0f);
+				GL11.glBegin(GL11.GL_LINES);
+				GL11.glVertex3d(clone.posX, clone.posY + clone.getEyeHeight(), clone.posZ);
+				GL11.glVertex3d(cc.posX+0.5f, cc.posY+0.5f, cc.posZ+0.5f);
+				GL11.glEnd();
 
-					GL11.glEnable(GL11.GL_TEXTURE_2D);
-				}
+				GL11.glEnable(GL11.GL_TEXTURE_2D);
 			}
-			
-
-			/*int index = buildAi.getIndex();
-		
-			Schematic schem = buildAi.getSchematic();
-			
-			int[] pos = schem.indexToPos(index);
-			
-			int x = buildAi.posX + pos[EntityAIBuild.offsetIndexes[buildAi.getRotate()][0]] * EntityAIBuild.xzMultipliers[buildAi.getRotate()][0];
-			int y = buildAi.posY + pos[1];
-			int z = buildAi.posZ + pos[EntityAIBuild.offsetIndexes[buildAi.getRotate()][1]] * EntityAIBuild.xzMultipliers[buildAi.getRotate()][1];
-		
-			GL11.glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
-			
-			GL11.glDisable(GL11.GL_TEXTURE_2D);
-			
-			GL11.glBegin(GL11.GL_LINES);
-			GL11.glVertex3d(clone.posX, clone.posY + clone.height, clone.posZ);
-			GL11.glVertex3d(x+0.5f, y+0.5f, z+0.5f);
-			GL11.glEnd();
-			
-			System.out.println(buildAi.getRotate());
-
-			GL11.glEnable(GL11.GL_TEXTURE_2D);*/
-			
 		}
 	}
 

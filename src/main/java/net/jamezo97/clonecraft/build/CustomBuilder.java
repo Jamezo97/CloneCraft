@@ -4,20 +4,8 @@ import net.minecraft.block.Block;
 import net.minecraft.item.ItemStack;
 import net.minecraft.world.World;
 
-public interface CustomBuilder {
-
-	/**
-	 * Is this custom builder able to build the given block at the given location in the world.
-	 * @param ai The AI Object that is trying to build it
-	 * @param block The block that needs to be placed
-	 * @param meta The metadata of the block to be placed
-	 * @param world The world to place the block in
-	 * @param x The x position of the block to be placed in the world
-	 * @param y The y position of the block to be placed in the world
-	 * @param z The z position of the block to be placed in the world
-	 * @return True or false depending on whether it can be built.
-	 */
-//	boolean isBuildValid(EntityAIBuild ai, Block block, int meta, World world, int x, int y, int z);
+public interface CustomBuilder
+{
 
 	/**
 	 * Actually build the block in the world.

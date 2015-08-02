@@ -27,7 +27,6 @@ public class ModelCentrifuge extends ModelBase{
 
     public ModelCentrifuge()
     {
-    	//this.chestLid.addBox(1, 9, 3, 10, 3, 10, 0.0F);
     	this.lid.addBox(1, -1, -10, 10, 1, 10, 0.0F);
     	this.lid.rotationPointX = 0F;
     	this.lid.rotationPointY = 8F;
@@ -60,20 +59,18 @@ public class ModelCentrifuge extends ModelBase{
      */
     public void renderAll()
     {
-//        this.chestKnob.rotateAngleX = this.chestLid.rotateAngleX;
     	this.panel.rotateAngleX = -0.32f;
         this.lid.render(0.0625F);
         this.sideBox.render(0.0625F);
         this.box.render(0.0625F);
         this.panel.render(0.0625F);
-//        
+
         GL11.glDisable(GL11.GL_CULL_FACE);
         this.inner.render(0.0625F);
         GL11.glEnable(GL11.GL_CULL_FACE);
-//
+        
         this.innerStand.rotateAngleY = 0+rotateCentrifuge;
         this.innerStand.render(0.0625F);
-        //45 deg = (Math.PI/4.0F) radians, = 0.7854
         this.innerStand.rotateAngleY = 0.7854F+rotateCentrifuge;
         this.innerStand.render(0.0625F);
     }

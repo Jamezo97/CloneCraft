@@ -29,6 +29,7 @@ public class EntityBubbleFXAir extends EntityFX
     /**
      * Called to update the entity's position/logic.
      */
+    @Override
     public void onUpdate()
     {
         this.prevPosX = this.posX;
@@ -37,13 +38,9 @@ public class EntityBubbleFXAir extends EntityFX
         this.motionY += 0.002D;
         this.moveEntity(this.motionX, this.motionY, this.motionZ);
         this.motionX *= 0.8500000238418579D;
-        this.motionY *= 0.97D;//0.8500000238418579D;
+        this.motionY *= 0.97D;
         this.motionZ *= 0.8500000238418579D;
 
-/*        if (this.worldObj.getBlockMaterial(MathHelper.floor_double(this.posX), MathHelper.floor_double(this.posY), MathHelper.floor_double(this.posZ)) != Material.water)
-        {
-            this.setDead();
-        }*/
 
         if (this.particleMaxAge-- <= 0)
         {

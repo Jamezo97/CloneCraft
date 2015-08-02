@@ -174,7 +174,7 @@ public class GuiChooseSchematic extends GuiScreen{
 			if(clone.getBuildAI().isRunning())
 			{
 				clone.getBuildAI().setBuilding(false);
-				clone.getWatcher().sendValueToServer(Syncer.ID_BUILD);
+				clone.getSyncer().sendValueToServer(Syncer.ID_BUILD);
 			}
 			else if(this.schematicList.getSelectedSchematic() != null)
 			{
@@ -201,7 +201,7 @@ public class GuiChooseSchematic extends GuiScreen{
 			
 			if(clone.getBuildAI().isRunning())
 			{
-				clone.getWatcher().sendValueToServer(Syncer.ID_IGNOREITEMS);
+				clone.getSyncer().sendValueToServer(Syncer.ID_IGNOREITEMS);
 			}
 		}
 		else if(btn.id == 11)
@@ -296,7 +296,7 @@ public class GuiChooseSchematic extends GuiScreen{
 			if(this.buildSpeed.getValueInt() != lastBuildSpeed)
 			{
 				this.clone.getBuildAI().setBuildSpeed(lastBuildSpeed = (this.buildSpeed.getValueInt()));
-				this.clone.getWatcher().sendValueToServer(Syncer.ID_BUILDSPEED);
+				this.clone.getSyncer().sendValueToServer(Syncer.ID_BUILDSPEED);
 			}
 			else if(this.buildSpeed.getValueInt() != this.clone.getBuildAI().getBuildSpeed())
 			{

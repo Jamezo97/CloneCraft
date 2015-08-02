@@ -27,6 +27,7 @@ public class EntityAIOpenDoorClone extends EntityAIDoorInteract
     /**
      * Returns whether an in-progress EntityAIBase should continue executing
      */
+	@Override
     public boolean continueExecuting()
     {
         return this.field_75361_i && this.field_75360_j > 0 && super.continueExecuting();
@@ -35,6 +36,7 @@ public class EntityAIOpenDoorClone extends EntityAIDoorInteract
     /**
      * Execute a one shot task or start executing a continuous task
      */
+	@Override
     public void startExecuting()
     {
         this.field_75360_j = 20;
@@ -45,6 +47,7 @@ public class EntityAIOpenDoorClone extends EntityAIDoorInteract
     /**
      * Resets the task
      */
+	@Override
     public void resetTask()
     {
         if (this.field_75361_i)
@@ -57,6 +60,7 @@ public class EntityAIOpenDoorClone extends EntityAIDoorInteract
     /**
      * Updates the task
      */
+	@Override
     public void updateTask()
     {
         --this.field_75360_j;

@@ -109,9 +109,6 @@ public class CustomBuilders {
 				}
 			}
 		}
-		{
-//			NoNotifyCustomBuilder non = new NoNotifyCustomBuilder();
-		}
 		
 		{
 			PistonCustomBuilder pc = new PistonCustomBuilder();
@@ -142,8 +139,6 @@ public class CustomBuilders {
 		
 		registerCustomBuilder(new BedCustomBuilder(), Blocks.bed);
 		
-//		registerCustomBuilder(new FarmlandCustomBuilder(), Blocks.farmland);
-		
 		registerCustomBuilder(new CakeCustomBuilder(), Blocks.cake);
 
 		registerCustomBuilder(new GrassCustomBuilder(), Blocks.grass);
@@ -154,11 +149,6 @@ public class CustomBuilders {
 		
 		registerCustomBuilder(new LiquidCustomBuilder(Items.water_bucket, Blocks.flowing_water), Blocks.flowing_water);
 		registerCustomBuilder(new LiquidCustomBuilder(Items.lava_bucket, Blocks.flowing_lava), Blocks.flowing_lava);
-		
-//		registerCustomBuilder(new LiquidCustomBuilder(Items.water_bucket), Blocks.flowing_water);
-//		registerCustomBuilder(new LiquidCustomBuilder(Items.lava_bucket), Blocks.lava);
-		
-		
 	}
 
 

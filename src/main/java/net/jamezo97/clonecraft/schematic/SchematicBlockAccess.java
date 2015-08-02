@@ -20,37 +20,43 @@ import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
 
 @SideOnly(value = Side.CLIENT)
-public class SchematicBlockAccess extends World{
-	
+public class SchematicBlockAccess extends World
+{
+
 	Minecraft mc;
-	
+
 	public SchematicBlockAccess()
 	{
-		 super(new SaveHandlerMP(), "MpServer", WorldProvider.getProviderForDimension(0), new WorldSettings(0L, WorldSettings.GameType.CREATIVE, false, false, WorldType.DEFAULT), new Profiler());
-		 this.mc = Minecraft.getMinecraft();
+		super(new SaveHandlerMP(), "MpServer", WorldProvider.getProviderForDimension(0), new WorldSettings(0L, WorldSettings.GameType.CREATIVE, false, false,
+				WorldType.DEFAULT), new Profiler());
+		this.mc = Minecraft.getMinecraft();
 	}
-	
-	public SchematicBlockAccess loadData(Schematic schem, int posX, int posY, int posZ/*, WorldClient world*/)
+
+	public SchematicBlockAccess loadData(Schematic schem, int posX, int posY, int posZ/*
+																					 * ,
+																					 * WorldClient
+																					 * world
+																					 */)
 	{
 		this.schem = schem;
 		this.posX = posX;
 		this.posY = posY;
 		this.posZ = posZ;
-//		this.world = world;
-		
+		// this.world = world;
+
 		return this;
 	}
 
 	public Schematic schem;
-	
-//	WorldClient world;
-	
+
+	// WorldClient world;
+
 	int posX, posY, posZ;
 
 	@Override
 	public Block getBlock(int x, int y, int z)
 	{
-		if(schem.coordExists(x, y, z))
+		if (schem.coordExists(x, y, z))
 		{
 			return schem.blockAt(schem.posToIndex(x, y, z));
 		}
@@ -58,22 +64,24 @@ public class SchematicBlockAccess extends World{
 	}
 
 	@Override
-	public TileEntity getTileEntity(int x, int y, int z) 
+	public TileEntity getTileEntity(int x, int y, int z)
 	{
 		schem.getTileEntity(x, y, z, this);
 		return null;
 	}
 
 	@Override
-	public int getLightBrightnessForSkyBlocks(int p_72802_1_, int p_72802_2_, int p_72802_3_, int p_72802_4_) {
-//		world.getLightBrightnessForSkyBlocks(p_72802_4_, p_72802_4_, p_72802_4_, p_72802_4_);
-		return 0/*15728880*/; //15 << 20 | 15 << 4
+	public int getLightBrightnessForSkyBlocks(int p_72802_1_, int p_72802_2_, int p_72802_3_, int p_72802_4_)
+	{
+		// world.getLightBrightnessForSkyBlocks(p_72802_4_, p_72802_4_,
+		// p_72802_4_, p_72802_4_);
+		return 0/* 15728880 */; // 15 << 20 | 15 << 4
 	}
 
 	@Override
-	public int getBlockMetadata(int x, int y, int z) 
+	public int getBlockMetadata(int x, int y, int z)
 	{
-		if(schem.coordExists(x, y, z))
+		if (schem.coordExists(x, y, z))
 		{
 			return schem.blockMetaAt(schem.posToIndex(x, y, z));
 		}
@@ -81,15 +89,15 @@ public class SchematicBlockAccess extends World{
 	}
 
 	@Override
-	public int isBlockProvidingPowerTo(int p_72879_1_, int p_72879_2_, int p_72879_3_, int p_72879_4_) 
+	public int isBlockProvidingPowerTo(int p_72879_1_, int p_72879_2_, int p_72879_3_, int p_72879_4_)
 	{
 		return 0;
 	}
 
 	@Override
-	public boolean isAirBlock(int x, int y, int z) 
+	public boolean isAirBlock(int x, int y, int z)
 	{
-		if(schem.coordExists(x, y, z))
+		if (schem.coordExists(x, y, z))
 		{
 			return schem.blockIdAt(schem.posToIndex(x, y, z)) == 0;
 		}
@@ -97,38 +105,43 @@ public class SchematicBlockAccess extends World{
 	}
 
 	@Override
-	public BiomeGenBase getBiomeGenForCoords(int x, int z) {
+	public BiomeGenBase getBiomeGenForCoords(int x, int z)
+	{
 		return BiomeGenBase.forest;
 	}
 
 	@Override
-	public int getHeight() {
+	public int getHeight()
+	{
 		return 256;
 	}
 
 	@Override
-	public boolean extendedLevelsInChunkCache() {
+	public boolean extendedLevelsInChunkCache()
+	{
 		return false;
 	}
 
 	@Override
-	public boolean isSideSolid(int x, int y, int z, ForgeDirection side, boolean _default) {
+	public boolean isSideSolid(int x, int y, int z, ForgeDirection side, boolean _default)
+	{
 		return _default;
 	}
 
 	IChunkProvider clientChunkProvider;
-	
+
 	@Override
-	protected IChunkProvider createChunkProvider() {
+	protected IChunkProvider createChunkProvider()
+	{
 		this.clientChunkProvider = new ChunkProviderClient(this);
-        return this.clientChunkProvider;
+		return this.clientChunkProvider;
 	}
 
 	@Override
 	protected int func_152379_p()
-    {
-        return this.mc.gameSettings.renderDistanceChunks;
-    }
+	{
+		return this.mc.gameSettings.renderDistanceChunks;
+	}
 
 	@Override
 	public Entity getEntityByID(int p_73045_1_)
@@ -136,6 +149,4 @@ public class SchematicBlockAccess extends World{
 		return null;
 	}
 
-	
-	
 }

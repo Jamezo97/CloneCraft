@@ -94,14 +94,16 @@ public class TileEntityCentrifuge extends TileEntityFueled implements ISidedInve
 		}
 		return count > 0;
 	}
-	
+
+	@Override
 	public boolean shouldRefresh(Block oldBlock, Block newBlock, int oldMeta, int newMeta, World world, int x, int y, int z)
     {
         return oldBlock != newBlock;
     }
 	
 	AxisAlignedBB playerSearch;
-	
+
+	@Override
 	public void validate()
 	{
 		super.validate();

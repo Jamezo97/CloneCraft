@@ -29,7 +29,8 @@ public class FakeGameProfile extends GameProfile{
      * @param name Display name of the profile
      * @throws java.lang.IllegalArgumentException Both ID and name are either null or empty
      */
-    public FakeGameProfile(EntityClone clone) {
+    public FakeGameProfile(EntityClone clone) 
+    {
     	super(null, "Steve");
     	this.clone = clone;
     }
@@ -41,6 +42,7 @@ public class FakeGameProfile extends GameProfile{
      *
      * @return ID of the profile
      */
+	@Override
     public UUID getId() {
         return null;
     }
@@ -52,6 +54,7 @@ public class FakeGameProfile extends GameProfile{
      *
      * @return Name of the profile
      */
+	@Override
     public String getName() {
         return clone.getCommandSenderName();
     }
@@ -61,6 +64,7 @@ public class FakeGameProfile extends GameProfile{
      *
      * @return Modifiable map of profile properties.
      */
+	@Override
     public PropertyMap getProperties() {
         return properties;
     }
@@ -72,6 +76,7 @@ public class FakeGameProfile extends GameProfile{
      *
      * @return True if this profile is complete (as opposed to partial)
      */
+	@Override
     public boolean isComplete() {
         return false;//id != null && StringUtils.isNotBlank(getName());
     }
@@ -102,6 +107,7 @@ public class FakeGameProfile extends GameProfile{
                 .toString();
     }
 
+	@Override
     public boolean isLegacy() {
         return legacy;
     }

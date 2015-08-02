@@ -46,31 +46,6 @@ public class Mapping
 	
 	public boolean doesClash(int[] metas) 
 	{
-		
-		/*String s = "";
-		for(int a = 0; a < quads.size(); a++)
-		{
-			
-			if(a != 0)
-			{
-				s += ", ";
-			}
-			
-			s += "{";
-			for(int b = 0; b < quads.get(a).length; b++)
-			{
-				if(b != 0)
-				{
-					s += ", ";
-				}
-				s += quads.get(a)[b];
-			}
-
-			s += "}";
-		}
-		System.out.println(s);
-		System.out.println(Arrays.toString(metas));*/
-		
 		for(int a = 0; a < quads.size(); a++)
 		{
 			for(int b = 0; b < quads.get(a).length; b++)
@@ -85,15 +60,13 @@ public class Mapping
 			}
 		}
 		
-		
-		
-		
 		return false;
 	}
 
 	public boolean addQuad(int... metas)
 	{
 		boolean clashed = false;
+		
 		if(metas != null && metas.length == 4)
 		{
 			for(int a = 0; a < quads.size(); a++)
@@ -117,29 +90,6 @@ public class Mapping
 			
 			quads.add(metas);
 		}
-		
-		/*String s = "";
-		for(int a = 0; a < quads.size(); a++)
-		{
-			
-			if(a != 0)
-			{
-				s += ", ";
-			}
-			
-			s += "{";
-			for(int b = 0; b < quads.get(a).length; b++)
-			{
-				if(b != 0)
-				{
-					s += ", ";
-				}
-				s += quads.get(a)[b];
-			}
-
-			s += "}";
-		}
-		System.out.println("AAA" + s);*/
 		
 		return !clashed;
 	}

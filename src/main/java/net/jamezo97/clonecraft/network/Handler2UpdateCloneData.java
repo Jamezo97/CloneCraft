@@ -90,7 +90,7 @@ public class Handler2UpdateCloneData extends Handler{
 								id = d.readInt();
 								if(d.available() > 0)
 								{
-									sync = clone.getWatcher().getSync(id);
+									sync = clone.getSyncer().getSync(id);
 									
 									if(sync != null)
 									{
@@ -168,7 +168,7 @@ public class Handler2UpdateCloneData extends Handler{
 							
 							if(d.available() > 0)
 							{
-								sync = clone.getWatcher().getSync(id);
+								sync = clone.getSyncer().getSync(id);
 								
 								if(sync != null)
 								{

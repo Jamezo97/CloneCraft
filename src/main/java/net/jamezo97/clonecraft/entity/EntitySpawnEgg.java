@@ -14,44 +14,48 @@ import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.MovingObjectPosition;
 import net.minecraft.world.World;
 
-public class EntitySpawnEgg extends EntityThrowable{
+public class EntitySpawnEgg extends EntityThrowable
+{
 
 	public ItemStack stack;
-	
+
 	String spawnedBy;
-	
-	public EntitySpawnEgg(World par1World, EntityLivingBase par2EntityLivingBase, ItemStack stack, String username) {
+
+	public EntitySpawnEgg(World par1World, EntityLivingBase par2EntityLivingBase, ItemStack stack, String username)
+	{
 		super(par1World, par2EntityLivingBase);
 		this.stack = stack.copy();
 		this.dataWatcher.updateObject(3, stack);
 		spawnedBy = username;
 	}
-	
+
 	public EntitySpawnEgg(World par1World, double x, double y, double z, ItemStack stack)
-    {
-        super(par1World, x, y, z);
-        this.stack = stack.copy();
+	{
+		super(par1World, x, y, z);
+		this.stack = stack.copy();
 		this.dataWatcher.updateObject(3, stack);
 		spawnedBy = "";
-    }
-
-	public EntitySpawnEgg(World par1World) {
-		super(par1World);
-		
 	}
-	
-	
+
+	public EntitySpawnEgg(World par1World)
+	{
+		super(par1World);
+
+	}
 
 	@Override
-	protected void entityInit() {
+	protected void entityInit()
+	{
 		super.entityInit();
 		this.dataWatcher.addObject(3, new ItemStack(Blocks.stone));
 	}
 
 	@Override
-	public void writeEntityToNBT(NBTTagCompound nbt) {
+	public void writeEntityToNBT(NBTTagCompound nbt)
+	{
 		super.writeEntityToNBT(nbt);
-		if(stack != null){
+		if (stack != null)
+		{
 			NBTTagCompound nbtStack = new NBTTagCompound();
 			stack.writeToNBT(nbtStack);
 			nbt.setTag("ItemStack", nbtStack);
@@ -60,12 +64,15 @@ public class EntitySpawnEgg extends EntityThrowable{
 	}
 
 	@Override
-	public void readEntityFromNBT(NBTTagCompound nbt) {
+	public void readEntityFromNBT(NBTTagCompound nbt)
+	{
 		super.readEntityFromNBT(nbt);
 		NBTTagCompound nbtStack = nbt.getCompoundTag("ItemStack");
-		if(!nbtStack.hasNoTags()){
+		if (!nbtStack.hasNoTags())
+		{
 			stack = ItemStack.loadItemStackFromNBT(nbtStack);
-			if(stack != null){
+			if (stack != null)
+			{
 				this.dataWatcher.updateObject(3, stack);
 			}
 		}
@@ -73,31 +80,35 @@ public class EntitySpawnEgg extends EntityThrowable{
 	}
 
 	@Override
-	protected void onImpact(MovingObjectPosition mop) {
-		if(stack != null)
+	protected void onImpact(MovingObjectPosition mop)
+	{
+		if (stack != null)
 		{
-			if(!worldObj.isRemote)
+			if (!worldObj.isRemote)
 			{
 				float addY = 0;
-				
-				if(EntityTNTPrimed.class == CCEntityList.idToClass.get(new ItemData(stack).getId()))
+
+				if (EntityTNTPrimed.class == CCEntityList.idToClass.get(new ItemData(stack).getId()))
 				{
 					mop.hitVec.yCoord += 0.5;
 				}
 				Entity entity = new ItemData(stack).spawn(mop, this);
-				
+
 				if (entity != null)
 				{
-					entity.worldObj.playSoundAtEntity(entity, "clonecraft:general.pop", 1.0f, 0.9f + (worldObj.rand.nextFloat()/5));
+					entity.worldObj.playSoundAtEntity(entity, "clonecraft:general.pop", 1.0f, 0.9f + (worldObj.rand.nextFloat() / 5));
 					if (entity instanceof EntityLivingBase && stack.hasDisplayName())
 					{
-						((EntityLiving)entity).setCustomNameTag(stack.getDisplayName());
+						((EntityLiving) entity).setCustomNameTag(stack.getDisplayName());
 					}
-					if(entity instanceof EntityClone){
-						((EntityClone)entity).onSpawnedBy(spawnedBy);
+					if (entity instanceof EntityClone)
+					{
+						((EntityClone) entity).onSpawnedBy(spawnedBy);
 					}
 				}
-			}else{
+			}
+			else
+			{
 				worldObj.playSound(posX, posY, posZ, "clonecraft.pop", 1.0f, 1.0f, false);
 			}
 			worldObj.removeEntity(this);
@@ -105,8 +116,9 @@ public class EntitySpawnEgg extends EntityThrowable{
 		}
 	}
 
-/*	public void updateData() {
-		new Handler2UpdateEntitySpawnEgg(stack, entityId).sendToAllWatching(this);
-	}*/
-	
+	/*
+	 * public void updateData() { new Handler2UpdateEntitySpawnEgg(stack,
+	 * entityId).sendToAllWatching(this); }
+	 */
+
 }

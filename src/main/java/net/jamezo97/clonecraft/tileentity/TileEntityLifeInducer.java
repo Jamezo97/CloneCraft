@@ -35,7 +35,7 @@ import net.minecraft.world.World;
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
 
-public class TileEntityLifeInducer extends TileEntityBase{
+public class TileEntityLifeInducer extends CCTileEntityBase{
 
 	public int power = 0;
 	int maxPower = 160;

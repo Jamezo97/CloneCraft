@@ -15,9 +15,9 @@ public class SyncBuildData extends Sync
 	{
 		super(id);
 	}
-	
+
 	boolean lastBuild = false;
-	
+
 	int lastBuildState, lastFullSize;
 
 	@Override
@@ -48,7 +48,7 @@ public class SyncBuildData extends Sync
 	@Override
 	public void read(DataInputStream in, EntityClone clone) throws IOException
 	{
-		if(clone.worldObj.isRemote)
+		if (clone.worldObj.isRemote)
 		{
 			clone.getBuildAI().setBuilding(in.readBoolean());
 			clone.getBuildAI().setSchemFullSize(in.readInt());
@@ -61,18 +61,11 @@ public class SyncBuildData extends Sync
 			in.read();
 		}
 	}
-	
 
 	@Override
 	public boolean canBeEditedByClient()
 	{
 		return true;
 	}
-
-	
-	
-	
-	
-	
 
 }

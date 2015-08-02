@@ -14,7 +14,8 @@ public class RenderEntry {
 		this.renderer = renderer;
 	}
 
-	public void onRemoved() {
+	public void onRemoved()
+	{
 		this.manager.onRemoved();
 		this.renderer.onRemoved();
 	}

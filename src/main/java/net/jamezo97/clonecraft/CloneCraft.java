@@ -44,33 +44,8 @@ import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
 
 @Mod(modid = CloneCraft.MODID, version = CloneCraft.VERSION, name = CloneCraft.NAME)
-public class CloneCraft {
-
-	/*
-	 * As chunks are generated, randomly create 'towns'.
-	 * While the player is near a town, make the clones do stuff, make it look like a town.
-	 * When player leaves vicinity, town stops.
-	 * When loaded again, determine how much time has passed, and change accordingly, adding new buildings
-	 * new clones, new roads, new mines
-	 * Start off with just one family inside a house
-	 * Add crops, more houses
-	 * Add farms, animal pens, church, mineshaft, town center, shops
-	 * As more families procreate, build more houses. Type of houses depend on biome
-	 * If you attack a town clone, other will come to the rescue
-	 * 
-	 * Eventually add sounds, make them talk?
-	 * 
-	 * 
-	 * 
-	 * 
-	 * Extend Wander ability. If multiple tries to wander somewhere fail, check if stuck. 
-	 * If stuck, and the 'Mine' and 'Pickup items' options are turned on, teleport out of the hole. Or maybe dig the surrounding blocks
-	 * to escape, if they are stone.
-	 * 
-	 * 
-	 * */
-	
-	
+public class CloneCraft
+{
 	final static String MODID = "clonecraft";
 	final static String VERSION = "3.0";
 	final static String NAME = "CloneCraft";
@@ -232,37 +207,11 @@ public class CloneCraft {
 		GameRegistry.addShapedRecipe(new ItemStack(itemWoodStaff, 1), new Object[]{
 			"  Y", " X ", "X  ", Character.valueOf('X'), Items.stick, Character.valueOf('Y'), Blocks.planks
 		});
-		
-		/*GameRegistry.addShapelessRecipe(new ItemStack(this.itemGrowBall), new Object[]{
-			//Melon, BoneMeal, Brown Mushroom, Charcoal, Jungle Leaves
-			Items.melon, new ItemStack(Items.dye, 1, 15), Blocks.brown_mushroom, new ItemStack(Items.coal, 1, 1), new ItemStack(Blocks.leaves, 1, 3)
-		});*/
-		//Ink, Slime, furnace, diamond, iron, gold
-//		GameRegistry.addRecipe(new ItemStack(dnaSequencer), new Object[]{
-//			"ABA", "ACA", "ADA", 
-//			Character.valueOf('A'), Items.ingotIron, 
-//			Character.valueOf('B'), new ItemStack(Items.dyePowder, 1, 0), 
-//			Character.valueOf('C'), Items.slimeBall, 
-//			Character.valueOf('D'), Blocks.furnaceIdle, 
-//		});
-//		GameRegistry.addRecipe(new ItemStack(geneExtractor), new Object[]{
-//			"ABC", "BDB", "EFG", 
-//			Character.valueOf('A'), Items.flint, 
-//			Character.valueOf('B'), Items.redstone, 
-//			Character.valueOf('C'), Items.bucketEmpty, 
-//			Character.valueOf('D'), Blocks.blockIron, 
-//			Character.valueOf('E'), new ItemStack(needle, 1, 0), 
-//			Character.valueOf('F'), Items.diamond, 
-//			Character.valueOf('G'), Blocks.furnaceIdle
-//		});
-		//Flint, Bucket, Needle, Redstone, Diamond, Furnace, IronBlock
+
 		GameRegistry.addShapelessRecipe(new ItemStack(itemEmptyEgg), new Object[]{
 			Items.egg
 		});
 		
-		
-//		GameRegistry.registerCraftingHandler(new CloneCraftCraftingHandler());
-
 		GameRegistry.addRecipe(new RecipeNeedleTestTubeRecipe());
 		GameRegistry.addRecipe(new RecipeTestTubeNeedle());
 		GameRegistry.addRecipe(new RecipeClearDNAItem());
@@ -281,20 +230,15 @@ public class CloneCraft {
 	}
 	
 	
-	
+	//This may be used in the future to load and save towns / villages.. If I even get around to it......
 	public NBTTagCompound saveWorldData(NBTTagCompound nbt)
 	{
-//		CCBlockList.saveIdToId(nbt);
-		
 		return nbt;
 	}
 	
 	public void loadWorldData(NBTTagCompound nbt)
 	{
 		ImportantBlockRegistry.determineImportantBlocks();
-//		CCBlockList.loadIdToId(nbt);
-		
-		
 	}
 	
 }

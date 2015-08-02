@@ -133,7 +133,7 @@ public class EntityClone extends EntityLiving implements RenderableManager{
 	PlayerTeam team = PlayerTeam.Good;
 	
 	public InventoryClone inventory;
-	Syncer watcher;
+	Syncer syncer;
 	CloneOptions options;
 	
 	Interpretter interpretter;
@@ -166,7 +166,7 @@ public class EntityClone extends EntityLiving implements RenderableManager{
 		}
 		
 		inventory = new InventoryClone(this);
-		watcher = new Syncer(this, 1);
+		syncer = new Syncer(this, 1);
 		options = new CloneOptions(this);
 		ticksExisted = -1;
 
@@ -305,7 +305,8 @@ public class EntityClone extends EntityLiving implements RenderableManager{
 	}
 	
 	
-	
+
+	@Override
 	protected void applyEntityAttributes()
     {
         super.applyEntityAttributes();
@@ -339,13 +340,14 @@ public class EntityClone extends EntityLiving implements RenderableManager{
 	}
 
 	@Override
-	protected void updateAITasks() {
+	protected void updateAITasks()
+	{
 		super.updateAITasks();
 	}
 
-	public Syncer getWatcher()
+	public Syncer getSyncer()
 	{
-		return watcher;
+		return syncer;
 	}
 
 	int pId = -1;
@@ -555,7 +557,7 @@ public class EntityClone extends EntityLiving implements RenderableManager{
 		this.updateArmSwingProgress();
 		this.options.onTick();
 
-		if(!worldObj.isRemote){/*long l1=System.nanoTime();*/watcher.tick();/*System.out.println((System.nanoTime()-l1) / 1000000.0f);*/}
+		if(!worldObj.isRemote){/*long l1=System.nanoTime();*/syncer.tick();/*System.out.println((System.nanoTime()-l1) / 1000000.0f);*/}
 	}
 	
 	
@@ -716,7 +718,7 @@ public class EntityClone extends EntityLiving implements RenderableManager{
 	{
 		if(displayMessageCooldown != cooldown)
 		{
-			this.getWatcher().getSync(Syncer.ID_MESG).setDirty();
+			this.getSyncer().getSync(Syncer.ID_MESG).setDirty();
 		}
 		this.displayMessageCooldown = cooldown;
 	}
@@ -1183,7 +1185,8 @@ public class EntityClone extends EntityLiving implements RenderableManager{
 	float boundingBoxShift = 0;
 	
 	float actualHeight = 0.5f;
-	
+
+	@Override
 	protected void setSize(float newWidth, float newHeight)
     {
         
@@ -1325,19 +1328,19 @@ public class EntityClone extends EntityLiving implements RenderableManager{
 	protected void onNewPotionEffect(PotionEffect p_70670_1_)
     {
         super.onNewPotionEffect(p_70670_1_);
-        this.watcher.getSync(Syncer.ID_POTS).setDirty();
+        this.syncer.getSync(Syncer.ID_POTS).setDirty();
     }
 	@Override
     protected void onChangedPotionEffect(PotionEffect p_70695_1_, boolean p_70695_2_)
     {
         super.onChangedPotionEffect(p_70695_1_, p_70695_2_);
-        this.watcher.getSync(Syncer.ID_POTS).setDirty();
+        this.syncer.getSync(Syncer.ID_POTS).setDirty();
     }
 	@Override
     protected void onFinishedPotionEffect(PotionEffect p_70688_1_)
     {
         super.onFinishedPotionEffect(p_70688_1_);
-        this.watcher.getSync(Syncer.ID_POTS).setDirty();
+        this.syncer.getSync(Syncer.ID_POTS).setDirty();
     }
 	
 	public void forceClearActivePotions()
@@ -1399,8 +1402,10 @@ public class EntityClone extends EntityLiving implements RenderableManager{
 	 * @param entity
 	 * @return
 	 */
-	public boolean shouldProvokeAttack(EntityLivingBase entity){
-		if(entity == null){
+	public boolean shouldProvokeAttack(EntityLivingBase entity)
+	{
+		if(entity == null)
+		{
 			return false;
 		}
 		if(entity instanceof FakePlayer)
@@ -1537,9 +1542,10 @@ public class EntityClone extends EntityLiving implements RenderableManager{
 		return false;
 	}
 	
-	public void shootBow(ItemStack bow){
-		if(this.getAttackTarget() != null){
-			
+	public void shootBow(ItemStack bow)
+	{
+		if(this.getAttackTarget() != null)
+		{
 			int j1 = 20;
 			
 			float f = (float)j1 / 20.0F;
@@ -1554,22 +1560,13 @@ public class EntityClone extends EntityLiving implements RenderableManager{
             {
                 f = 1.0F;
             }
-            
-//            if(true){
-//            	return;
-//            }
-			
-//            SmartArrow entityarrow = new SmartArrow(this.worldObj, this, this.getAttackTarget(), 2.0f);
+
             float temp = this.rotationYaw;
             this.rotationYaw = this.rotationYawHead;
             EntityArrow entityarrow = new EntityArrow(this.worldObj, this, f * 2.0F);
             entityarrow.canBePickedUp = 1;
             this.rotationYaw = temp;
-            
-//			float temp = this.rotationYaw;
-//            this.rotationYaw = this.rotationYawHead;
-//            EntityArrow entityarrow = new EntityArrow(this.worldObj, this, getAttackTarget(), 1.6F, 0.0f);
-			
+
 			
 	        int i = EnchantmentHelper.getEnchantmentLevel(Enchantment.power.effectId, this.getHeldItem());
 	        int j = EnchantmentHelper.getEnchantmentLevel(Enchantment.punch.effectId, this.getHeldItem());
@@ -1597,11 +1594,11 @@ public class EntityClone extends EntityLiving implements RenderableManager{
 	        	this.inventory.consumeInventoryItem(Items.arrow);
 	        }
 	        
-			
 		}
 	}
 	
-	public void selectBestDamageItem(boolean searchWhole){
+	public void selectBestDamageItem(boolean searchWhole)
+	{
 		int index = -1;
 		float best = -1;
 		for(int a = 0; a < (searchWhole?36:9); a++)
@@ -1610,14 +1607,16 @@ public class EntityClone extends EntityLiving implements RenderableManager{
 			{
 				ItemStack stack = inventory.getStackInSlot(a);
 				float goodness = getWeaponGoodness(stack);
-				if(goodness > best){
+				if(goodness > best)
+				{
 					best = goodness;
 					index = a;
 				}
 				
 			}
 		}
-		if(index != -1){
+		if(index != -1)
+		{
 			if(index < 9)
 			{
 				inventory.currentItem = index;
@@ -1633,7 +1632,8 @@ public class EntityClone extends EntityLiving implements RenderableManager{
 		}
 	}
 	
-	public float getBowGoodness(ItemStack stack){
+	public float getBowGoodness(ItemStack stack)
+	{
 		float f1 = 0.0f;
 		f1 += 4*EnchantmentHelper.getEnchantmentLevel(Enchantment.flame.effectId, stack);
         f1 += 3*EnchantmentHelper.getEnchantmentLevel(Enchantment.power.effectId, stack);
@@ -1644,18 +1644,21 @@ public class EntityClone extends EntityLiving implements RenderableManager{
         return f1;
 	}
 	
-	public float getWeaponGoodness(ItemStack stack){
+	public float getWeaponGoodness(ItemStack stack)
+	{
 		Multimap map = stack.getAttributeModifiers();
 		Iterator iterator = map.entries().iterator();
 		float f = 0;
+		
         while (iterator.hasNext())
         {
             Entry entry = (Entry)iterator.next();
-            if(((String)entry.getKey()).equals(SharedMonsterAttributes.attackDamage.getAttributeUnlocalizedName())){
+            if(((String)entry.getKey()).equals(SharedMonsterAttributes.attackDamage.getAttributeUnlocalizedName()))
+            {
             	f = (float)((AttributeModifier)entry.getValue()).getAmount();
             }
         }
-//        System.out.println(f);
+
         int i = 0;
         float f1 = 0.0F;
         
@@ -1859,10 +1862,6 @@ public class EntityClone extends EntityLiving implements RenderableManager{
     @Override
 	public boolean attackEntityFrom(DamageSource damageSource, float damageAmount) 
     {
-    
-
-    	
-
     	{
     		Entity e = damageSource.getEntity();
     		
@@ -1943,17 +1942,14 @@ public class EntityClone extends EntityLiving implements RenderableManager{
 				}
 			}
 		}
-		/*if(damageSource.getDamageType().equals("fall") && this.getHealth() - damageAmount <= 0)
-		{
-			return false;
-		}*/
 		
 		return super.attackEntityFrom(damageSource, damageAmount);
 	}
     
 	
 	@Override
-	public void knockBack(Entity p_70653_1_, float power, double dx, double dz) {
+	public void knockBack(Entity p_70653_1_, float power, double dx, double dz)
+	{
 		super.knockBack(p_70653_1_, power, dx, dz);
 	}
 
@@ -1967,7 +1963,8 @@ public class EntityClone extends EntityLiving implements RenderableManager{
      * Makes other mobs attack this clone. 
      * Basically just adds an AI task to the surrounding hostile mobs to make them think the clone is the same as a player
      */
-    public void makeOthersAttackMe(){
+    public void makeOthersAttackMe()
+    {
     	if(this.ticksExisted % 20 == 0)
     	{
     		
@@ -1980,6 +1977,7 @@ public class EntityClone extends EntityLiving implements RenderableManager{
     		}
 
     		List mobs = this.worldObj.getEntitiesWithinAABBExcludingEntity(this, this.boundingBox.expand(50, 50, 50));
+    		
 			for(int a = 0; a < mobs.size(); a++)
         	{
 				Object mob = mobs.get(a);
@@ -2564,8 +2562,10 @@ public class EntityClone extends EntityLiving implements RenderableManager{
 		this.dataWatcher.updateObject(ID_OPTIONS, Integer.valueOf(options.toInteger()));
 	}
 	
-	public Set<EntityPlayer> getWatchingEntities(){
-		if(this.worldObj instanceof WorldServer){
+	public Set<EntityPlayer> getWatchingEntities()
+	{
+		if(this.worldObj instanceof WorldServer)
+		{
 			return ((WorldServer)this.worldObj).getEntityTracker().getTrackingPlayers(this);
 		}
 		return null;
@@ -2655,6 +2655,7 @@ public class EntityClone extends EntityLiving implements RenderableManager{
 	{
 		return ownerName;
 	}
+	
 	//==================================================================================================================
 	//TODO Items & Experience
 	//==================================================================================================================
@@ -2749,13 +2750,15 @@ public class EntityClone extends EntityLiving implements RenderableManager{
 	
 
 	@Override
-	protected void damageArmor(float dam) {
+	protected void damageArmor(float dam)
+	{
 		this.inventory.damageArmour(dam);
 	}
 
 
 
-	public float getArmourDamageReduction(ItemStack stack, ItemArmor armour){
+	public float getArmourDamageReduction(ItemStack stack, ItemArmor armour)
+	{
 		float reduction = armour.getArmorMaterial().getDamageReductionAmount(armour.armorType);
 		reduction += EnchantmentHelper.getEnchantmentLevel(Enchantment.protection.effectId, stack)*1.5;
 		reduction += EnchantmentHelper.getEnchantmentLevel(Enchantment.featherFalling.effectId, stack);
@@ -2989,7 +2992,8 @@ public class EntityClone extends EntityLiving implements RenderableManager{
 		}
 		
 	}
-	
+
+	@Override
 	public void swingItem()
     {
         super.swingItem();
@@ -3387,6 +3391,7 @@ public class EntityClone extends EntityLiving implements RenderableManager{
 				return false;
 			}
 
+			@Override
 			public void run(){
 				Minecraft mc = Minecraft.getMinecraft();
 				List[] fxLayers = Reflect.getFieldValueAndCast(Reflect.EffectRenderer_fxLayers, mc.effectRenderer, List[].class);
@@ -3585,12 +3590,6 @@ public class EntityClone extends EntityLiving implements RenderableManager{
     	}
     	return false;
     }
-
-	
-
-
-	
-
 
 	
 }

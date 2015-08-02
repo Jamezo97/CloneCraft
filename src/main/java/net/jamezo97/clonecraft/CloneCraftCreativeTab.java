@@ -7,16 +7,18 @@ import net.minecraft.item.Item;
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
 
-public class CloneCraftCreativeTab extends CreativeTabs{
+public class CloneCraftCreativeTab extends CreativeTabs
+{
 
-	 public CloneCraftCreativeTab(String par2Str) {
+	public CloneCraftCreativeTab(String par2Str)
+	{
 		super(par2Str);
 	}
 
 	@SideOnly(Side.CLIENT)
-     public Item getTabIconItem()
-     {
+	public Item getTabIconItem()
+	{
 		return CloneCraft.INSTANCE.itemNeedle;
-     }
-	
+	}
+
 }

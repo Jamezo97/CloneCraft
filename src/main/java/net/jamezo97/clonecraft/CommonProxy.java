@@ -70,9 +70,6 @@ public class CommonProxy {
 		        
 		        EntitySpawnEgg iprojectile = new EntitySpawnEgg(blockSource.getWorld(), iposition.getX(), iposition.getY(), iposition.getZ(), stack);
 		        
-		        
-		        
-//		        IProjectile iprojectile = this.getProjectileEntity(world, iposition);
 		        iprojectile.setThrowableHeading((double)enumfacing.getFrontOffsetX(), (double)((float)enumfacing.getFrontOffsetY() + 0.1F), (double)enumfacing.getFrontOffsetZ(), this.func_82500_b(), this.func_82498_a());
 		        world.spawnEntityInWorld((Entity)iprojectile);
 		        stack.splitStack(1);

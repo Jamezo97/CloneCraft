@@ -1,28 +1,31 @@
 package net.jamezo97.framebuffer;
 
-public class FBException extends Exception{
+public class FBException extends Exception
+{
 
-	public FBException() {
+	public FBException()
+	{
 		super();
 	}
 
-	public FBException(String message, Throwable cause,
-			boolean enableSuppression, boolean writableStackTrace) {
+	public FBException(String message, Throwable cause, boolean enableSuppression, boolean writableStackTrace)
+	{
 		super(message, cause, enableSuppression, writableStackTrace);
 	}
 
-	public FBException(String message, Throwable cause) {
+	public FBException(String message, Throwable cause)
+	{
 		super(message, cause);
 	}
 
-	public FBException(String message) {
+	public FBException(String message)
+	{
 		super(message);
 	}
 
-	public FBException(Throwable cause) {
+	public FBException(Throwable cause)
+	{
 		super(cause);
 	}
-	
-	
 
 }

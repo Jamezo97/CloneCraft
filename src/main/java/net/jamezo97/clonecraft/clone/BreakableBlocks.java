@@ -108,7 +108,7 @@ public class BreakableBlocks
 		if (clone.getOptions().farming.get())
 		{
 			// If it's a fully grown growable block, and it's not a bush
-			if (CustomBuilders.customBuilderMap.get(block) instanceof PlantCustomBuilder)
+			if (block instanceof IGrowable && CustomBuilders.customBuilderMap.get(block) instanceof PlantCustomBuilder)
 			{
 				if (!((IGrowable) block).func_149851_a(clone.worldObj, x, y, z, true))
 				{

@@ -12,12 +12,6 @@ public class BedCustomBuilder implements CustomBuilder{
 	@Override
 	public boolean doCustomBuild(EntityAIBuild ai, Block block, int meta, World world, int x, int y, int z, ItemStack using) 
 	{
-		/*if(true)
-		{
-			world.setBlock(x, y, z, block, meta, 3);
-			return true;
-		}*/
-		
 		int otherMeta = meta;
 		
 		if(meta >= 8)
@@ -28,9 +22,6 @@ public class BedCustomBuilder implements CustomBuilder{
 		{
 			otherMeta += 8;
 		}
-		
-//		System.out.println("My meta " + meta + ", other " + otherMeta);
-
 		
 		int newX = x;
 		int newZ = z;

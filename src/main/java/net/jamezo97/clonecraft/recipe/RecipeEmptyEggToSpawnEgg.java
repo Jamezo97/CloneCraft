@@ -9,24 +9,30 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.item.crafting.IRecipe;
 import net.minecraft.world.World;
 
-public class RecipeEmptyEggToSpawnEgg implements IRecipe, IOnCrafted{
-	
-	public RecipeEmptyEggToSpawnEgg(){
-//		CloneCraftCraftingHandler.add(this);
+public class RecipeEmptyEggToSpawnEgg implements IRecipe, IOnCrafted
+{
+
+	public RecipeEmptyEggToSpawnEgg()
+	{
+		// CloneCraftCraftingHandler.add(this);
 	}
 
 	@Override
-	public void onCrafted(EntityPlayer player, ItemStack result, IInventory ic) {
-		for(int a = 0; a < ic.getSizeInventory(); a++){
+	public void onCrafted(EntityPlayer player, ItemStack result, IInventory ic)
+	{
+		for (int a = 0; a < ic.getSizeInventory(); a++)
+		{
 			ItemStack stack = ic.getStackInSlot(a);
-			if(stack != null && stack.getItem() == CloneCraft.INSTANCE.itemNeedle && stack.getItemDamage() == 2){
+			if (stack != null && stack.getItem() == CloneCraft.INSTANCE.itemNeedle && stack.getItemDamage() == 2)
+			{
 				ItemStack returnStack = stack.copy();
 				returnStack.stackSize = 1;
 				ItemData dna = new ItemData(returnStack);
 				dna.empty();
 				dna.save();
 				returnStack.setItemDamage(0);
-				if(!player.inventory.addItemStackToInventory(returnStack)){
+				if (!player.inventory.addItemStackToInventory(returnStack))
+				{
 					player.dropPlayerItemWithRandomChoice(returnStack, false);
 				}
 				return;
@@ -35,24 +41,33 @@ public class RecipeEmptyEggToSpawnEgg implements IRecipe, IOnCrafted{
 	}
 
 	@Override
-	public boolean isValidItem(ItemStack stack, IInventory craftMatrix) {
-		return stack.getItem() == CloneCraft.INSTANCE.itemSpawnEgg;	
+	public boolean isValidItem(ItemStack stack, IInventory craftMatrix)
+	{
+		return stack.getItem() == CloneCraft.INSTANCE.itemSpawnEgg;
 	}
 
 	@Override
-	public boolean matches(InventoryCrafting ic, World world) {
+	public boolean matches(InventoryCrafting ic, World world)
+	{
 		ItemStack needle = null;
 		ItemStack egg = null;
-		for(int a = 0; a < ic.getSizeInventory(); a++){
+		for (int a = 0; a < ic.getSizeInventory(); a++)
+		{
 			ItemStack stack = ic.getStackInSlot(a);
-			if(stack != null){
-				if(stack.getItem() == CloneCraft.INSTANCE.itemNeedle && stack.getItemDamage() == 2){
-					if(needle != null) return false;
+			if (stack != null)
+			{
+				if (stack.getItem() == CloneCraft.INSTANCE.itemNeedle && stack.getItemDamage() == 2)
+				{
+					if (needle != null) return false;
 					needle = stack;
-				}else if(stack.getItem() == CloneCraft.INSTANCE.itemEmptyEgg){
-					if(egg != null) return false;
+				}
+				else if (stack.getItem() == CloneCraft.INSTANCE.itemEmptyEgg)
+				{
+					if (egg != null) return false;
 					egg = stack;
-				}else{
+				}
+				else
+				{
 					return false;
 				}
 			}
@@ -61,33 +76,40 @@ public class RecipeEmptyEggToSpawnEgg implements IRecipe, IOnCrafted{
 	}
 
 	@Override
-	public ItemStack getCraftingResult(InventoryCrafting ic) {
+	public ItemStack getCraftingResult(InventoryCrafting ic)
+	{
 		ItemStack needle = null;
-		for(int a = 0; a < ic.getSizeInventory(); a++){
+		for (int a = 0; a < ic.getSizeInventory(); a++)
+		{
 			ItemStack stack = ic.getStackInSlot(a);
-			if(stack != null){
-				if(stack.getItem() == CloneCraft.INSTANCE.itemNeedle && stack.getItemDamage() == 2){
+			if (stack != null)
+			{
+				if (stack.getItem() == CloneCraft.INSTANCE.itemNeedle && stack.getItemDamage() == 2)
+				{
 					needle = stack;
 				}
 			}
 		}
-		if(needle != null){
+		if (needle != null)
+		{
 			ItemStack itemReturn = new ItemStack(CloneCraft.INSTANCE.itemSpawnEgg);
 			ItemData dna = new ItemData(needle);
 			itemReturn.setTagCompound(dna.save());
 			return itemReturn;
 		}
-		
+
 		return new ItemStack(CloneCraft.INSTANCE.itemSpawnEgg);
 	}
 
 	@Override
-	public int getRecipeSize() {
+	public int getRecipeSize()
+	{
 		return 0;
 	}
 
 	@Override
-	public ItemStack getRecipeOutput() {
+	public ItemStack getRecipeOutput()
+	{
 		return null;
 	}
 

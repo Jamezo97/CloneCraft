@@ -137,7 +137,8 @@ public class RecipeStemCells  implements IRecipe, IOnCrafted{
 				}
 			}
 		}
-		if(needle != null && tube != null && bonemeal != null){
+		if(needle != null && tube != null && bonemeal != null)
+		{
 			//Create a new needle, fill the needle data with the tube data, save the needle data to the new output, return the new output.
 /*			ItemStack result = new ItemStack(CloneCraft.INSTANCE.itemNeedle, 1, 2);
 			ItemData nData = new ItemData(needle);

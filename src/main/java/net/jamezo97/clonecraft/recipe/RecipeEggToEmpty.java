@@ -8,20 +8,33 @@ import net.minecraft.item.crafting.IRecipe;
 import net.minecraft.world.World;
 
 //TODO Delete this class if never used.
-public class RecipeEggToEmpty implements IRecipe{
+public class RecipeEggToEmpty implements IRecipe
+{
 
 	@Override
-	public boolean matches(InventoryCrafting ic, World world) {
+	public boolean matches(InventoryCrafting ic, World world)
+	{
 		ItemStack eggs = null;
 		ItemStack needle = null;
-		for(int a = 0; a < ic.getSizeInventory(); a++){
+		for (int a = 0; a < ic.getSizeInventory(); a++)
+		{
 			ItemStack stack = ic.getStackInSlot(a);
-			if(stack != null){
-				if(stack.getItem() == Items.egg){
-					if(eggs != null){return false;}
+			if (stack != null)
+			{
+				if (stack.getItem() == Items.egg)
+				{
+					if (eggs != null)
+					{
+						return false;
+					}
 					eggs = stack;
-				}else if(stack.getItem() == CloneCraft.INSTANCE.itemNeedle && stack.getItemDamage() == 0){
-					if(needle != null){return false;}
+				}
+				else if (stack.getItem() == CloneCraft.INSTANCE.itemNeedle && stack.getItemDamage() == 0)
+				{
+					if (needle != null)
+					{
+						return false;
+					}
 					needle = stack;
 				}
 			}
@@ -30,30 +43,37 @@ public class RecipeEggToEmpty implements IRecipe{
 	}
 
 	@Override
-	public ItemStack getCraftingResult(InventoryCrafting ic) {
+	public ItemStack getCraftingResult(InventoryCrafting ic)
+	{
 		ItemStack needle = null;
-		for(int a = 0; a < ic.getSizeInventory(); a++){
+		for (int a = 0; a < ic.getSizeInventory(); a++)
+		{
 			ItemStack stack = ic.getStackInSlot(a);
-			if(stack != null){
-				if(stack.getItem() == CloneCraft.INSTANCE.itemNeedle && stack.getItemDamage() == 0){
+			if (stack != null)
+			{
+				if (stack.getItem() == CloneCraft.INSTANCE.itemNeedle && stack.getItemDamage() == 0)
+				{
 					needle = stack;
 				}
 			}
 		}
-		if(needle != null){
-			
+		if (needle != null)
+		{
+
 		}
-		
+
 		return null;
 	}
 
 	@Override
-	public int getRecipeSize() {
+	public int getRecipeSize()
+	{
 		return 0;
 	}
 
 	@Override
-	public ItemStack getRecipeOutput() {
+	public ItemStack getRecipeOutput()
+	{
 		return null;
 	}
 

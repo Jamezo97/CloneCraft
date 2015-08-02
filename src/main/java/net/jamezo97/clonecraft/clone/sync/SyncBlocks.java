@@ -7,37 +7,46 @@ import java.util.ArrayList;
 
 import net.jamezo97.clonecraft.clone.EntityClone;
 
-public class SyncBlocks extends Sync{
+public class SyncBlocks extends Sync
+{
 
-	public SyncBlocks(int id) {
+	public SyncBlocks(int id)
+	{
 		super(id);
 	}
-	
+
 	@Override
-	public boolean checkNeedsUpdating(EntityClone clone) {
+	public boolean checkNeedsUpdating(EntityClone clone)
+	{
 		return false;
 	}
 
 	@Override
-	public void updateValues(EntityClone clone) {
+	public void updateValues(EntityClone clone)
+	{
 	}
 
 	@Override
-	public void write(DataOutputStream out, EntityClone clone)throws IOException {
+	public void write(DataOutputStream out, EntityClone clone) throws IOException
+	{
 		ArrayList<Long> list = clone.getOptions().breakables.getArray();
 		out.writeInt(list.size());
-		for(int a = 0; a < list.size(); a++){
+		for (int a = 0; a < list.size(); a++)
+		{
 			out.writeLong(list.get(a));
 		}
 	}
 
 	@Override
-	public void read(DataInputStream in, EntityClone clone) throws IOException {
+	public void read(DataInputStream in, EntityClone clone) throws IOException
+	{
 		int size = in.readInt();
-		if(size > -1){
+		if (size > -1)
+		{
 			clone.getOptions().breakables.clear();
 			long[] data = new long[size];
-			for(int a = 0; a < size; a++){
+			for (int a = 0; a < size; a++)
+			{
 				data[a] = in.readLong();
 			}
 			clone.getOptions().breakables.importLong(data);
@@ -45,11 +54,9 @@ public class SyncBlocks extends Sync{
 	}
 
 	@Override
-	public int getChannel() {
+	public int getChannel()
+	{
 		return 1;
 	}
-
-	
-	
 
 }

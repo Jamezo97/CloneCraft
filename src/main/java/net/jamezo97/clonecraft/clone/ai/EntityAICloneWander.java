@@ -25,6 +25,7 @@ public class EntityAICloneWander extends EntityAIBase
     /**
      * Returns whether the EntityAIBase should begin execution.
      */
+	@Override
     public boolean shouldExecute()
     {
         if (this.entity.getAge() >= 100)
@@ -63,6 +64,7 @@ public class EntityAICloneWander extends EntityAIBase
     /**
      * Returns whether an in-progress EntityAIBase should continue executing
      */
+	@Override
     public boolean continueExecuting()
     {
         return !this.entity.getNavigator().noPath() && entity.getOptions().wander.get() && !entity.getOptions().guard.get();
@@ -71,13 +73,11 @@ public class EntityAICloneWander extends EntityAIBase
     /**
      * Execute a one shot task or start executing a continuous task
      */
+	@Override
     public void startExecuting()
     {
         this.entity.getNavigator().tryMoveToXYZ(this.xPosition, this.yPosition, this.zPosition, this.speed);
     }
-    
-    
-    
     
     private static Vec3 findRandomTargetBlock(EntityClone par0EntityCreature, int par1, int par2, Vec3 par3Vec3)
     {

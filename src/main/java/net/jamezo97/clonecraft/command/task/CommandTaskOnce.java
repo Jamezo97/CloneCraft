@@ -6,51 +6,64 @@ import net.jamezo97.clonecraft.command.parameter.Parameter;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.nbt.NBTTagCompound;
 
-public abstract class CommandTaskOnce extends CommandTask{
-	
-	
+public abstract class CommandTaskOnce extends CommandTask
+{
+
 	/**
-	 * Doesn't need to remember the command that sent it, because it's executed immediately, and only once.
+	 * Doesn't need to remember the command that sent it, because it's executed
+	 * immediately, and only once.
 	 */
-	public CommandTaskOnce() {
+	public CommandTaskOnce()
+	{
 		super(null);
 	}
 
 	@Override
-	public boolean shouldExecute() {
+	public boolean shouldExecute()
+	{
 		return true;
 	}
 
 	@Override
-	public boolean continueExecuting() {
+	public boolean continueExecuting()
+	{
 		return false;
 	}
 
 	@Override
-	public boolean isInterruptible() {
+	public boolean isInterruptible()
+	{
 		return false;
 	}
 
 	@Override
-	public void startExecuting() {
+	public void startExecuting()
+	{
 		execute();
 	}
-	
+
 	public abstract void execute();
 
 	@Override
-	public void resetTask() {}
+	public void resetTask()
+	{
+	}
 
 	@Override
-	public void updateTask() {}
+	public void updateTask()
+	{
+	}
 
 	@Override
-	public void saveTask(NBTTagCompound nbt) { }
+	public void saveTask(NBTTagCompound nbt)
+	{
+	}
 
 	@Override
-	public void loadTask(NBTTagCompound nbt) { }
+	public void loadTask(NBTTagCompound nbt)
+	{
+	}
 
-	
 	/**
 	 * The poor bugger who gets to be on the front end of my AI system
 	 */
@@ -63,15 +76,14 @@ public abstract class CommandTaskOnce extends CommandTask{
 	 * The parameters for the command to use.
 	 */
 	protected CurrentParams paramSet = null;
-	
+
 	@Override
-	public Parameter taskInit(EntityClone clone, EntityPlayer commander, CurrentParams paramset) {
+	public Parameter taskInit(EntityClone clone, EntityPlayer commander, CurrentParams paramset)
+	{
 		this.clone = clone;
 		this.commander = commander;
 		this.paramSet = paramset;
 		return null;
 	}
-	
-	
 
 }

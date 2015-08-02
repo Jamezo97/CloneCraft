@@ -13,7 +13,7 @@ public class SyncBuildIndex extends Sync
 	{
 		super(id);
 	}
-	
+
 	int lastIndex = 0;
 
 	@Override
@@ -40,6 +40,4 @@ public class SyncBuildIndex extends Sync
 		clone.getBuildAI().setIndex(in.readInt());
 	}
 
-	
-	
 }

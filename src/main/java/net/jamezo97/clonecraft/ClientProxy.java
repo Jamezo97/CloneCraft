@@ -3,7 +3,6 @@ package net.jamezo97.clonecraft;
 import java.io.File;
 
 import net.jamezo97.clonecraft.clone.BreakableBlocks;
-import net.jamezo97.clonecraft.entity.custom.RenderCustom;
 import net.jamezo97.clonecraft.render.CentrifugeRenderHandler;
 import net.jamezo97.clonecraft.render.LifeInducerRenderHandler;
 import net.jamezo97.clonecraft.render.RenderClone;
@@ -20,15 +19,22 @@ import cpw.mods.fml.client.registry.ClientRegistry;
 import cpw.mods.fml.client.registry.RenderingRegistry;
 import cpw.mods.fml.relauncher.Side;
 
+/**
+ * Client side mod initialization methods
+ * @author James
+ *
+ */
 public class ClientProxy extends CommonProxy{
 
 	public static CentrifugeRenderHandler rh;
 	
-	public static KeyBinding moveUp, moveDown, moveLeft, moveRight, moveForward, moveBackward, rotate,
-	selectModifier;
+	public static LifeInducerRenderHandler lh;
+	
+	public static KeyBinding moveUp, moveDown, moveLeft, moveRight, moveForward, moveBackward, rotate, selectModifier;
 	
 	@Override
-	public void init(CloneCraft craft) {
+	public void init(CloneCraft craft)
+	{
 		super.init(craft);
 		
 	}
@@ -40,23 +46,22 @@ public class ClientProxy extends CommonProxy{
 		
 		RenderingRegistry.registerEntityRenderingHandler(net.jamezo97.clonecraft.clone.EntityClone.class, new RenderClone());
 		
-		RenderingRegistry.registerEntityRenderingHandler(net.minecraft.entity.EntityCustom.class, new RenderCustom());
-		
+		//Register TileEntity custom renders
 		int nextRenderID = RenderingRegistry.getNextAvailableRenderId();
-
-
+		
 		RenderingRegistry.registerBlockHandler(rh = new CentrifugeRenderHandler(nextRenderID));
 		CloneCraft.INSTANCE.blockCentrifuge.setRenderID(nextRenderID);
 		TileEntityRendererDispatcher.instance.mapSpecialRenderers.put(TileEntityCentrifuge.class, rh);
 		
+		
 		nextRenderID = RenderingRegistry.getNextAvailableRenderId();
 		
-		LifeInducerRenderHandler lh;
 		RenderingRegistry.registerBlockHandler(lh = new LifeInducerRenderHandler(nextRenderID));
 		CloneCraft.INSTANCE.blockLifeInducer.setRenderID(nextRenderID);
 		TileEntityRendererDispatcher.instance.mapSpecialRenderers.put(TileEntityLifeInducer.class, lh);
 		
-//		kb_select = new KeyBinding("key.ccSelectClone", Keyboard.KEY_R, "key.categories.clonecraft");
+		
+		//Register Key Bindings
 		selectModifier = new KeyBinding("key.ccModify", Keyboard.KEY_LMENU, "key.categories.clonecraft");
 		
 		rotate = new KeyBinding("key.ccRotate", Keyboard.KEY_R, "key.categories.clonecraft");
@@ -80,7 +85,8 @@ public class ClientProxy extends CommonProxy{
 	}
 
 	@Override
-	public void postInit(CloneCraft cloneCraft) {
+	public void postInit(CloneCraft cloneCraft)
+	{
 		super.postInit(cloneCraft);
 		
 		Reflect.init(Side.CLIENT);
@@ -89,12 +95,9 @@ public class ClientProxy extends CommonProxy{
 	}
 
 	@Override
-	public File getBaseFolder() {
+	public File getBaseFolder()
+	{
 		return Minecraft.getMinecraft().mcDataDir;
 	}
-	
-	
-
-	
 	
 }

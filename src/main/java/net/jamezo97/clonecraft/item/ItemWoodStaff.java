@@ -56,16 +56,6 @@ public class ItemWoodStaff extends Item{
 	@Override
 	public boolean onItemUse(ItemStack stack, EntityPlayer player, World world, int posX, int posY, int posZ, int side, float f1, float f2, float f3)
 	{
-		/*if(true && world.isRemote)
-		{
-			Block block = world.getBlock(posX, posY, posZ);
-			int meta = world.getBlockMetadata(posX, posY, posZ);
-			
-			System.out.println(block + ", " + meta + ", " + Integer.toBinaryString(meta));
-		}*/
-		
-		
-		
 		if(world.isRemote)
 		{
 			useTimeLast = world.getTotalWorldTime();

@@ -152,20 +152,23 @@ public class CloneOptions {
 	public int[] toIntArray()
 	{
 		int[] data = new int[allOptions.size()];
-		
-		for (int a = 0; a < allOptions.size(); a++) {
+
+		for (int a = 0; a < allOptions.size(); a++)
+		{
 			data[a] = allOptions.get(a).write();
 		}
 		return data;
 	}
 
-	public int toInteger() {
+	public int toInteger()
+	{
 		int val = 0;
-		
-		for (int a = 0; a < allOptions.size(); a++) {
+
+		for (int a = 0; a < allOptions.size(); a++)
+		{
 			val |= ((allOptions.get(a).get() ? 1 : 0) << a);
 		}
-		
+
 		return val;
 	}
 

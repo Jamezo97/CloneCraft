@@ -210,11 +210,6 @@ public class ItemSpawnEgg extends Item{
 		ItemData data = new ItemData();
 		ItemStack egg;
 		
-		/*data.fill(0);
-		egg = new ItemStack(item, 1, 1);
-		data.save(egg);
-		list.add(egg);*/
-		
 		for(Entry<Integer, Class> entry : CCEntityList.idToClass.entrySet())
 		{
 			int id = entry.getKey();

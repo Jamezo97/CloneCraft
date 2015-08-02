@@ -17,23 +17,14 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.ReportedException;
 
-public class InventoryClone extends InventoryPlayer{//implements IInventory{
-	
-	//0-35 = Main Inventory
-	//36-39 = Armour Inventory
-//	ItemStack[] mainInventory;
-//	ItemStack[] armorInventory;
-	
-	//decrementAnimations
-	
-	
+public class InventoryClone extends InventoryPlayer
+{
+
 	EntityClone clone;
 	
 	public InventoryClone(EntityClone clone){
 		super(null);
 		this.clone = clone;
-//		mainInventory = new ItemStack[36];
-//		armorInventory = new ItemStack[4];
 	}
 	
 	/**
@@ -41,12 +32,15 @@ public class InventoryClone extends InventoryPlayer{//implements IInventory{
 	 * @param stack ItemStack to try and fit
 	 * @return True if the stack fits, false otherwise
 	 */
-	public boolean canFullyFit(ItemStack stack){
+	public boolean canFullyFit(ItemStack stack)
+	{
 		if(stack == null){return false;}
+		
 		int removed = 0;
 		ItemStack toFit = stack.copy();
 		ItemStack slot;
 		int emptySlotIndex = -1;
+		
 		for(int a = 0; a < mainInventory.length; a++)
 		{
 			if(toFit.stackSize == 0){
@@ -186,6 +180,7 @@ public class InventoryClone extends InventoryPlayer{//implements IInventory{
 	/**
      * Returns the number of slots in the inventory.
      */
+	@Override
     public int getSizeInventory()
     {
         return 40;
@@ -197,6 +192,7 @@ public class InventoryClone extends InventoryPlayer{//implements IInventory{
      * @param slot 3=Head, 2=Chest, 1=Legs, 0=Feet
      * @return The ItemStack in the armour slot
      */
+	@Override
     public ItemStack armorItemInSlot(int slot){
     	return armorInventory[slot];
     }
@@ -204,6 +200,7 @@ public class InventoryClone extends InventoryPlayer{//implements IInventory{
     /**
      * Returns the stack in slot i
      */
+	@Override
     public ItemStack getStackInSlot(int slot)
     {
     	if(slot >= 36){
@@ -258,6 +255,7 @@ public class InventoryClone extends InventoryPlayer{//implements IInventory{
      * Removes from an inventory slot (first arg) up to a specified number (second arg) of mainInventory and returns them in a
      * new stack.
      */
+	@Override
     public ItemStack decrStackSize(int slot, int count)
     {
     	ItemStack[] stacks = mainInventory;
@@ -298,6 +296,7 @@ public class InventoryClone extends InventoryPlayer{//implements IInventory{
      * When some containers are closed they call this on each slot, then drop whatever it returns as an EntityItem -
      * like when you close a workbench GUI.
      */
+	@Override
     public ItemStack getStackInSlotOnClosing(int slot)
     {
     	ItemStack[] stacks = mainInventory;
@@ -320,6 +319,7 @@ public class InventoryClone extends InventoryPlayer{//implements IInventory{
     /**
      * Sets the given item stack to the specified slot in the inventory (can be crafting or armor sections).
      */
+	@Override
     public void setInventorySlotContents(int slot, ItemStack stack)
     {
     	ItemStack[] stacks = mainInventory;
@@ -342,6 +342,7 @@ public class InventoryClone extends InventoryPlayer{//implements IInventory{
     /**
      * Returns the name of the inventory
      */
+	@Override
     public String getInventoryName()
     {
         return "inventory.clone";
@@ -351,6 +352,7 @@ public class InventoryClone extends InventoryPlayer{//implements IInventory{
     /**
      * Returns the maximum stack size for a inventory slot.
      */
+	@Override
     public int getInventoryStackLimit()
     {
         return 64;
@@ -585,25 +587,6 @@ public class InventoryClone extends InventoryPlayer{//implements IInventory{
     public void dropAllItems()
     {
     	this.dropAllItemsMe();
-//        int i;
-//
-//        for (i = 0; i < this.mainInventory.length; ++i)
-//        {
-//            if (this.mainInventory[i] != null)
-//            {
-//                this.player.func_146097_a(this.mainInventory[i], true, false);
-//                this.mainInventory[i] = null;
-//            }
-//        }
-//
-//        for (i = 0; i < this.armorInventory.length; ++i)
-//        {
-//            if (this.armorInventory[i] != null)
-//            {
-//                this.clone.func_146097_a(this.armorInventory[i], true, false);
-//                this.armorInventory[i] = null;
-//            }
-//        }
     }
 
     @Override
@@ -612,17 +595,23 @@ public class InventoryClone extends InventoryPlayer{//implements IInventory{
         return this.clone.isDead ? false : p_70300_1_.getDistanceSqToEntity(this.clone) <= 64.0D;
     }
 
-	public int putStackOnHotbar(int slotFrom) {
-		if(slotFrom < 9){
+	public int putStackOnHotbar(int slotFrom)
+	{
+		if(slotFrom < 9)
+		{
 			return slotFrom;
 		}
-		for(int a = 8; a >= 0; a--){
-			if(this.mainInventory[a] == null){
+		
+		for(int a = 8; a >= 0; a--)
+		{
+			if(this.mainInventory[a] == null)
+			{
 				this.mainInventory[a] = this.mainInventory[slotFrom];
 				this.mainInventory[slotFrom] = null;
 				return a;
 			}
 		}
+		
 		ItemStack temp;
 		temp = mainInventory[8];
 		mainInventory[8] = mainInventory[slotFrom];

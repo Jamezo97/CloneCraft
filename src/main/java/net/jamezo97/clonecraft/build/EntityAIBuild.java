@@ -34,7 +34,7 @@ public class EntityAIBuild extends EntityAIBase implements BlockFinder, Notifier
 	EntityClone clone;
 	
 	Schematic schem;
-	//Tests
+	
 	boolean isBuilding = false;
 	
 	/**
@@ -85,10 +85,6 @@ public class EntityAIBuild extends EntityAIBase implements BlockFinder, Notifier
 	int buildState = 0;
 	
 	ArrayList<Integer> skipBlocks = new ArrayList<Integer>();
-	
-//	ArrayList<Block> specialConsiderations = new ArrayList<Block>();
-	
-//	ArrayList<ChunkCoordinates> availableChests = new ArrayList<ChunkCoordinates>();
 	
 	public EntityAIBuild(EntityClone clone)
 	{
@@ -979,10 +975,7 @@ public class EntityAIBuild extends EntityAIBase implements BlockFinder, Notifier
 	public void loadState(NBTTagCompound nbt) {}
 
 	@Override
-	public void onSuccess(ItemStack fetched)
-	{
-		
-	}
+	public void onSuccess(ItemStack fetched) {}
 	
 	@Override
 	public boolean isCreativeMode()
@@ -990,22 +983,17 @@ public class EntityAIBuild extends EntityAIBase implements BlockFinder, Notifier
 		return this.shouldIgnoreItems();
 	}
 
+	@Override
 	public boolean mustFetchAll()
 	{
 		return false;
 	}
 
 	@Override
-	public void onFailure(ItemStack failedToFetch)
-	{
-		
-	}
+	public void onFailure(ItemStack failedToFetch) {}
 
 	@Override
-	public void onFetchedSome(ItemStack fetched)
-	{
-		
-	}
+	public void onFetchedSome(ItemStack fetched) {}
 
 	public void setIndex(int index)
 	{
@@ -1058,14 +1046,4 @@ public class EntityAIBuild extends EntityAIBase implements BlockFinder, Notifier
 	{
 		return this.buildSpeed;
 	}
-
-
-
-
-
-
-	
-	
-	
-	
 }

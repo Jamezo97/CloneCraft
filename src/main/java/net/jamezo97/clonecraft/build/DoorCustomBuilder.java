@@ -12,14 +12,6 @@ public class DoorCustomBuilder implements CustomBuilder{
 	@Override
 	public ItemStack getRequiredItemToBuild(EntityAIBuild ai, Block block, int meta, World world, int x, int y, int z) 
 	{
-		/*if(block == Blocks.wooden_door)
-		{
-			return new ItemStack(Items.wooden_door);
-		}
-		else if(block == Blocks.iron_door)
-		{
-			return new ItemStack(Items.iron_door);
-		}*/
 		return null;
 	}
 
@@ -39,8 +31,6 @@ public class DoorCustomBuilder implements CustomBuilder{
 			
 			world.setBlock(x, y, z, block, meta, 2);
 			world.setBlock(x, y+1, z, blockOnTop, metaOnTop, 3);
-			
-			
 			
 			if(using != null)
 			{
@@ -65,8 +55,6 @@ public class DoorCustomBuilder implements CustomBuilder{
 		return true;
 	}
 
-	
-	
 	@Override
 	public boolean isBlockNormalizable()
 	{

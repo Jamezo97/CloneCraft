@@ -19,6 +19,7 @@ public class FireCustomBuilder implements CustomBuilder{
             {
                 world.playSoundEffect((double)x + 0.5D, (double)y + 0.5D, (double)z + 0.5D, "fire.ignite", 1.0F, world.rand.nextFloat() * 0.4F + 0.8F);
                 world.setBlock(x, y, z, Blocks.fire);
+                
                 if(stack != null)
                 {
                     stack.damageItem(1, ai.clone);

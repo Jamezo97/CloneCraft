@@ -20,57 +20,6 @@ public class PistonCustomBuilder implements CustomBuilder
 			meta = meta & 7;
 			
 			world.setBlock(x, y, z, block, meta, 3);
-			/*int x2 = x;
-			int y2 = y;
-			int z2 = z;
-			
-			switch(meta & 7)
-			{
-			case 0: y2--; break;
-			case 1: y2++; break;
-			case 2: z2--; break;
-			case 3: z2++; break;
-			case 4: x2--; break;
-			case 5: x2++; break;
-			}
-			
-			System.out.println("GOOOOOOOOO: " + x2 + ", " + y2 + ", " + z2);
-			
-			world.setBlock(x2, y2, z2, Blocks.diamond_block);
-			
-			if(world.getBlock(x2, y2, z2) == Blocks.air)
-			{
-				meta = meta & 7;
-				
-				world.setBlock(x, y, z, block, meta, 3);
-			}
-			else
-			{
-				int index = ai.getSchematicIndexFromWorld(x2, y2, z2);
-				
-				Block adj = ai.schem.blockAtSafe(index);
-				
-				
-				if(adj instanceof BlockPistonExtension)
-				{
-					int metaAdj = RotationMapping.translate(adj, ai.schem.blockMetaAtSafe(index), ai.getRotate());
-					
-					world.setBlock(x2, y2, z2, adj, metaAdj, 2);
-					world.setBlock(x, y, z, block, meta, 2);
-				}
-				else
-				{
-					meta = meta & 7;
-					
-					world.setBlock(x, y, z, block, meta, 3);
-				}
-			}*/
-			
-			
-			
-			
-			
-			
 			
 			if(using != null)
 			{
@@ -80,32 +29,6 @@ public class PistonCustomBuilder implements CustomBuilder
 			return true;
 		}
 		
-		/*if((meta & 7) == meta)
-		{
-			
-			
-			
-			int x2 = x;
-			int y2 = y;
-			int z2 = z;
-			
-			switch(meta)
-			{
-			case 0: y2--; break;
-			case 1: y2++; break;
-			case 2: z2--; break;
-			case 3: z2++; break;
-			case 4: x2--; break;
-			case 5: x2++; break;
-			}
-			
-			int index = ai.getSchematicIndexFromWorld(x2, y2, z2);
-			
-			Block adj = ai.schem.blockAtSafe(index);
-			
-			
-			
-		}*/
 		return false;
 	}
 

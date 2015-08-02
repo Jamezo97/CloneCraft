@@ -9,8 +9,6 @@ import net.minecraft.entity.player.EntityPlayer;
 
 public class SyncBuildSpeed extends Sync
 {
-	
-	
 
 	public SyncBuildSpeed(int id)
 	{
@@ -18,7 +16,7 @@ public class SyncBuildSpeed extends Sync
 	}
 
 	int lastBuildSpeed = 0;
-	
+
 	@Override
 	public boolean checkNeedsUpdating(EntityClone clone)
 	{
@@ -44,12 +42,10 @@ public class SyncBuildSpeed extends Sync
 		out.write(clone.getBuildAI().getBuildSpeed());
 	}
 
-	
-	
 	@Override
 	public void read(DataInputStream in, EntityClone clone, EntityPlayer player) throws IOException
 	{
-		if(!clone.worldObj.isRemote && player.capabilities.isCreativeMode)
+		if (!clone.worldObj.isRemote && player.capabilities.isCreativeMode)
 		{
 			clone.getBuildAI().setBuildSpeed(in.read());
 		}
@@ -61,6 +57,7 @@ public class SyncBuildSpeed extends Sync
 
 	@Override
 	public void read(DataInputStream in, EntityClone clone) throws IOException
-	{}
+	{
+	}
 
 }

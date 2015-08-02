@@ -99,7 +99,6 @@ public class EntityAIMine extends EntityAIBase{
 		}
 		return false;
 	}
-	/**/
 
 	@Override
 	public boolean continueExecuting()

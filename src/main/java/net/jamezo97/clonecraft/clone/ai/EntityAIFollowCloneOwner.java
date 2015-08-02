@@ -44,22 +44,6 @@ public class EntityAIFollowCloneOwner extends EntityAIBase
 	//A timer which increments whilst the player is being followed. Reset when not.
 	int followingCount = 0;
 	
-//	int runningTick = 0;
-	
-	
-
-//	@Override
-//	public void startExecuting() {
-//		runningTick = 0;
-//	}
-//
-//
-//	@Override
-//	public void resetTask() {
-//		runningTick = 0;
-//	}
-
-	//long timer = 0;
 	
 	@Override
 	public boolean continueExecuting() {
@@ -67,8 +51,6 @@ public class EntityAIFollowCloneOwner extends EntityAIBase
 		if(owner != null)
 		{
 			double distance = clone.getDistanceSqToEntity(owner);
-
-//			System.out.println("Look");
 			
 			this.clone.getLookHelper().setLookPositionWithEntity(owner, 16.0f, clone.getVerticalFaceSpeed());
 			
