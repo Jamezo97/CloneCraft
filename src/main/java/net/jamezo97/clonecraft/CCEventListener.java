@@ -11,21 +11,27 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 
+import net.jamezo97.clonecraft.build.BlockItemRegistry;
 import net.jamezo97.clonecraft.clone.EntityClone;
 import net.jamezo97.clonecraft.command.word.WordSet;
 import net.jamezo97.clonecraft.recipe.CloneCraftCraftingHandler;
 import net.minecraft.client.Minecraft;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLivingBase;
+import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.nbt.CompressedStreamTools;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.integrated.IntegratedServer;
 import net.minecraft.util.AxisAlignedBB;
+import net.minecraft.util.ChatComponentText;
+import net.minecraft.util.ChatStyle;
+import net.minecraft.util.EnumChatFormatting;
 import net.minecraft.util.MovingObjectPosition;
 import net.minecraft.util.Vec3;
 import net.minecraftforge.client.event.RenderWorldLastEvent;
 import net.minecraftforge.event.ServerChatEvent;
+import net.minecraftforge.event.entity.EntityJoinWorldEvent;
 import net.minecraftforge.event.world.WorldEvent;
 
 import org.lwjgl.opengl.GL11;
@@ -85,7 +91,20 @@ public class CCEventListener {
 		}
 	}
 	
-	
+	@SubscribeEvent
+	public void entityJoinedWorld(EntityJoinWorldEvent event)
+	{
+		if(event.entity instanceof EntityPlayerMP)
+		{
+			EntityPlayerMP player = (EntityPlayerMP)event.entity;
+//			player.addChatMessage(
+//					new ChatComponentText("YOYO. MR PLAYER")
+//					.setChatStyle(new ChatStyle().setColor(EnumChatFormatting.GOLD)));
+			
+			BlockItemRegistry.playerLoggedIn(player);
+			
+		}
+	}
 
 	@SubscribeEvent
 	public void onWorldSave(WorldEvent.Save param)

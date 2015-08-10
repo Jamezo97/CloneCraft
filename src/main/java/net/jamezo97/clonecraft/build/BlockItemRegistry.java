@@ -1,6 +1,5 @@
 package net.jamezo97.clonecraft.build;
 
-import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map.Entry;
@@ -8,13 +7,11 @@ import java.util.Random;
 
 import net.jamezo97.clonecraft.chunktricks.FakePlayer;
 import net.jamezo97.clonecraft.chunktricks.FakeSmallWorld;
-import net.jamezo97.clonecraft.schematic.Schematic;
+import net.jamezo97.clonecraft.network.Handler14RequestBlockItemMapping;
 import net.minecraft.block.Block;
+import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.init.Blocks;
-import net.minecraft.init.Items;
 import net.minecraft.item.Item;
-import net.minecraft.item.ItemBlock;
-import net.minecraft.item.ItemSign;
 import net.minecraft.item.ItemStack;
 
 /**
@@ -28,6 +25,12 @@ public class BlockItemRegistry {
 	
 	//In theory should be faster.
 	public static HashMap<Integer, Item> idToItem = new HashMap<Integer, Item>();
+	
+	/**
+	 * The blocks which don't have mappings, but may. Check with a client once connected for these blocks.`
+	 */
+	public static ArrayList<Block> needToClientSearch = new ArrayList<Block>();
+	
 	
 	
 	static Random rand = new Random();
@@ -55,6 +58,18 @@ public class BlockItemRegistry {
 //		registerBlockItem(Blocks.redstone_wire, Items.redstone);
 //		
 //		registerBlockItem(Blocks.cake, Items.cake);
+	}
+	
+	public static void playerLoggedIn(EntityPlayerMP player)
+	{
+		if(!BlockItemRegistry.needToClientSearch.isEmpty())
+		{
+			System.out.println("Requesting " + needToClientSearch.size() + " blocks");
+			Handler14RequestBlockItemMapping handler = new Handler14RequestBlockItemMapping(
+					needToClientSearch.toArray(new Block[needToClientSearch.size()]));
+			handler.addToken(handler.rand.nextLong(), player);
+			handler.sendToPlayer(player);
+		}
 	}
 	
 	
@@ -117,15 +132,7 @@ public class BlockItemRegistry {
 				fakeWorld.setBlockForget(xyz[a][0], xyz[a][1], xyz[a][2], Blocks.cobblestone, 0, 0);
 			}
 			
-			
-		//		Schematic schem = Schematic.createSchematic(0, 0, 0, 15, 255, 15, fakeWorld);
-		//		schem.name = "TEST";
-		//		schem.saveTo(new File("C:/Users/James/Desktop/Schematic/AAChunk.schematic"));
-			
-			
 			FakePlayer fp = new FakePlayer(fakeWorld);
-			
-			
 			
 			for(Object key : Item.itemRegistry.getKeys())
 			{
@@ -155,11 +162,6 @@ public class BlockItemRegistry {
 							if(!blockToItem.containsKey(block))
 							{
 								registerBlockItem(block, item);
-								
-								/*if(block.getItemDropped(0, rand, 0) == item)
-								{
-									normalizeable.add(Block.getIdFromBlock(block));
-								}*/
 							}
 						}
 					}
@@ -227,15 +229,125 @@ public class BlockItemRegistry {
 				}
 			}
 		}
-		
 	}
 	
 	
+	/**
+	 * Well that's a bit dodgey. But it works.
+	 * @return True if the client method 'getItem' exists.
+	 */
+	public static boolean hasGetItemMethod()
+	{
+		try
+		{
+			Blocks.air.getItem(null, 0, 0, 0);
+		}
+		catch(Throwable t)
+		{
+			if(t instanceof java.lang.NoSuchMethodError)
+			{
+				return false;
+			}
+		}
+		return true;
+	}
+	
+	public static void init3()
+	{
+		if(!hasGetItemMethod())
+		{
+			return;
+		}
+		
+		System.out.println("RUNNING CLIENT ITEM BLOCK REGISTRY");
+		
+		FakeSmallWorld world = new FakeSmallWorld();
+		FakePlayer player = new FakePlayer(world);
+		
+		for(Object obj : Block.blockRegistry.getKeys())
+		{
+			try
+			{
+				Block block = (Block)Block.blockRegistry.getObject(obj);
+				
+				world.setBlock(0, 70, 0, block, 0, 0);
+				
+				Item item = block.getItem(world, 0, 70, 0);
+				
+				world.resetWorld();
+
+		        if (item == null)
+		        {
+		        	
+		        	
+		        	item = Item.getItemFromBlock(block);
+		        	
+		            if(item == null)
+		            {
+		            	System.err.println("ERR: Fetch failed: " + obj);
+		            	continue;
+		            }
+		            System.out.println("War: Assuming default Block-BlockItem mapping for " + obj);
+		        }
+
+		        BlockItemRegistry.registerBlockItem(block, item);
+			}
+			catch(Throwable t)
+			{
+				System.err.println("Failed to find block for " + obj);
+				System.out.println(t);
+			}
+		}
+	}
+	
+	public static void init1()
+	{
+		for(Object obj : Block.blockRegistry.getKeys())
+		{
+			Block block = (Block)Block.blockRegistry.getObject(obj);
+			
+			if(!blockToItem.containsKey(block))
+			{
+				Item item = Item.getItemFromBlock(block);
+				
+				if(item != null)
+				{
+					registerBlockItem(block, item);
+				}
+			}
+		}
+	}
+	
 	public static void init()
 	{
-		init2();
+		init3();
+		init1();
+//		init2();
 		initCustom();
+		
+		
+		
+		if(!BlockItemRegistry.hasGetItemMethod())
+		{
+			for(Object obj : Block.blockRegistry.getKeys())
+			{
+				try
+				{
+					Block block = (Block)Block.blockRegistry.getObject(obj);
+					
+					if(!BlockItemRegistry.blockToItem.containsKey(block))
+					{
+						needToClientSearch.add(block);
+					}
+				}
+				catch(Throwable t){}
+			}
+		}
+		
+
 	
+		
+		System.out.println("Finished");
 	}
 
 

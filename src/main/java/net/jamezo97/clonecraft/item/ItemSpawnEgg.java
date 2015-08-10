@@ -19,6 +19,9 @@ import net.minecraft.entity.item.EntityTNTPrimed;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
+import net.minecraft.util.ChatComponentText;
+import net.minecraft.util.ChatStyle;
+import net.minecraft.util.EnumChatFormatting;
 import net.minecraft.util.Facing;
 import net.minecraft.util.IIcon;
 import net.minecraft.util.StatCollector;
@@ -155,6 +158,14 @@ public class ItemSpawnEgg extends Item{
             }
             
             Entity entity = new ItemData(par1ItemStack).spawnEntity(par4 + 0.5, par5+addY, par6 + 0.5, par3World);
+            
+            if(entity == null)
+            {
+            	par2EntityPlayer.addChatMessage(
+						new ChatComponentText("Entity(" + new ItemData(par1ItemStack).getCurrentEntityNameTrans() + ") could not be spawned")
+						.setChatStyle(new ChatStyle().setColor(EnumChatFormatting.RED)));
+            	return true;
+            }
             
             if(entity instanceof EntityClone)
             {

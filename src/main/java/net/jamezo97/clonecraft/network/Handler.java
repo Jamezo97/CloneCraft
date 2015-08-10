@@ -179,6 +179,30 @@ public abstract class Handler
 	{
 		PacketHandler.net.sendToAllAround(new HandlerPacket(this), new TargetPoint(dim, xCoord, yCoord, zCoord, range));
 	}
+	
+	public void writeUTF(ByteBuf out, String str)
+	{
+		out.writeShort(str.length());
+		
+		for(int a = 0; a < str.length(); a++)
+		{
+			out.writeChar(str.charAt(a));
+		}
+	}
+	
+	public String readUTF(ByteBuf in)
+	{
+		String str = "";
+		
+		int len = in.readShort();
+		
+		for(int a = 0; a < len; a++)
+		{
+			str += in.readChar();
+		}
+		
+		return str;
+	}
 
 	static HashMap<Integer, Class> idToClass = new HashMap<Integer, Class>();
 	static HashMap<Class, Integer> classToId = new HashMap<Class, Integer>();
@@ -199,6 +223,7 @@ public abstract class Handler
 		registerHandler(11, Handler11SendSchematic.class);
 		registerHandler(12, Handler12BuildSchematic.class);
 		registerHandler(13, Handler13CloneSay.class);
+		registerHandler(14, Handler14RequestBlockItemMapping.class);
 
 	}
 

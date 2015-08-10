@@ -160,8 +160,14 @@ public class GuiScrollableBlocks extends GuiScrollable
 		RenderHelper.enableGUIStandardItemLighting();
 
 		GL11.glScalef(2, 2, 2);
-		itemRenderer.renderItemAndEffectIntoGUI(Minecraft.getMinecraft().fontRenderer, Minecraft.getMinecraft().renderEngine, var5, par2, par3);
-
+		
+		try
+		{
+			itemRenderer.renderItemAndEffectIntoGUI(Minecraft.getMinecraft().fontRenderer, Minecraft.getMinecraft().renderEngine, var5, par2, par3);	
+		} 
+		catch (Throwable t)
+		{}//BAH
+		
 		RenderHelper.disableStandardItemLighting();
 		GL11.glDisable(GL12.GL_RESCALE_NORMAL);
 		GL11.glPopMatrix();
