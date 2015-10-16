@@ -65,6 +65,8 @@ public class CCEntityList {
 					String name = (String)name_obj;
 					Integer ID = name.hashCode();
 					
+					System.out.println(name);
+					
 					idToString.put(ID, name);
 					stringToId.put(name, ID);
 					

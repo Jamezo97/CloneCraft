@@ -43,7 +43,7 @@ public class ClientProxy extends CommonProxy{
 	{
 		super.preInit(craft);
 		RenderingRegistry.registerEntityRenderingHandler(net.jamezo97.clonecraft.entity.EntitySpawnEgg.class, new RenderSpawnEgg());
-		
+
 		RenderingRegistry.registerEntityRenderingHandler(net.jamezo97.clonecraft.clone.EntityClone.class, new RenderClone());
 		
 		//Register TileEntity custom renders

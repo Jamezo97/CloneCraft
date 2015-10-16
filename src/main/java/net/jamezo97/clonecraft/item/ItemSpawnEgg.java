@@ -1,3 +1,4 @@
+
 package net.jamezo97.clonecraft.item;
 
 import java.util.List;
@@ -172,10 +173,10 @@ public class ItemSpawnEgg extends Item{
 				((EntityClone)entity).onSpawnedBy(par2EntityPlayer.getCommandSenderName());
 			}
             
-            par3World.playSoundAtEntity(entity, "clonecraft:general.pop", 1.0f, 1.0f);
-            
             if (entity != null)
             {
+                par3World.playSoundAtEntity(entity, "clonecraft:general.pop", 1.0f, 1.0f);
+                
                 if (entity instanceof EntityLivingBase && par1ItemStack.hasDisplayName())
                 {
                     ((EntityLiving)entity).setCustomNameTag(par1ItemStack.getDisplayName());

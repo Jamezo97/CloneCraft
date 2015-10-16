@@ -6,7 +6,7 @@ import net.minecraftforge.common.config.Configuration;
 
 public class CConfig {
 	
-	public boolean OWNERS_ENABLED, DEBUG_ENABLED, LIFEINDUCER_EXPLODE;
+	public boolean OWNERS_ENABLED, DEBUG_ENABLED, LIFEINDUCER_EXPLODE, SYNC_BLOCK_ITEM_CLIENT;
 	
 	public int SYNC_FREQUENCY, SYNC_FORCE;
 	
@@ -36,6 +36,15 @@ public class CConfig {
 		
 		LIFEINDUCER_EXPLODE = c.get("Options", "Life Inducer Damage Blocks", false, "If set to true, when a life inducer is broken without being discharged, the explosion will also damage blocks.").getBoolean(false);
 		
+		SYNC_BLOCK_ITEM_CLIENT = c
+				.get("Options",
+						"Sync Block->Item Mapping With Client",
+						true,
+						"When set to false, disables the ability for clients to automatically send the mapping between items and blocks to the server. "
+						+ "You can usually leave this on, however if you're running a large server, then it may be prudent to disable this feature, as clients "
+						+ "with the correct know how can upload incorrect information and cheat the clonecraft build system.")
+				.getBoolean(true);
+
 		SYNC_FREQUENCY = c.get("Options", "Sync Frequency", 2, "How often clones are checked for changes and synced between server and client. A higher values reduces the frequency").getInt(2);
 		
 		SYNC_FORCE = c.get("Options", "Sync Force Timer", 0, "How many ticks before Clones have all values forcibly synchronized (0 = Off, 200 = Every 10 seconds)").getInt(-1);

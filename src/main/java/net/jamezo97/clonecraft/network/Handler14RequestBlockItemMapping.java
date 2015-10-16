@@ -5,13 +5,15 @@ import io.netty.buffer.ByteBuf;
 import java.util.ArrayList;
 import java.util.Random;
 
+import net.jamezo97.clonecraft.CloneCraft;
+import net.jamezo97.clonecraft.build.BlockItemRegistry;
+import net.jamezo97.clonecraft.chunktricks.FakePlayer;
+import net.jamezo97.clonecraft.chunktricks.FakeSmallWorld;
 import net.minecraft.block.Block;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.item.Item;
 import cpw.mods.fml.relauncher.Side;
-import net.jamezo97.clonecraft.build.BlockItemRegistry;
-import net.jamezo97.clonecraft.chunktricks.*;
 
 public class Handler14RequestBlockItemMapping extends Handler
 {
@@ -37,6 +39,7 @@ public class Handler14RequestBlockItemMapping extends Handler
 		this.blockString = this.packBlocks(blocks);
 		return this;
 	}
+	
 	public Handler14RequestBlockItemMapping setItems(Item... items)
 	{
 		this.itemString = this.packItems(items);
@@ -129,6 +132,11 @@ public class Handler14RequestBlockItemMapping extends Handler
 	@Override
 	public void handle(Side side, EntityPlayer player)
 	{
+		if(!CloneCraft.INSTANCE.config.SYNC_BLOCK_ITEM_CLIENT)
+		{
+			return;
+		}
+		
 		Block[] blocks = this.unpackBlocks(blockString);
 		Item[] items = this.unpackItems(itemString);
 		if(side == Side.CLIENT)
@@ -138,27 +146,43 @@ public class Handler14RequestBlockItemMapping extends Handler
 		else
 		{
 			System.out.println("Handling server block register");
-			if(Handler14RequestBlockItemMapping.tokens.contains(securityToken))
+			
+			boolean found = false;
+			
+			for(int i = 0; i < tokens.size(); i++)
 			{
-				Handler14RequestBlockItemMapping.tokens.remove((Object)securityToken);
-				
-				if(items != null && blocks != null && items.length == blocks.length)
+				if(tokens.get(i).token == securityToken)
 				{
-					for(int a = 0; a < blocks.length; a++)
+					found = true;
+					tokens.remove(i);
+					
+					if(items != null && blocks != null && items.length == blocks.length)
 					{
-						if(BlockItemRegistry.needToClientSearch.contains(blocks[a]))
+						System.out.println("Blocks and Items exists");
+						for(int a = 0; a < blocks.length; a++)
 						{
-							System.out.println("Registered " + blocks[a] + ", " + items[a]);
-							BlockItemRegistry.registerBlockItem(blocks[a], items[a]);
-							BlockItemRegistry.needToClientSearch.remove(blocks[a]);
+							System.out.println("Block " + blocks[a]);
+							if(BlockItemRegistry.needToClientSearch.contains(blocks[a]))
+							{
+								System.out.println("Registered " + blocks[a] + ", " + items[a]);
+								BlockItemRegistry.registerBlockItem(blocks[a], items[a]);
+								BlockItemRegistry.needToClientSearch.remove(blocks[a]);
+							}
 						}
+					}
+					else
+					{
+
+						System.out.println("Blocks and/or Items do not exists: " + blocks + ", " + items);
 					}
 				}
 			}
-			else
-			{
+			
+			if(!found){
 				//Token has expired.
+				System.out.println("Token has expired: " + securityToken + ", " + tokens.size());
 			}
+			
 		}
 	}
 	
@@ -228,13 +252,16 @@ public class Handler14RequestBlockItemMapping extends Handler
 		{
 			if(tokens.get(a).time+30000 < System.currentTimeMillis() || tokens.get(a).token == token)
 			{
+				System.out.println("Removing token: " + tokens.get(a).token);
 				tokens.remove(a--);
 			}
 		}
 		
 		this.securityToken = token;
 		
-		this.tokens.add(new TokenEntry(token,player));
+		System.out.println("ADDING TOKEN: " + token);
+		
+		this.tokens.add(new TokenEntry(token, player));
 	}
 	
 	private static ArrayList<TokenEntry> tokens = new ArrayList<TokenEntry>();
@@ -259,12 +286,14 @@ public class Handler14RequestBlockItemMapping extends Handler
 		{
 			if(obj instanceof Long)
 			{
+				System.out.println("CHecking if " + token + ", == " + obj);
 				return (Long)obj == token;
 			}
 			if(obj instanceof TokenEntry)
 			{
 				return ((TokenEntry)obj).token == token;
 			}
+			System.out.println("Object "+ obj + " does not match " + token);
 			
 			return false;
 		}

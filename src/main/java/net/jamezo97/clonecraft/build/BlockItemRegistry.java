@@ -5,6 +5,7 @@ import java.util.HashMap;
 import java.util.Map.Entry;
 import java.util.Random;
 
+import net.jamezo97.clonecraft.CloneCraft;
 import net.jamezo97.clonecraft.chunktricks.FakePlayer;
 import net.jamezo97.clonecraft.chunktricks.FakeSmallWorld;
 import net.jamezo97.clonecraft.network.Handler14RequestBlockItemMapping;
@@ -62,7 +63,7 @@ public class BlockItemRegistry {
 	
 	public static void playerLoggedIn(EntityPlayerMP player)
 	{
-		if(!BlockItemRegistry.needToClientSearch.isEmpty())
+		if(CloneCraft.INSTANCE.config.SYNC_BLOCK_ITEM_CLIENT && !BlockItemRegistry.needToClientSearch.isEmpty())
 		{
 			System.out.println("Requesting " + needToClientSearch.size() + " blocks");
 			Handler14RequestBlockItemMapping handler = new Handler14RequestBlockItemMapping(

@@ -163,7 +163,10 @@ public class GuiScrollableBlocks extends GuiScrollable
 		
 		try
 		{
-			itemRenderer.renderItemAndEffectIntoGUI(Minecraft.getMinecraft().fontRenderer, Minecraft.getMinecraft().renderEngine, var5, par2, par3);	
+			if(var5 != null && var5.getItem() != null)
+			{
+				itemRenderer.renderItemAndEffectIntoGUI(Minecraft.getMinecraft().fontRenderer, Minecraft.getMinecraft().renderEngine, var5, par2, par3);	
+			}
 		} 
 		catch (Throwable t)
 		{}//BAH

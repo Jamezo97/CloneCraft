@@ -263,22 +263,32 @@ public class BreakableBlocks
 
 				if (blockItem != null && block.getCreativeTabToDisplayOn() != null)
 				{
-					blockItem.getSubItems(blockItem, CreativeTabs.tabAllSearch, loadInto);
-					ItemStack stack;
-
-					for (int a = 0; a < loadInto.size(); a++)
+					try
 					{
-						if (loadInto.get(a) instanceof ItemStack)
-						{
-							stack = (ItemStack) loadInto.get(a);
-							long data = conjoin(Block.getIdFromBlock(block), stack.getItemDamage());
+						blockItem.getSubItems(blockItem, CreativeTabs.tabAllSearch, loadInto);
+						
+						ItemStack stack;
 
-							if (!validBlocks.contains(data))
+						for (int a = 0; a < loadInto.size(); a++)
+						{
+							if (loadInto.get(a) instanceof ItemStack)
 							{
-								validBlocks.add(data);
+								stack = (ItemStack) loadInto.get(a);
+								long data = conjoin(Block.getIdFromBlock(block), stack.getItemDamage());
+
+								if (!validBlocks.contains(data))
+								{
+									validBlocks.add(data);
+								}
 							}
 						}
 					}
+					catch(Exception e)
+					{
+						System.err.println("Failed to load sub items from block " + blockItem);
+						e.printStackTrace();
+					}
+					
 				}
 			}
 		}

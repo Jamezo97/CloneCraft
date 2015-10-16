@@ -35,7 +35,7 @@ public class CommonProxy {
 	{
 		
 		EntityRegistry.registerModEntity(EntitySpawnEgg.class, craft.config.ID_ENTITY_SPAWNEGG, 0, craft, 80, 10, true);
-		
+
 		EntityRegistry.registerModEntity(EntityClone.class, craft.config.ID_ENTITY_CLONE, 1, craft, 512, 2, true);
 		
 		NetworkRegistry.INSTANCE.registerGuiHandler(craft, new GuiHandler());

@@ -47,7 +47,7 @@ import cpw.mods.fml.relauncher.SideOnly;
 public class CloneCraft
 {
 	final static String MODID = "clonecraft";
-	final static String VERSION = "3.0";
+	final static String VERSION = "B3.0.14";
 	final static String NAME = "CloneCraft";
 	
 	@SidedProxy(modId = "clonecraft", clientSide="net.jamezo97.clonecraft.ClientProxy", serverSide="net.jamezo97.clonecraft.CommonProxy")
