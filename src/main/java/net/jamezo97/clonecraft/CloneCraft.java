@@ -10,6 +10,7 @@ import net.jamezo97.clonecraft.build.BlockItemRegistry;
 import net.jamezo97.clonecraft.build.BlockLists;
 import net.jamezo97.clonecraft.build.CustomBuilders;
 import net.jamezo97.clonecraft.build.RotationMapping;
+import net.jamezo97.clonecraft.clone.CCWavefrontOBJ;
 import net.jamezo97.clonecraft.clone.ai.ImportantBlockRegistry;
 import net.jamezo97.clonecraft.item.ItemEmptyEgg;
 import net.jamezo97.clonecraft.item.ItemNeedle;
@@ -30,6 +31,7 @@ import net.minecraft.init.Blocks;
 import net.minecraft.init.Items;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.oredict.RecipeSorter;
 import cpw.mods.fml.common.FMLCommonHandler;
@@ -40,8 +42,6 @@ import cpw.mods.fml.common.event.FMLInitializationEvent;
 import cpw.mods.fml.common.event.FMLPostInitializationEvent;
 import cpw.mods.fml.common.event.FMLPreInitializationEvent;
 import cpw.mods.fml.common.registry.GameRegistry;
-import cpw.mods.fml.relauncher.Side;
-import cpw.mods.fml.relauncher.SideOnly;
 
 @Mod(modid = CloneCraft.MODID, version = CloneCraft.VERSION, name = CloneCraft.NAME)
 public class CloneCraft
@@ -63,6 +63,7 @@ public class CloneCraft
 		CloneCraft.INSTANCE = this;
 		creativeTab = new CloneCraftCreativeTab("clonecraft");
 		creativeTabAll = new CloneCraftCreativeTabAll("clonecraftAll");
+		
 	}
 	
 	

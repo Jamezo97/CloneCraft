@@ -52,6 +52,8 @@ public class CommonProxy {
 	public void init(CloneCraft craft)
 	{
 		
+		GameRegistry.registerWorldGenerator(new CloneCraftVillageGenerator(), 2);
+		
 	}
 
 	public void postInit(CloneCraft cloneCraft) {

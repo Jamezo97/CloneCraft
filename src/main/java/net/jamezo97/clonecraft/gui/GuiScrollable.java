@@ -51,11 +51,17 @@ public abstract class GuiScrollable extends Gui{
 		{
 			frameBuffer = new FrameBuffer((int)((width-scrollBarWidth))*2, (int)((height))*2);
 			frameBuffer.setClearColour(0x00000000);
+			useFrameBuffer = true;
 		}
 		catch (Exception e) 
 		{
 			useFrameBuffer = false;
 			e.printStackTrace();
+		}
+
+		if(frameBuffer == null)
+		{	
+			useFrameBuffer = false;
 		}
 	}
 	
@@ -291,36 +297,70 @@ public abstract class GuiScrollable extends Gui{
 		
 		this.updateMouse(mX, mY);
 		
-		frameBuffer.beginRender();
-		GL11.glDisable(GL11.GL_CULL_FACE);
-		GL11.glScalef(2.0f, 2.0f, 2.0f);
-		this.doScrollDraw(mX, mY);
-		GL11.glScalef(0.5f, 0.5f, 0.5f);
-		GL11.glEnable(GL11.GL_CULL_FACE);
-		frameBuffer.endRender();
+		if(this.useFrameBuffer)
+		{
+			frameBuffer.beginRender();
+			GL11.glDisable(GL11.GL_CULL_FACE);
+			GL11.glScalef(2.0f, 2.0f, 2.0f);
+			this.doScrollDraw(mX, mY);
+			GL11.glScalef(0.5f, 0.5f, 0.5f);
+			GL11.glEnable(GL11.GL_CULL_FACE);
+			frameBuffer.endRender();
+			
+			
+			this.drawRect(xPosition, yPosition, xPosition+width-this.scrollBarWidth, yPosition+height, this.colour_BG);
+			
+			this.drawRect(xPosition+width-this.scrollBarWidth, yPosition, xPosition+width, yPosition+height, this.colour_SCROLL);
+			
+			
+			
+			//Render Scrollable Section
+			frameBuffer.bindTexture();
+			float u = frameBuffer.getUMax();
+			float v = frameBuffer.getVMax();
+			GL11.glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
+			GL11.glBegin(GL11.GL_QUADS);
+			GL11.glTexCoord2f(0, 0);
+			GL11.glVertex3f(xPosition, yPosition, 0);
+			GL11.glTexCoord2f(0, v);
+			GL11.glVertex3f(xPosition, yPosition+height, 0);
+			GL11.glTexCoord2f(u, v);
+			GL11.glVertex3f(xPosition+width-scrollBarWidth, yPosition+height, 0);
+			GL11.glTexCoord2f(u, 0);
+			GL11.glVertex3f(xPosition+width-scrollBarWidth, yPosition, 0);
+			GL11.glEnd();
+		}
+		else
+		{			
+			
+			this.drawRect(xPosition, yPosition, xPosition+width-this.scrollBarWidth, yPosition+height, this.colour_BG);
+			
+			this.drawRect(xPosition+width-this.scrollBarWidth, yPosition, xPosition+width, yPosition+height, this.colour_SCROLL);
+			
+			GL11.glTranslatef(xPosition, yPosition, 0);
+			
+			this.doScrollDraw(mX, mY);
+
+			GL11.glTranslatef(-xPosition, -yPosition, 0);
+			
+			/*//Render Scrollable Section
+			frameBuffer.bindTexture();
+			float u = frameBuffer.getUMax();
+			float v = frameBuffer.getVMax();
+			GL11.glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
+			GL11.glBegin(GL11.GL_QUADS);
+			GL11.glTexCoord2f(0, 0);
+			GL11.glVertex3f(xPosition, yPosition, 0);
+			GL11.glTexCoord2f(0, v);
+			GL11.glVertex3f(xPosition, yPosition+height, 0);
+			GL11.glTexCoord2f(u, v);
+			GL11.glVertex3f(xPosition+width-scrollBarWidth, yPosition+height, 0);
+			GL11.glTexCoord2f(u, 0);
+			GL11.glVertex3f(xPosition+width-scrollBarWidth, yPosition, 0);
+			GL11.glEnd();*/
+		}
 		
 		
-		this.drawRect(xPosition, yPosition, xPosition+width-this.scrollBarWidth, yPosition+height, this.colour_BG);
-		
-		this.drawRect(xPosition+width-this.scrollBarWidth, yPosition, xPosition+width, yPosition+height, this.colour_SCROLL);
-		
-		
-		
-		//Render Scrollable Section
-		frameBuffer.bindTexture();
-		float u = frameBuffer.getUMax();
-		float v = frameBuffer.getVMax();
-		GL11.glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
-		GL11.glBegin(GL11.GL_QUADS);
-		GL11.glTexCoord2f(0, 0);
-		GL11.glVertex3f(xPosition, yPosition, 0);
-		GL11.glTexCoord2f(0, v);
-		GL11.glVertex3f(xPosition, yPosition+height, 0);
-		GL11.glTexCoord2f(u, v);
-		GL11.glVertex3f(xPosition+width-scrollBarWidth, yPosition+height, 0);
-		GL11.glTexCoord2f(u, 0);
-		GL11.glVertex3f(xPosition+width-scrollBarWidth, yPosition, 0);
-		GL11.glEnd();
 		
 		Minecraft.getMinecraft().renderEngine.bindTexture(scrollableTex);
 //		int s = 8;
@@ -405,7 +445,7 @@ public abstract class GuiScrollable extends Gui{
 		int minX = this.xPosition;
 		int minY = this.yPosition + (beginRenderY-this.getEntryHeight());
 		
-		for(int a = beginEntryFloor-1; a < beginEntryFloor+maxEntryCount+1; a++)
+		for(int a = beginEntryFloor-1; a < beginEntryFloor+maxEntryCount; a++)
 		{
 			if(a >= this.getEntryCount())
 			{

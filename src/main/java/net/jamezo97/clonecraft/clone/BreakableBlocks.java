@@ -96,28 +96,33 @@ public class BreakableBlocks
 
 	public boolean canBreak(int x, int y, int z)
 	{
-		Block block = clone.worldObj.getBlock(x, y, z);
-		if (block == Blocks.air || (block.getMaterial() != null && block.getMaterial().isLiquid()))
+		try
 		{
-			return false;
-		}
-
-		int id = Block.getIdFromBlock(block);
-		int meta = clone.worldObj.getBlockMetadata(x, y, z);
-
-		if (clone.getOptions().farming.get())
-		{
-			// If it's a fully grown growable block, and it's not a bush
-			if (block instanceof IGrowable && CustomBuilders.customBuilderMap.get(block) instanceof PlantCustomBuilder)
+			Block block = clone.worldObj.getBlock(x, y, z);
+			if (block == Blocks.air || (block.getMaterial() != null && block.getMaterial().isLiquid()))
 			{
-				if (!((IGrowable) block).func_149851_a(clone.worldObj, x, y, z, true))
+				return false;
+			}
+
+			int id = Block.getIdFromBlock(block);
+			int meta = clone.worldObj.getBlockMetadata(x, y, z);
+
+			if (clone.getOptions().farming.get())
+			{
+				// If it's a fully grown growable block, and it's not a bush
+				if (block instanceof IGrowable && CustomBuilders.customBuilderMap.get(block) instanceof PlantCustomBuilder)
 				{
-					return true;
+					if (!((IGrowable) block).func_149851_a(clone.worldObj, x, y, z, true))
+					{
+						return true;
+					}
 				}
 			}
-		}
 
-		return canBreak(this.conjoin(id, meta));
+			return canBreak(this.conjoin(id, meta));
+		}
+		catch(Throwable t){return false;}//Why. At least it won't crash.
+		
 	}
 
 	public void tick(EntityClone clone)
@@ -283,7 +288,7 @@ public class BreakableBlocks
 							}
 						}
 					}
-					catch(Exception e)
+					catch(Throwable e)
 					{
 						System.err.println("Failed to load sub items from block " + blockItem);
 						e.printStackTrace();

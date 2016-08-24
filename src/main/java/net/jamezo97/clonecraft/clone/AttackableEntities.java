@@ -13,7 +13,9 @@ import net.minecraft.entity.monster.EntityMob;
 import net.minecraft.entity.monster.IMob;
 import net.minecraft.entity.passive.EntityAnimal;
 import net.minecraft.entity.passive.IAnimals;
+import net.minecraft.nbt.NBTBase;
 import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.nbt.NBTTagIntArray;
 
 public class AttackableEntities {
 	
@@ -52,9 +54,20 @@ public class AttackableEntities {
 	
 	public NBTTagCompound load(NBTTagCompound nbt)
 	{
-		int[] data = nbt.getIntArray("AttEnt");
-		addPrimitive(this.selectedEntities, data);
-		setDirty(false);
+		if(nbt.hasKey("AttEnt"))
+		{
+			NBTBase tag = nbt.getTag("AttEnt");
+			
+			if(tag instanceof NBTTagIntArray)
+			{
+
+				int[] data = ((NBTTagIntArray)tag).func_150302_c();
+				addPrimitive(this.selectedEntities, data);
+				setDirty(false);
+			}
+			
+		}
+		
 		return nbt;
 	}
 	

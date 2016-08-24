@@ -10,6 +10,10 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiButton;
 import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.client.gui.GuiTextField;
+import net.minecraft.client.renderer.Tessellator;
+
+import org.lwjgl.opengl.GL11;
+
 import cpw.mods.fml.client.config.GuiSlider;
 
 public class GuiChooseSchematic extends GuiScreen{
@@ -32,6 +36,32 @@ public class GuiChooseSchematic extends GuiScreen{
 	{
 		this.drawDefaultBackground();
 		this.drawDefaultBackground();
+		
+		
+		this.schematicList.draw(mX, mY);
+		
+//		System.out.println(this.schematicList.useFrameBuffer);
+		
+		
+		if(!this.schematicList.useFrameBuffer)
+	    {
+	        GL11.glDisable(GL11.GL_LIGHTING);
+	        GL11.glDisable(GL11.GL_FOG);
+	        Tessellator tessellator = Tessellator.instance;
+	        this.mc.getTextureManager().bindTexture(optionsBackground);
+	        GL11.glColor4f(1.0F, 1.0F, 1.0F, 1.0F);
+	        tessellator.startDrawingQuads();
+	        tessellator.setColorOpaque_I(4210752);
+	        
+	        this.draw(tessellator, 0, 0, schematicList.xPosition, this.height);
+			this.draw(tessellator, 0, 0, this.width, schematicList.yPosition);
+			this.draw(tessellator, 0, schematicList.yPosition+schematicList.height, this.width, this.height);
+			this.draw(tessellator, schematicList.xPosition+schematicList.width, 0, this.width, this.height);
+	        
+	        tessellator.draw();
+	    }
+		
+		
 		
 
 		int maxY = height-(itemsRequired==null?0:20) - 5;
@@ -83,7 +113,7 @@ public class GuiChooseSchematic extends GuiScreen{
 			
 		}
 		
-		this.schematicList.draw(mX, mY);
+		
 		
 		this.drawString(Minecraft.getMinecraft().fontRenderer, "Show:", 5, 11, 0xffffffff);
 		
@@ -96,7 +126,15 @@ public class GuiChooseSchematic extends GuiScreen{
 		searchField.drawTextBox();
 	}
 	
-	
+	private void draw(Tessellator tessellator, int minX, int minY, int maxX, int maxY)
+	{
+        float f = 32.0F;
+        
+		tessellator.addVertexWithUV(minX, maxY, 0.0D, minX / f, minY / f + 1);
+		tessellator.addVertexWithUV(maxX, maxY, 0.0D, maxX / f, minY / f + 1);
+        tessellator.addVertexWithUV(maxX, minY, 0.0D, maxX / f, maxY / f + 1);
+        tessellator.addVertexWithUV(minX, minY, 0.0D, minX / f, maxY / f + 1);
+	}
 
 	@Override
 	protected void keyTyped(char charC, int p_73869_2_) 

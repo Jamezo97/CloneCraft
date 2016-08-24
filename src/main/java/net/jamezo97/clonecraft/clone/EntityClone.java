@@ -1986,7 +1986,14 @@ public class EntityClone extends EntityLiving implements RenderableManager{
         		{
         			EntityLiving entity = (EntityLiving)mob;
         			
-        			if(EntityAccessor.isAIEnabled(entity))
+        			boolean aiEnabled = true;
+        			
+        			try
+        			{
+        				aiEnabled = EntityAccessor.isAIEnabled(entity);
+        			}catch(Throwable t){}//Screw it
+        			
+        			if(aiEnabled)
         			{
         				if(!(entity instanceof EntityCreature)){
         					continue;

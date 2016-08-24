@@ -4,6 +4,7 @@ import java.util.Random;
 
 import net.jamezo97.clonecraft.CloneCraft;
 import net.jamezo97.clonecraft.clone.EntityClone;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.model.ModelBiped;
 import net.minecraft.client.model.ModelRenderer;
 import net.minecraft.entity.Entity;
@@ -242,6 +243,7 @@ public class ModelBipedCustom extends ModelBiped
 				this.modelBreastLeft.render(p_78088_7_);
 				this.modelBreastRight.render(p_78088_7_);
 			}
+			
 
 		}
 	}

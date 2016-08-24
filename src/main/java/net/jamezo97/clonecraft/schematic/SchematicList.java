@@ -3,6 +3,7 @@ package net.jamezo97.clonecraft.schematic;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Random;
 
 import net.jamezo97.clonecraft.CloneCraft;
 import net.jamezo97.clonecraft.network.Handler;
@@ -360,6 +361,16 @@ public class SchematicList
 			SchematicEntry schemEntry = this.schematics.get(a);
 			schemEntry.schem.cleanGPU();
 		}
+	}
+
+	public Schematic getRandom(Random random)
+	{
+		if(!schematics.isEmpty())
+		{
+			return schematics.get(random.nextInt(schematics.size())).schem;
+		}
+		
+		return null;
 	}
 
 }

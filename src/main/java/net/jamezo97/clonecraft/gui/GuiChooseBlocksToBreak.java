@@ -1,9 +1,12 @@
 package net.jamezo97.clonecraft.gui;
 
+import org.lwjgl.opengl.GL11;
+
 import net.jamezo97.clonecraft.clone.EntityClone;
 import net.minecraft.client.gui.GuiButton;
 import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.client.gui.GuiTextField;
+import net.minecraft.client.renderer.Tessellator;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.StatCollector;
 
@@ -14,8 +17,9 @@ public class GuiChooseBlocksToBreak extends GuiScreen {
 	EntityClone clone;
 	
 	GuiScreen parent;
-	
+
 	ResourceLocation backgroundImageResource = new ResourceLocation("clonecraft:textures/gui/chooseEntities.png");
+	ResourceLocation backgroundImageResource_hollow = new ResourceLocation("clonecraft:textures/gui/chooseEntities_hollow.png");
 	
 	int xSize, ySize;
 	
@@ -26,9 +30,102 @@ public class GuiChooseBlocksToBreak extends GuiScreen {
 		ySize = 212;
 	}
 
-
-
 	@Override
+	public void drawScreen(int mX, int mY, float partial)
+	{
+		drawDefaultBackground();
+		
+		int xPosition = (width-xSize)/2;
+		int yPosition = (height-ySize)/2;
+		
+
+		
+		if(scrollable.useFrameBuffer)
+		{
+			mc.renderEngine.bindTexture(backgroundImageResource);
+			
+			this.drawTexturedModalRect(xPosition, yPosition, 0, 0, 256, ySize);
+			
+			super.drawScreen(mX, mY, partial);
+			
+			scrollable.draw(mX, mY);
+			
+			search.drawTextBox();
+			
+			this.drawString(mc.fontRenderer, search_label, xPosition+4, yPosition+8, 0xffffffff);
+		}
+		else
+		{
+			
+			int BG = 0xFFFFffff;
+
+			GL11.glDisable(GL11.GL_DEPTH_TEST);
+			drawBackground(1);
+			GL11.glEnable(GL11.GL_DEPTH_TEST);
+
+			scrollable.draw(mX, mY);
+			
+
+			GL11.glDisable(GL11.GL_DEPTH_TEST);
+			
+
+//			public void drawBackground(int p_146278_1_)
+			if(true)
+		    {
+		        GL11.glDisable(GL11.GL_LIGHTING);
+		        GL11.glDisable(GL11.GL_FOG);
+		        Tessellator tessellator = Tessellator.instance;
+		        this.mc.getTextureManager().bindTexture(optionsBackground);
+		        GL11.glColor4f(1.0F, 1.0F, 1.0F, 1.0F);
+		        tessellator.startDrawingQuads();
+		        tessellator.setColorOpaque_I(4210752);
+		        
+		        this.draw(tessellator, 0, 0, scrollable.xPosition, height);
+				this.draw(tessellator, 0, 0, width, scrollable.yPosition);
+				this.draw(tessellator, 0, scrollable.yPosition+scrollable.height, width, height);
+				this.draw(tessellator, scrollable.xPosition+scrollable.width, 0, width, height);
+		        
+		        tessellator.draw();
+		    }
+			
+			GL11.glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
+			
+			mc.renderEngine.bindTexture(backgroundImageResource_hollow);
+			
+
+			GL11.glEnable(GL11.GL_BLEND);
+	        GL11.glBlendFunc(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA);
+			
+			this.drawTexturedModalRect(xPosition, yPosition, 0, 0, 256, ySize);
+			
+			super.drawScreen(mX, mY, partial);
+			
+			search.drawTextBox();
+			
+
+			GL11.glDisable(GL11.GL_BLEND);
+			
+			this.drawString(mc.fontRenderer, search_label, xPosition+4, yPosition+8, 0xffffffff);
+			
+
+			GL11.glEnable(GL11.GL_DEPTH_TEST);
+			
+		}
+		
+		
+	}
+	
+	private void draw(Tessellator tessellator, int minX, int minY, int maxX, int maxY)
+	{
+        float f = 32.0F;
+        
+		tessellator.addVertexWithUV(minX, maxY, 0.0D, minX / f, minY / f + 1);
+		tessellator.addVertexWithUV(maxX, maxY, 0.0D, maxX / f, minY / f + 1);
+        tessellator.addVertexWithUV(maxX, minY, 0.0D, maxX / f, maxY / f + 1);
+        tessellator.addVertexWithUV(minX, minY, 0.0D, minX / f, maxY / f + 1);
+	}
+
+	/*@Override
 	public void drawScreen(int mX, int mY, float partial) {
 		drawDefaultBackground();
 		
@@ -45,7 +142,7 @@ public class GuiChooseBlocksToBreak extends GuiScreen {
 		search.drawTextBox();
 		
 		this.drawString(mc.fontRenderer, search_label, xPosition+4, yPosition+8, 0xffffffff);
-	}
+	}*/
 	
 	@Override
 	protected void keyTyped(char c, int par2) {
