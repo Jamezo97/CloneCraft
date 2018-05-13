@@ -2910,7 +2910,11 @@ public class EntityClone extends EntityLiving implements RenderableManager{
 		
 		if(object == null || !(object instanceof ThreadDownloadImageData))
 		{
-			object = new ThreadDownloadImageData(null, "http://skins.minecraft.net/MinecraftSkins/" + username + ".png", NameRegistry.getDefaultSkinForClone(this), new ImageBufferDownload());
+			String url;
+			// url = "http://skins.minecraft.net/MinecraftSkins/" + username + ".png";
+			url = "https://minotar.net/skin/" + username + ".png";
+
+			object = new ThreadDownloadImageData(null, url, NameRegistry.getDefaultSkinForClone(this), new ImageBufferDownload());
 			texturemanager.loadTexture(resource, object);
 		}
 		currentResource = resource;
